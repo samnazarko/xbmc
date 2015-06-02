@@ -192,6 +192,24 @@ void CPosixTimezone::SetTimezone(const std::string& timezoneName)
     snprintf(env_var, sizeof(env_var), "TZ=:%s", timezoneName.c_str());
     putenv(env_var);
     tzset();
+    if (timezoneName.empty())
+       return;
+    /* Keep /etc/timezone in sync */
+    FILE *fp = fopen("/tmp/timezone", "w");
+    if (fp)
+    {
+               fprintf(fp, "%s\n", timezoneName.c_str());
+               fclose(fp);
+               int res = system("/usr/bin/sudo /bin/mv /tmp/timezone /etc/timezone"); /* We need this to update a root owned file */
+               if (res == 0)
+               {
+                 char *command;
+                 asprintf(&command, "%s%s%s", "/usr/bin/sudo /bin/cp /usr/share/zoneinfo/", timezoneName.c_str(), " /etc/localtime.dpkg-new");
+                 system(command);
+                 system("/usr/bin/sudo /bin/mv /etc/localtime.dpkg-new /etc/localtime");
+               }
+    }
+
   }
 }
 
