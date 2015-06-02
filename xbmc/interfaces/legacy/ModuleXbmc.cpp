@@ -514,6 +514,11 @@ namespace XBMCAddon
         ae->Resume();
     }
 
+   void saveSettings()
+   {
+      CServiceBroker::GetSettingsComponent()->GetSettings()->Save();
+   }
+
     String convertLanguage(const char* language, int format)
     {
       std::string convertedLanguage;

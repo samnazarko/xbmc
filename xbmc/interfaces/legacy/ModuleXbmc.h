@@ -809,6 +809,27 @@ namespace XBMCAddon
 #ifdef DOXYGEN_SHOULD_USE_THIS
     ///
     /// \ingroup python_xbmc
+    /// @brief \python_func{ xbmc.saveSettings() }
+    ///-----------------------------------------------------------------------
+    /// Save Kodi settings.
+    ///
+    ///
+    /// ------------------------------------------------------------------------
+    ///
+    /// **Example:**
+    /// ~~~~~~~~~~~~~{.py}
+    /// ..
+    /// xbmc.saveSettings()
+    /// ..
+    /// ~~~~~~~~~~~~~
+    ///
+#else
+    void saveSettings();
+#endif
+
+#ifdef DOXYGEN_SHOULD_USE_THIS
+    ///
+    /// \ingroup python_xbmc
     /// @brief \python_func{ xbmc.getUserAgent() }
     /// @brief Returns Kodi's HTTP UserAgent string
     ///
