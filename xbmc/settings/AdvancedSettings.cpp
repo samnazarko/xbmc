@@ -103,8 +103,7 @@ void CAdvancedSettings::Initialize(CSettingsManager& settingsMgr)
   if (params->IsStartFullScreen())
     m_startFullScreen = true;
 
-  if (params->IsStandAlone())
-    m_handleMounting = true;
+  m_handleMounting = false;
 
   settingsMgr.RegisterSettingsHandler(this, true);
   std::set<std::string> settingSet;
