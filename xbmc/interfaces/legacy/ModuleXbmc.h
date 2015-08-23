@@ -244,6 +244,34 @@ namespace XBMCAddon
 #ifdef DOXYGEN_SHOULD_USE_THIS
     ///
     /// \ingroup python_xbmc
+    /// @brief \python_func{ xbmc.setosmcwalkthroughstatus(state) }
+    ///-----------------------------------------------------------------------
+    /// Change the OSMC Walkthrough Status
+    ///
+    /// @param          state       int - state of the walkthrough progress
+    ///
+    ///
+    ///
+    /// List of commands -
+    ///
+    ///
+    /// ------------------------------------------------------------------------
+    ///
+    /// **Example:**
+    /// ~~~~~~~~~~~~~{.py}
+    /// ..
+    /// xbmc.setosmcwalkthroughstatus(1)
+    /// ..
+    /// ~~~~~~~~~~~~~
+    ///
+    setosmcwalkthroughstatus(...);
+#else
+    void setosmcwalkthroughstatus(int state);
+#endif
+
+#ifdef DOXYGEN_SHOULD_USE_THIS
+    ///
+    /// \ingroup python_xbmc
     /// @brief \python_func{ xbmc.getLocalizedString(id) }
     /// Get a localized 'unicode string'.
     ///

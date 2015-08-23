@@ -122,6 +122,11 @@ namespace XBMCAddon
                                                    function);
     }
 
+    void setosmcwalkthroughstatus(int state)
+    {
+      CServiceBroker::GetAppMessenger()->SendMsg(TMSG_SETOSMCWALKTHROUGHSTATE, state);
+    }
+
     String executeJSONRPC(const char* jsonrpccommand)
     {
       XBMC_TRACE;
