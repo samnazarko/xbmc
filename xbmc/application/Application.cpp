@@ -1578,6 +1578,23 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
   }
   break;
 
+ case TMSG_SETOSMCWALKTHROUGHSTATE:
+ {
+     switch (pMsg->param1)
+     {
+         case 0:
+             g_application.SetOSMCWalkthroughState(g_application.OSMC_WALKTHROUGH_NOTRUNNING);
+             break;
+         case 1:
+             g_application.SetOSMCWalkthroughState(g_application.OSMC_WALKTHROUGH_ISRUNNING);
+             break;
+         case 2:
+             g_application.SetOSMCWalkthroughState(g_application.OSMC_WALKTHROUGH_ISDONE);
+             break;
+      }
+      break;
+  }
+
   case TMSG_NETWORKMESSAGE:
     m_ServiceManager->GetNetwork().NetworkMessage(static_cast<CNetworkBase::EMESSAGE>(pMsg->param1),
                                                   pMsg->param2);
