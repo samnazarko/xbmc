@@ -208,6 +208,34 @@ namespace XBMCAddon
 #ifdef DOXYGEN_SHOULD_USE_THIS
     ///
     /// \ingroup python_xbmc
+    /// @brief \python_func{ xbmc.setskin(skinname) }
+    ///-----------------------------------------------------------------------
+    /// Change the XBMC skin
+    ///
+    /// @param          state       string - the name of the skin to change to
+    ///
+    ///
+    ///
+    /// List of commands -
+    ///
+    ///
+    /// ------------------------------------------------------------------------
+    ///
+    /// **Example:**
+    /// ~~~~~~~~~~~~~{.py}
+    /// ..
+    /// xbmc.setskin("skin.confluence")
+    /// ..
+    /// ~~~~~~~~~~~~~
+    ///
+    setskin(...);
+#else
+    void setskin(const char *skin);
+#endif
+
+#ifdef DOXYGEN_SHOULD_USE_THIS
+    ///
+    /// \ingroup python_xbmc
     /// @brief \python_func{ xbmc.sleep(time) }
     /// Sleeps for 'time' (msec).
     /// \anchor xbmc_Sleep

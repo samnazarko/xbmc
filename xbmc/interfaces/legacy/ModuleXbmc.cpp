@@ -127,6 +127,14 @@ namespace XBMCAddon
       CServiceBroker::GetAppMessenger()->SendMsg(TMSG_SETOSMCWALKTHROUGHSTATE, state);
     }
 
+    void setskin(const char* skin)
+    {
+      XBMC_TRACE;
+      if (! skin)
+      return;
+      CServiceBroker::GetSettingsComponent()->GetSettings()->SetString(CSettings::SETTING_LOOKANDFEEL_SKIN, skin);
+    }
+
     String executeJSONRPC(const char* jsonrpccommand)
     {
       XBMC_TRACE;
