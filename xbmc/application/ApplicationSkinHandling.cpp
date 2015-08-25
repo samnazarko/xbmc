@@ -44,6 +44,7 @@
 #include "utils/XBMCTinyXML.h"
 #include "utils/log.h"
 #include "video/dialogs/GUIDialogFullScreenInfo.h"
+#include "Application.h"
 
 using namespace KODI::MESSAGING;
 
@@ -500,8 +501,13 @@ bool CApplicationSkinHandling::OnSettingChanged(const CSetting& setting)
     {
       // now we can finally reload skins
       std::string builtin("ReloadSkin");
-      if (settingId == CSettings::SETTING_LOOKANDFEEL_SKIN && m_confirmSkinChange)
+      if (settingId == CSettings::SETTING_LOOKANDFEEL_SKIN && m_confirmSkinChange && g_application.m_eOSMCWalkthroughState != g_application.OSMC_WALKTHROUGH_ISRUNNING)
         builtin += "(confirm)";
+
+     // Always make sure ISDONE is set or our changes won't progress. We hit this point if the user has selected a different skin in the OSMC setup wizard.
+     if (g_application.m_eOSMCWalkthroughState == g_application.OSMC_WALKTHROUGH_ISRUNNING)
+        g_application.SetOSMCWalkthroughState(g_application.OSMC_WALKTHROUGH_ISDONE);
+
       CServiceBroker::GetAppMessenger()->PostMsg(TMSG_EXECUTE_BUILT_IN, -1, -1, nullptr, builtin);
     }
   }
