@@ -236,6 +236,34 @@ namespace XBMCAddon
 #ifdef DOXYGEN_SHOULD_USE_THIS
     ///
     /// \ingroup python_xbmc
+    /// @brief \python_func{ xbmc.sethostname(hostname) }
+    ///-----------------------------------------------------------------------
+    /// Change the XBMC skin
+    ///
+    /// @param          state       string - Change the device name, and in turn, hostname
+    ///
+    ///
+    ///
+    /// List of commands -
+    ///
+    ///
+    /// ------------------------------------------------------------------------
+    ///
+    /// **Example:**
+    /// ~~~~~~~~~~~~~{.py}
+    /// ..
+    /// xbmc.sethostname("osmc")
+    /// ..
+    /// ~~~~~~~~~~~~~
+    ///
+    sethostname(...);
+#else
+    void sethostname(const char *hostname);
+#endif
+
+#ifdef DOXYGEN_SHOULD_USE_THIS
+    ///
+    /// \ingroup python_xbmc
     /// @brief \python_func{ xbmc.sleep(time) }
     /// Sleeps for 'time' (msec).
     /// \anchor xbmc_Sleep

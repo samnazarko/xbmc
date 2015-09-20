@@ -135,6 +135,15 @@ namespace XBMCAddon
       CServiceBroker::GetSettingsComponent()->GetSettings()->SetString(CSettings::SETTING_LOOKANDFEEL_SKIN, skin);
     }
 
+    void sethostname(const char* hostname)
+    {
+      XBMC_TRACE;
+      if (! hostname)
+      return;
+      CServiceBroker::GetSettingsComponent()->GetSettings()->SetString(CSettings::SETTING_SERVICES_DEVICENAME, hostname);
+    }
+
+
     String executeJSONRPC(const char* jsonrpccommand)
     {
       XBMC_TRACE;
