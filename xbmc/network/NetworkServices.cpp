@@ -144,6 +144,7 @@ CNetworkServices::CNetworkServices()
       CSettings::SETTING_SMB_MAXPROTOCOL,
       CSettings::SETTING_SMB_LEGACYSECURITY,
       CSettings::SETTING_SERVICES_WSDISCOVERY,
+      CSettings::SETTING_SERVICES_DEVICENAME,
   };
   m_settings = CServiceBroker::GetSettingsComponent()->GetSettings();
   m_settings->GetSettingsManager()->RegisterCallback(this, settingSet);
@@ -515,6 +516,23 @@ void CNetworkServices::OnSettingChanged(const std::shared_ptr<const CSetting>& s
       CServiceBroker::GetAppMessenger()->PostMsg(TMSG_RESTARTAPP);
     }
   }
+
+  if (settingId == "services.devicename")
+  {
+     std::string newHostName = CServiceBroker::GetSettingsComponent()->GetSettings()->GetString("services.devicename"); 
+     FILE *fp;
+     fp = fopen("/tmp/hostname", "w");
+     if (fp)
+     {
+         fprintf(fp, "%s", newHostName.c_str());
+         fclose(fp);
+     }
+     else
+         return;
+     system("/usr/bin/sudo /bin/mv /tmp/hostname /etc/hostname");
+     system("/usr/bin/sudo /bin/hostname -F /etc/hostname");
+  }
+
 }
 
 bool CNetworkServices::OnSettingUpdate(const std::shared_ptr<CSetting>& setting,

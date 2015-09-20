@@ -42,6 +42,7 @@
 #include "utils/TimeUtils.h"
 #include "windowing/WinSystem.h"
 #include "windows/GUIMediaWindow.h"
+#include "network/Network.h"
 
 using namespace KODI::GUILIB;
 using namespace KODI::GUILIB::GUIINFO;
@@ -109,6 +110,7 @@ bool CSystemGUIInfo::InitCurrentItem(CFileItem *item)
 
 bool CSystemGUIInfo::GetLabel(std::string& value, const CFileItem *item, int contextWindow, const CGUIInfo &info, std::string *fallback) const
 {
+  std::string strLabel;
   switch (info.m_info)
   {
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -275,8 +277,13 @@ bool CSystemGUIInfo::GetLabel(std::string& value, const CFileItem *item, int con
       value = g_langInfo.GetTemperatureUnitString();
       return true;
     case SYSTEM_FRIENDLY_NAME:
-      value = CSysInfo::GetDeviceName();
-      return true;
+    {
+       std::string hostname("osmc");
+       CServiceBroker::GetNetwork().GetHostName(hostname); 
+       strLabel = hostname.c_str();
+       value = strLabel;
+       return true;
+    }
     case SYSTEM_STEREOSCOPIC_MODE:
     {
       int iStereoMode = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOSCREEN_STEREOSCOPICMODE);
