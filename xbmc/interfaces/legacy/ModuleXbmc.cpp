@@ -143,6 +143,14 @@ namespace XBMCAddon
       CServiceBroker::GetSettingsComponent()->GetSettings()->SetString(CSettings::SETTING_SERVICES_DEVICENAME, hostname);
     }
 
+    void settimezone(const char* timezone)
+    {
+      XBMC_TRACE;
+      if (! timezone)
+      return;
+      CServiceBroker::GetSettingsComponent()->GetSettings()->SetString(CSettings::SETTING_LOCALE_TIMEZONE, timezone);
+    }
+
 
     String executeJSONRPC(const char* jsonrpccommand)
     {

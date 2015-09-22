@@ -264,6 +264,34 @@ namespace XBMCAddon
 #ifdef DOXYGEN_SHOULD_USE_THIS
     ///
     /// \ingroup python_xbmc
+    /// @brief \python_func{ xbmc.settimezone(timezone) }
+    ///-----------------------------------------------------------------------
+    /// Change the timezone
+    ///
+    /// @param          state       string - the name of the timezone to change to
+    ///
+    ///
+    ///
+    /// List of commands -
+    ///
+    ///
+    /// ------------------------------------------------------------------------
+    ///
+    /// **Example:**
+    /// ~~~~~~~~~~~~~{.py}
+    /// ..
+    /// xbmc.settimezone("Europe/London")
+    /// ..
+    /// ~~~~~~~~~~~~~
+    ///
+    settimezone(...);
+#else
+    void settimezone(const char *timezone);
+#endif
+
+#ifdef DOXYGEN_SHOULD_USE_THIS
+    ///
+    /// \ingroup python_xbmc
     /// @brief \python_func{ xbmc.sleep(time) }
     /// Sleeps for 'time' (msec).
     /// \anchor xbmc_Sleep
