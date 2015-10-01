@@ -140,6 +140,13 @@ void CUDevProvider::GetDisks(VECSOURCES& disks, bool removable)
       continue;
     }
 
+   // filter out osmc boot partition
+   if (strcmp(mountpoint, "/boot") == 0)
+   {
+      udev_device_unref(device);
+      continue;
+   }
+
     // filter out things mounted on /tmp
     if (strstr(mountpoint, "/tmp"))
     {
