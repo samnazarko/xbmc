@@ -124,7 +124,17 @@ bool CPosixMountProvider::Eject(const std::string& mountpath)
 #if !defined(TARGET_DARWIN_EMBEDDED)
   // just go ahead and try to umount the disk
   // if it does umount, life is good, if not, no loss.
-  std::string cmd = "umount \"" + mountpath + "\"";
+  std::string cmd;
+  if (access("/usr/bin/udevil", F_OK) != -1)
+  {
+      cmd = "/usr/bin/udevil umount \"" + mountpath + "\"";
+      CLog::Log(LOGDEBUG, "CPosixMountProvider::Eject - Going to use /bin/umount to perform an unmount operation");
+  }
+  else
+  {
+      cmd = "/bin/umount \"" + mountpath + "\"";
+      CLog::Log(LOGDEBUG, "CPosixMountProvider::Eject Going to use /usr/bin/udevil to perform an unmount operation");
+  }
   int status = system(cmd.c_str());
 
   if (status == 0)
