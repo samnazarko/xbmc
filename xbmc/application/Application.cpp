@@ -1475,8 +1475,10 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
   switch (msg)
   {
   case TMSG_POWERDOWN:
-    if (Stop(EXITCODE_POWERDOWN))
+    if (Stop(EXITCODE_POWERDOWN)) {
+      m_ShuttingDown = true;
       CServiceBroker::GetPowerManager().Powerdown();
+    }
     break;
 
   case TMSG_QUIT:
@@ -1501,8 +1503,10 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
 
   case TMSG_RESTART:
   case TMSG_RESET:
-    if (Stop(EXITCODE_REBOOT))
+    if (Stop(EXITCODE_REBOOT)) {
+      m_ShuttingDown = true;
       CServiceBroker::GetPowerManager().Reboot();
+    }
     break;
 
   case TMSG_RESTARTAPP:

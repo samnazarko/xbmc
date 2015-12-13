@@ -186,6 +186,11 @@ public:
 
   std::unique_ptr<CServiceManager> m_ServiceManager;
 
+  /*! \Allow OSMC's sigterm handler to know when to do the business or not, otherwise we get code on EXIT and POWERDOWN/REBOOT paths
++  */
+  bool m_ShuttingDown;
+  bool isShuttingDown() { return m_ShuttingDown; }
+
   /*!
   \brief Locks calls from outside kodi (e.g. python) until framemove is processed.
   */
