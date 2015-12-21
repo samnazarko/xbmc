@@ -27,6 +27,19 @@
 
 #include <sys/resource.h>
 
+#include "application/Application.h"
+#include "messaging/ApplicationMessenger.h"
+#include "ServiceBroker.h"
+
+using namespace KODI::MESSAGING;
+
+void sigterm_handler(int signum)
+{
+       CLog::Log(LOGINFO, "OSMC: received signal to tear down Kodi");
+       if (! g_application.isShuttingDown())
+          CServiceBroker::GetAppMessenger()->PostMsg(TMSG_QUIT);
+}
+
 namespace
 {
 extern "C" void XBMC_POSIX_HandleSignal(int sig)
