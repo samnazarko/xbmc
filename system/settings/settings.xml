@@ -3689,7 +3689,7 @@
       <group id="2" label="14111">
         <setting id="eventlog.enabled" type="boolean" label="14112" help="36460">
           <level>1</level>
-          <default>true</default>
+          <default>false</default>
           <control type="toggle" />
         </setting>
         <setting id="eventlog.enablednotifications" type="boolean" parent="eventlog.enabled" label="14113" help="36461">
