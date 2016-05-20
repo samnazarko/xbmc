@@ -31,6 +31,7 @@
 #include "utils/JobManager.h"
 #include "utils/ProgressJob.h"
 #include "utils/log.h"
+#include "application/Application.h"
 
 #include <algorithm>
 #include <iterator>
@@ -318,6 +319,11 @@ void CRepositoryUpdater::ScheduleUpdate(UpdateScheduleType scheduleType)
 
   if (CAddonSystemSettings::GetInstance().GetAddonAutoUpdateMode() == AUTO_UPDATES_NEVER)
     return;
+
+  if (g_application.m_eOSMCWalkthroughState != g_application.OSMC_WALKTHROUGH_ISDONE) {
+       CLog::Log(LOGDEBUG, "CRepositoryUpdater: refusing to update until My OSMC asserts");
+       return;
+  }
 
   if (!m_addonMgr.HasAddons(AddonType::REPOSITORY))
     return;
