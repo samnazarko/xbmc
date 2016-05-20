@@ -114,6 +114,18 @@ public:
   bool InitWindow(RESOLUTION res = RES_INVALID);
 
   bool Stop(int exitCode);
+
+  // osmc signals
+
+  typedef enum
+  {
+       OSMC_WALKTHROUGH_NOTRUNNING = 0,
+       OSMC_WALKTHROUGH_ISRUNNING = 1,
+       OSMC_WALKTHROUGH_ISDONE = 2,
+  } OSMCWalkthroughState;
+  OSMCWalkthroughState m_eOSMCWalkthroughState;
+  void SetOSMCWalkthroughState(OSMCWalkthroughState state);
+
   const std::string& CurrentFile();
   CFileItem& CurrentFileItem();
   std::shared_ptr<CFileItem> CurrentFileItemPtr();

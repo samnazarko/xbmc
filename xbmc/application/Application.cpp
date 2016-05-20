@@ -215,6 +215,7 @@ CApplication::CApplication(void)
     m_Autorun(new CAutorun()),
 #endif
     m_pInertialScrollingHandler(new CInertialScrollingHandler()),
+    m_eOSMCWalkthroughState(OSMC_WALKTHROUGH_NOTRUNNING),
     m_WaitingExternalCalls(0),
     m_itemCurrentFile(std::make_shared<CFileItem>()),
     m_playerEvent(true, true)
@@ -2246,6 +2247,12 @@ private:
   std::unique_ptr<PLAYLIST::CPlayList>& m_playlist;
 };
 } // namespace
+
+void CApplication::SetOSMCWalkthroughState(OSMCWalkthroughState state)
+{
+ m_eOSMCWalkthroughState = state;
+ CServiceBroker::GetRepositoryUpdater().ScheduleUpdate(CRepositoryUpdater::UpdateScheduleType::First);
+}
 
 bool CApplication::PlayMedia(CFileItem& item, const std::string& player, PLAYLIST::Id playlistId)
 {
