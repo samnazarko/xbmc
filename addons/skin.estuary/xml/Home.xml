@@ -1044,6 +1044,13 @@
 							<property name="id">weather</property>
 							<visible>!Skin.HasSetting(HomeMenuNoWeatherButton)</visible>
 						</item>
+                                                <item>
+                                                        <label>My OSMC</label>
+                                                        <onclick>RunAddon(service.osmc.settings)</onclick>
+                                                        <thumb>osmc.png</thumb>
+                                                        <property name="id">osmc</property>
+                                                </item>
+
 					</content>
 				</control>
 				<control type="grouplist" id="700">
