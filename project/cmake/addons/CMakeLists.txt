@@ -120,7 +120,6 @@ if(NOT ADDONS_TO_BUILD)
 else()
   string(STRIP "${ADDONS_TO_BUILD}" ADDONS_TO_BUILD)
   message(STATUS "Building following addons: ${ADDONS_TO_BUILD}")
-  separate_arguments(ADDONS_TO_BUILD)
 endif()
 
 if(NOT ADDONS_DEFINITION_DIR)
@@ -224,6 +223,7 @@ endif()
 # error either in ADDONS_TO_BUILD or in the directory configuration.
 set(SUPPORTED_ADDON_FOUND FALSE)
 
+separate_arguments(ADDONS_TO_BUILD)
 foreach(addon ${addons})
   if(NOT (addon MATCHES platforms.txt))
     file(STRINGS ${addon} def)
