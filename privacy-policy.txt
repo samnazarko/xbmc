@@ -1,0 +1,37 @@
+[B]OSMC Privacy Policy[/B]
+[I]2017 Feb 3[/I]
+
+Your privacy is an important factor to OSMC. We are committed to being transparent and open. This Privacy Policy explains generally how we receive information about you, and what we do with that information once we have it.
+
+[B]What information do we collect?[/B]
+We collect information from you when you register on our site and gather data if you participate our forum by reading, writing, and evaluating the content shared here.
+
+When registering on our site, you may be asked to enter your name and e-mail address. You may, however, visit our site without registering. Your e-mail address will be verified by an email containing a unique link. If that link is visited, we know that you control the e-mail address.
+
+When registered and posting, we record the IP address that the post originated from. We also may retain server logs which include the IP address of every request to our server.
+
+We collect information automatically through our software and services, such as when your device connects to our server to download updates.
+
+[B]What do we use your information for[/B]
+Any of the information we collect from you may be used in one of the following ways:
+
+	To personalize your experience —  your information helps us to better respond to your individual needs.
+	To improve our site — we continually strive to improve our site offerings based on the information and feedback we receive from you.
+	To improve customer service — your information helps us to more effectively respond to your customer service requests and support needs.
+	To send periodic emails — the email address you provide may be used to send you information, notifications that you request about changes to topics or in response to your user name, respond to inquiries, and/or other requests or questions.
+
+[B]How do we protect your information[/B]
+We implement a variety of security measures to maintain the safety of your personal information when you enter, submit, or access your personal information.
+
+[B]Data retention policy[/B]
+We will make a good faith effort to:
+
+	Retain server logs containing the IP address of all requests to this server no more than 90 days.
+	Retain the IP addresses associated with registered users and their posts no more than 5 years.
+
+[B]Third party disclosure[/B]
+We do not sell, trade, or otherwise transfer to outside parties your personally identifiable information. We may also release your information when we believe release is appropriate to comply with the law, enforce our site policies, or protect ours or others rights, property, or safety. However, non-personally identifiable visitor information may be provided to other parties for marketing, advertising, or other uses.
+
+
+[B]What if we change this privacy policy or any of our privacy notices?[/B]
+We may need to change this policy and our notices. Your continued use of the product or service after the effective date of such changes constitutes your acceptance of such changes. To make your review more convenient, we will post an effective date at the top of the page.
