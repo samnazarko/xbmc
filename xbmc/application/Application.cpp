@@ -2144,25 +2144,6 @@ bool CApplication::Stop(int exitCode)
 
     g_alarmClock.StopThread();
 
-    CLog::Log(LOGINFO, "Storing total System Uptime");
-    g_sysinfo.SetTotalUptime(g_sysinfo.GetTotalUptime() + (int)(CTimeUtils::GetFrameTime() / 60000));
-
-    // Update the settings information (volume, uptime etc. need saving)
-    if (CFile::Exists(CServiceBroker::GetSettingsComponent()->GetProfileManager()->GetSettingsFile()))
-    {
-      CLog::Log(LOGINFO, "Saving settings");
-      CServiceBroker::GetSettingsComponent()->GetSettings()->Save();
-    }
-    else
-      CLog::Log(LOGINFO, "Not saving settings (settings.xml is not present)");
-
-    // kodi may crash or deadlock during exit (shutdown / reboot) due to
-    // either a bug in core or misbehaving addons. so try saving
-    // skin settings early
-    CLog::Log(LOGINFO, "Saving skin settings");
-    if (g_SkinInfo != nullptr)
-      g_SkinInfo->SaveSettings();
-
     m_bStop = true;
     // Add this here to keep the same ordering behaviour for now
     // Needs cleaning up
