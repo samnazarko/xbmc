@@ -380,6 +380,11 @@ void CApplicationSkinHandling::ReloadSkin(bool confirm)
   if (!g_SkinInfo || m_bInitializing)
     return; // Don't allow reload before skin is loaded by system
 
+  if (m_SkinReloading) {
+    CLog::Log(LOGINFO, "Suppressing skin reload as we are already doing so");
+    return;
+  }
+
   std::string oldSkin = g_SkinInfo->ID();
 
   CGUIMessage msg(GUI_MSG_LOAD_SKIN, -1,
@@ -388,7 +393,11 @@ void CApplicationSkinHandling::ReloadSkin(bool confirm)
 
   const std::shared_ptr<CSettings> settings = CServiceBroker::GetSettingsComponent()->GetSettings();
   std::string newSkin = settings->GetString(CSettings::SETTING_LOOKANDFEEL_SKIN);
-  if (LoadSkin(newSkin))
+  m_SkinReloading = true;
+  bool skinLoaded = LoadSkin(newSkin);
+  m_SkinReloading = false;
+
+  if (skinLoaded)
   {
     /* The Reset() or SetString() below will cause recursion, so the m_confirmSkinChange boolean is set so as to not prompt the
        user as to whether they want to keep the current skin. */

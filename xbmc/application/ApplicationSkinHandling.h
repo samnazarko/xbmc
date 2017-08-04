@@ -50,4 +50,5 @@ protected:
   IMsgTargetCallback* m_msgCb;
   IWindowManagerCallback* m_wCb;
   bool& m_bInitializing;
+  bool m_SkinReloading = false;
 };
