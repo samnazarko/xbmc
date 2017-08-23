@@ -2156,7 +2156,7 @@
         </setting>
         <setting id="services.webserverport" type="integer" parent="services.webserver" label="730" help="36329">
           <level>1</level>
-          <default>8080</default>
+          <default>80</default>
           <constraints>
             <minimum>1</minimum>
             <step>1</step>
