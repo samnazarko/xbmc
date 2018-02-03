@@ -1,0 +1,21 @@
+<sources>
+    <video>
+        <default pathversion="1"></default>
+        <source>
+            <name>Auto-mounted drives</name>
+            <path pathversion="1">/media/</path>
+            <allowsharing>true</allowsharing>
+        </source>
+    </video>
+    <music>
+        <default pathversion="1"></default>
+        <source>
+            <name>Auto-mounted drives</name>
+            <path pathversion="1">/media/</path>
+            <allowsharing>true</allowsharing>
+        </source>
+    </music>
+    <files>
+        <default pathversion="1"></default>
+    </files>
+</sources>

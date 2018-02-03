@@ -361,6 +361,7 @@ bool CApplication::Create()
   CUtil::CopyUserDataIfNeeded("special://masterprofile/", "RssFeeds.xml");
   CUtil::CopyUserDataIfNeeded("special://masterprofile/", "favourites.xml");
   CUtil::CopyUserDataIfNeeded("special://masterprofile/", "Lircmap.xml");
+  CUtil::CopyUserDataIfNeeded("special://masterprofile/", "sources.xml");
 
   CServiceBroker::GetLogging().Initialize(CSpecialProtocol::TranslatePath("special://logpath"));
 
