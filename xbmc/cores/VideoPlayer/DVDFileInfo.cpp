@@ -165,7 +165,8 @@ std::unique_ptr<CTexture> CDVDFileInfo::ExtractThumbToTexture(const CFileItem& f
       if (demuxer->SeekTime(static_cast<double>(nSeekTo), true))
       {
         CDVDVideoCodec::VCReturn iDecoderState = CDVDVideoCodec::VC_NONE;
-        VideoPicture picture = {};
+        VideoPicture picture;
+        picture.Reset();
 
         // num streams * 160 frames, should get a valid frame, if not abort.
         int abort_index = demuxer->GetNrOfStreams() * 160;
@@ -189,6 +190,7 @@ std::unique_ptr<CTexture> CDVDFileInfo::ExtractThumbToTexture(const CFileItem& f
           iDecoderState = CDVDVideoCodec::VC_NONE;
           while (iDecoderState == CDVDVideoCodec::VC_NONE)
           {
+            picture.Reset();
             iDecoderState = pVideoCodec->GetPicture(&picture);
           }
 
