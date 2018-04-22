@@ -3243,7 +3243,7 @@
         </setting>
         <setting id="audiooutput.config" type="integer" label="337" help="36361">
           <level>2</level>
-          <default>2</default>
+          <default>3</default>
           <constraints>
             <options>
               <option label="338">1</option>
