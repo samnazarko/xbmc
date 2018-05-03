@@ -36,13 +36,6 @@ static int open_restricted(const char *path, int flags, void __attribute__((unus
     return -errno;
   }
 
-  auto ret = ioctl(fd, EVIOCGRAB, (void*)1);
-  if (ret < 0)
-  {
-    CLog::Log(LOGDEBUG, "{} - grab requested, but failed for {} ({})", __FUNCTION__, path,
-              strerror(errno));
-  }
-
   return fd;
 }
 
