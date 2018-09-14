@@ -545,37 +545,35 @@ bool CAESinkALSA::Initialize(AEAudioFormat &format, std::string &device)
 
     int aml_digital_codec = 0;
 
-    if (m_passthrough)
+   if (m_passthrough)
     {
       switch(format.m_streamInfo.m_type)
       {
         case CAEStreamInfo::STREAM_TYPE_AC3:
           aml_digital_codec = 2;
           break;
-
         case CAEStreamInfo::STREAM_TYPE_DTS_512:
         case CAEStreamInfo::STREAM_TYPE_DTS_1024:
         case CAEStreamInfo::STREAM_TYPE_DTS_2048:
         case CAEStreamInfo::STREAM_TYPE_DTSHD_CORE:
           aml_digital_codec = 3;
           break;
-
+        case CAEStreamInfo::STREAM_TYPE_DTSHD:
+          aml_digital_codec = 5;
+          break;
+        case CAEStreamInfo::STREAM_TYPE_DTSHD_MA:
+          aml_digital_codec = 8;
+          break;
         case CAEStreamInfo::STREAM_TYPE_EAC3:
           aml_digital_codec = 4;
           break;
-
-        case CAEStreamInfo::STREAM_TYPE_DTSHD:
-          aml_digital_codec = 8;
-          break;
-
         case CAEStreamInfo::STREAM_TYPE_TRUEHD:
+        case CAEStreamInfo::STREAM_TYPE_MLP:
           aml_digital_codec = 7;
           break;
+        default:
+          break;
       }
-    }
-    else
-    {
-      device = "@:CARD=AMLM8AUDIO,DEV=0";
     }
 
     if (device.find("M8AUDIO") != std::string::npos) {
