@@ -62,6 +62,54 @@ CWinSystemAmlogic::CWinSystemAmlogic() :
   aml_permissions();
   aml_disable_freeScale();
 
+ /* Take in to account custom OSMC parameters */
+  if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_VIDEOSCREEN_FORCERGB)) {
+    CLog::Log(LOGDEBUG, "CEGLNativeTypeAmlogic::Initialize -- forcing RGB");
+    SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/output_rgb", "1");
+ }
+
+  int range_control;
+  SysfsUtils::GetInt("/sys/module/am_vecm/parameters/range_control", range_control);
+  if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_VIDEOSCREEN_LIMITEDRANGEAML))
+    range_control &= 1;
+  else
+    range_control |= 2;
+  CLog::Log(LOGDEBUG, "CEGLNativeTypeAmlogic::Initialize -- setting quantization range to {}",
+      range_control & 2 ? "full" : "limited");
+  SysfsUtils::SetInt("/sys/module/am_vecm/parameters/range_control", range_control);
+
+ if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_VIDEOSCREEN_LOCKHPD)) {
+    CLog::Log(LOGDEBUG, "CEGLNativeTypeAmlogic::Initialize -- forcing HPD to be locked");
+    SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/debug", "hpd_lock1");
+ }
+
+ std::string attr = "";
+ SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/attr", attr);
+
+ if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_VIDEOSCREEN_FORCE422)) {
+   if (attr.find("444") != std::string::npos ||
+       attr.find("422") != std::string::npos ||
+       attr.find("420") != std::string::npos)
+     attr.replace(attr.find("4"),3,"422").append("now");
+   else
+     attr.append("422now");
+ }
+ else {
+   if (attr.find("422") != std::string::npos)
+     attr.erase(attr.find("4"),3);
+   attr.append("now");
+ }
+ CLog::Log(LOGDEBUG, "CEGLNativeTypeAmlogic::Initialize -- setting 422 output, attr = {}", attr);
+ SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/attr", attr.c_str());
+
+ int maxlum = 100;
+ maxlum = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOSCREEN_MAXLUM);
+ CLog::Log(LOGDEBUG, "CEGLNativeTypeAmlogic::Initialize -- setting max lum to {}", maxlum);
+ SysfsUtils::SetInt("/sys/module/am_vecm/parameters/customer_panel_lumin", maxlum);
+
+  // Register sink
+  AE::CAESinkFactory::ClearSinks();
+  CAESinkALSA::Register();
   m_libinput->Start();
 }
 

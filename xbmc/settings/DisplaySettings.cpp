@@ -23,6 +23,7 @@
 #include "settings/lib/SettingDefinitions.h"
 #include "storage/MediaManager.h"
 #include "utils/StringUtils.h"
+#include "utils/SysfsUtils.h"
 #include "utils/Variant.h"
 #include "utils/XMLUtils.h"
 #include "utils/log.h"
@@ -337,6 +338,49 @@ bool CDisplaySettings::OnSettingChanging(const std::shared_ptr<const CSetting>& 
     DX::DeviceResources::Get()->ApplyDisplaySettings();
     return true;
 #endif
+  }
+  else if (settingId == CSettings::SETTING_VIDEOSCREEN_FORCE422){
+    std::string attr = "";
+    SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/attr", attr);
+
+    if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_VIDEOSCREEN_FORCE422)) {
+      if (attr.find("444") != std::string::npos ||
+          attr.find("422") != std::string::npos ||
+          attr.find("420") != std::string::npos)
+        attr.replace(attr.find("4"),3,"422").append("now");
+      else
+        attr.append("422now");
+    }
+    else {
+      if (attr.find("422") != std::string::npos)
+        attr.erase(attr.find("4"),3);
+      attr.append("now");
+    }
+    CLog::Log(LOGDEBUG, "CDisplaySettings::OnSettingChanging -- setting 422 output, attr = {}", attr);
+    SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/attr", attr.c_str());
+  }
+  else if (settingId == CSettings::SETTING_VIDEOSCREEN_LIMITEDRANGEAML)
+  {
+    int range_control;
+    std::string attr = "";
+
+    SysfsUtils::GetInt("/sys/module/am_vecm/parameters/range_control", range_control);
+    if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_VIDEOSCREEN_LIMITEDRANGEAML)) 
+      range_control &= 1;
+    else
+      range_control |= 2;
+    CLog::Log(LOGDEBUG, "CDisplaySettings::OnSettingChanging -- setting quantization range to {}", range_control & 2 ? "full" : "limited");
+    SysfsUtils::SetInt("/sys/module/am_vecm/parameters/range_control", range_control);
+    SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/attr", attr);
+    attr.append("now");
+    SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/attr", attr.c_str());
+  }
+  else if (settingId == CSettings::SETTING_VIDEOSCREEN_MAXLUM)
+  {
+     int maxlum = 100;
+     maxlum = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOSCREEN_MAXLUM);
+     CLog::Log(LOGDEBUG, "CDisplaySettings::OnSettingChanging -- setting max lum to {}", maxlum);
+     SysfsUtils::SetInt("/sys/module/am_vecm/parameters/customer_panel_lumin", maxlum);
   }
 #if defined(HAVE_X11) || defined(TARGET_WINDOWS_DESKTOP) || defined(TARGET_DARWIN_OSX)
   else if (settingId == CSettings::SETTING_VIDEOSCREEN_BLANKDISPLAYS)

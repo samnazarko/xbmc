@@ -223,11 +223,6 @@
           </constraints>
           <control type="list" format="string" />
         </setting>
-        <setting id="videoscreen.limitedrange" type="boolean" label="36042" help="36359">
-          <level>3</level>
-          <default>false</default>
-          <control type="toggle" />
-        </setting>
       </group>
     </category>
     <category id="input">

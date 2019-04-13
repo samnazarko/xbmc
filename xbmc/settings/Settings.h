@@ -371,6 +371,11 @@ public:
   static constexpr auto SETTING_VIDEOSCREEN_SCREENMODE = "videoscreen.screenmode";
   static constexpr auto SETTING_VIDEOSCREEN_FAKEFULLSCREEN = "videoscreen.fakefullscreen";
   static constexpr auto SETTING_VIDEOSCREEN_BLANKDISPLAYS = "videoscreen.blankdisplays";
+  static constexpr auto SETTING_VIDEOSCREEN_FORCERGB = "videoscreen.forcergb";
+  static constexpr auto SETTING_VIDEOSCREEN_LOCKHPD = "videoscreen.lockhpd";
+  static constexpr auto SETTING_VIDEOSCREEN_MUTEHDMI = "videoscreen.mutehdmi";
+  static constexpr auto SETTING_VIDEOSCREEN_FORCE422 = "videoscreen.force422";
+  static constexpr auto SETTING_VIDEOSCREEN_MAXLUM = "videoscreen.maxlum";
   static constexpr auto SETTING_VIDEOSCREEN_STEREOSCOPICMODE = "videoscreen.stereoscopicmode";
   static constexpr auto SETTING_VIDEOSCREEN_PREFEREDSTEREOSCOPICMODE =
       "videoscreen.preferedstereoscopicmode";
@@ -379,7 +384,7 @@ public:
   static constexpr auto SETTING_VIDEOSCREEN_DISPLAYPROFILE = "videoscreen.displayprofile";
   static constexpr auto SETTING_VIDEOSCREEN_GUICALIBRATION = "videoscreen.guicalibration";
   static constexpr auto SETTING_VIDEOSCREEN_TESTPATTERN = "videoscreen.testpattern";
-  static constexpr auto SETTING_VIDEOSCREEN_LIMITEDRANGE = "videoscreen.limitedrange";
+  static constexpr auto SETTING_VIDEOSCREEN_LIMITEDRANGEAML = "videoscreen.limitedrangeaml";
   static constexpr auto SETTING_VIDEOSCREEN_FRAMEPACKING = "videoscreen.framepacking";
   static constexpr auto SETTING_VIDEOSCREEN_10BITSURFACES = "videoscreen.10bitsurfaces";
   static constexpr auto SETTING_VIDEOSCREEN_USESYSTEMSDRPEAKLUMINANCE =
