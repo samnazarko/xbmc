@@ -252,7 +252,6 @@ bool CDisplaySettings::OnSettingChanging(const std::shared_ptr<const CSetting>& 
 {
   if (setting == NULL)
     return false;
-
   const std::string &settingId = setting->GetId();
   if (settingId == CSettings::SETTING_VIDEOSCREEN_RESOLUTION ||
       settingId == CSettings::SETTING_VIDEOSCREEN_SCREEN)
@@ -724,13 +723,9 @@ std::string CDisplaySettings::GetStringFromResolution(RESOLUTION resolution, flo
   if (resolution >= RES_DESKTOP && resolution < (RESOLUTION)CDisplaySettings::GetInstance().ResolutionInfoSize())
   {
     const RESOLUTION_INFO &info = CDisplaySettings::GetInstance().GetResolutionInfo(resolution);
-    // also handle RES_DESKTOP resolutions with non-default refresh rates
-    if (resolution != RES_DESKTOP || (refreshrate > 0.0f && refreshrate != info.fRefreshRate))
-    {
-      return StringUtils::Format("{:05}{:05}{:09.5f}{}", info.iScreenWidth, info.iScreenHeight,
-                                 refreshrate > 0.0f ? refreshrate : info.fRefreshRate,
-                                 ModeFlagsToString(info.dwFlags, true));
-    }
+    return StringUtils::Format("{:05}{:05}{:09.5f}{}",
+        info.iScreenWidth, info.iScreenHeight,
+        refreshrate > 0.0f ? refreshrate : info.fRefreshRate, ModeFlagsToString(info.dwFlags, true));
   }
 
   return "DESKTOP";

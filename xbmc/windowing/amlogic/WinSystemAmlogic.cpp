@@ -305,11 +305,32 @@ bool CWinSystemAmlogic::DestroyWindow()
   return true;
 }
 
+static std::string ModeFlagsToString(unsigned int flags, bool identifier)
+{
+  std::string res;
+  if(flags & D3DPRESENTFLAG_INTERLACED)
+    res += "i";
+  else
+    res += "p";
+
+  if(!identifier)
+    res += " ";
+
+  if(flags & D3DPRESENTFLAG_MODE3DSBS)
+    res += "sbs";
+  else if(flags & D3DPRESENTFLAG_MODE3DTB)
+    res += "tab";
+  else if(identifier)
+    res += "std";
+  return res;
+}
+
 void CWinSystemAmlogic::UpdateResolutions()
 {
   CWinSystemBase::UpdateResolutions();
 
   RESOLUTION_INFO resDesktop, curDisplay;
+  std::string curDesktopSetting, curResolution, newRes;
   std::vector<RESOLUTION_INFO> resolutions;
 
   if (!aml_probe_resolutions(resolutions) || resolutions.empty())
@@ -325,8 +346,23 @@ void CWinSystemAmlogic::UpdateResolutions()
     resDesktop = curDisplay;
   }
 
+  curDesktopSetting = CServiceBroker::GetSettingsComponent()->GetSettings()->GetString(CSettings::SETTING_VIDEOSCREEN_SCREENMODE);
+
+  curResolution = StringUtils::Format("{:05}{:05}{:09.5f}{}",
+      resDesktop.iScreenWidth, resDesktop.iScreenHeight, resDesktop.fRefreshRate,
+      ModeFlagsToString(resDesktop.dwFlags, true));
+
+  if (curDesktopSetting == "DESKTOP")
+    curDesktopSetting = curResolution;
+
+  CLog::Log(LOGINFO, "Current display setting is {}", curDesktopSetting);
+  CLog::Log(LOGINFO, "Current output resolution is {}", curResolution);
+
   RESOLUTION ResDesktop = RES_INVALID;
   RESOLUTION res_index  = RES_DESKTOP;
+  bool resExactMatch = false;
+  std::string ResString;
+  std::string ResFallback = "00480024.00000istd";
 
   for (size_t i = 0; i < resolutions.size(); i++)
   {
@@ -349,14 +385,24 @@ void CWinSystemAmlogic::UpdateResolutions()
       resolutions[i].dwFlags & D3DPRESENTFLAG_INTERLACED ? "i" : "",
       resolutions[i].fRefreshRate);
 
-    if(resDesktop.iWidth == resolutions[i].iWidth &&
-       resDesktop.iHeight == resolutions[i].iHeight &&
-       resDesktop.iScreenWidth == resolutions[i].iScreenWidth &&
-       resDesktop.iScreenHeight == resolutions[i].iScreenHeight &&
-       (resDesktop.dwFlags & D3DPRESENTFLAG_MODEMASK) == (resolutions[i].dwFlags & D3DPRESENTFLAG_MODEMASK) &&
-       fabs(resDesktop.fRefreshRate - resolutions[i].fRefreshRate) < FLT_EPSILON)
+    ResString = StringUtils::Format("{:05}{:05}{:09.5f}{}",
+          resolutions[i].iScreenWidth, resolutions[i].iScreenHeight, resolutions[i].fRefreshRate,
+          ModeFlagsToString(resolutions[i].dwFlags, true));
+    if (curDesktopSetting == ResString){
+      ResDesktop = res_index;
+      resExactMatch = true;
+      newRes = ResString;
+      CLog::Log(LOGINFO, "Current resolution setting found at 16 + {}", i);
+    }
+
+    /* fall back to the highest resolution available but not more than current desktop */
+    if(curDesktopSetting.substr(5,18).compare(ResString.substr(5,18)) >= 0 &&
+        ResString.substr(5,18).compare(ResFallback) > 0 && ! resExactMatch)
     {
       ResDesktop = res_index;
+      ResFallback = ResString.substr(5,18);
+      newRes = ResString;
+      CLog::Log(LOGINFO, "Fallback resolution at 16 + {} {}", i, ResFallback);
     }
 
     res_index = (RESOLUTION)((int)res_index + 1);
