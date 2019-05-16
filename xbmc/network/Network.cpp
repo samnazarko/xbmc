@@ -468,9 +468,9 @@ std::vector<SOCKET> CreateTCPServerSocket(const int port, const bool bindLocal, 
 
 void CNetworkBase::WaitForNet()
 {
-  const int timeout = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_POWERMANAGEMENT_WAITFORNETWORK);
+  int timeout = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_POWERMANAGEMENT_WAITFORNETWORK);
   if (timeout <= 0)
-    return; // wait for network is disabled
+    timeout = 1;
 
   // check if we have at least one network interface to wait for
   if (!IsAvailable())
