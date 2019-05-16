@@ -1872,7 +1872,7 @@ void CVideoPlayer::HandlePlaySpeed()
     {
       if (cache.level < 0.0)
       {
-        CGUIDialogKaiToast::QueueNotification(g_localizeStrings.Get(21454), g_localizeStrings.Get(21455));
+        //CGUIDialogKaiToast::QueueNotification(g_localizeStrings.Get(21454), g_localizeStrings.Get(21455));
         SetCaching(CACHESTATE_INIT);
       }
       // Note: Previously used cache.level >= 1 would keep video stalled
