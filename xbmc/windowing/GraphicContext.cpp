@@ -354,7 +354,7 @@ void CGraphicContext::SetFullScreenVideo(bool bOnOff)
     }
   }
   else
-    SetVideoResolution(RES_WINDOW, false);
+    SetVideoResolution(RES_DESKTOP, false);
 }
 
 bool CGraphicContext::IsFullScreenVideo() const

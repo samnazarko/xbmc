@@ -420,6 +420,10 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
   res->bFullScreen   = true;
   res->iSubtitles    = (int)(0.965 * res->iHeight);
   res->fPixelRatio   = 1.0f;
+  if (res->iHeight == 576)
+    res->fPixelRatio = 16.0f / 15.0f;
+  if (res->iHeight == 480)
+    res->fPixelRatio = 8.0f / 9.0f;
   res->strId         = fromMode;
   res->strMode       = StringUtils::Format("{:d}x{:d} @ {:.2f}{} - Full Screen", res->iScreenWidth, res->iScreenHeight, res->fRefreshRate,
     res->dwFlags & D3DPRESENTFLAG_INTERLACED ? "i" : "");

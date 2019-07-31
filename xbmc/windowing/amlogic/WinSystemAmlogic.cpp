@@ -30,6 +30,7 @@
 #include "utils/AMLUtils.h"
 #include "utils/log.h"
 #include "utils/SysfsUtils.h"
+#include "utils/StringUtils.h"
 #include "threads/SingleLock.h"
 #include "messaging/ApplicationMessenger.h"
 #include <libudev.h>
@@ -354,6 +355,8 @@ void CWinSystemAmlogic::UpdateResolutions()
 
   if (curDesktopSetting == "DESKTOP")
     curDesktopSetting = curResolution;
+  else if (curDesktopSetting.length() == 24)
+    curDesktopSetting = StringUtils::Right(curDesktopSetting, 23);
 
   CLog::Log(LOGINFO, "Current display setting is {}", curDesktopSetting);
   CLog::Log(LOGINFO, "Current output resolution is {}", curResolution);

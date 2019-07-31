@@ -188,7 +188,8 @@ enum ViewMode
   ViewModeCustom,
   ViewModeStretch16x9Nonlin,
   ViewModeZoom120Width,
-  ViewModeZoom110Width
+  ViewModeZoom110Width,
+  ViewModeHDMIAVI
 };
 
 class CVideoSettings

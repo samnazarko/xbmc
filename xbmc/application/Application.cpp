@@ -139,6 +139,7 @@
 #include "utils/TimeUtils.h"
 #include "utils/URIUtils.h"
 #include "utils/Variant.h"
+#include "utils/SysfsUtils.h"
 #include "utils/XTimeUtils.h"
 #include "utils/log.h"
 #include "video/Bookmark.h"
@@ -2653,6 +2654,7 @@ void CApplication::PlaybackCleanup()
     else
     {
       //  resets to res_desktop or look&feel resolution (including refreshrate)
+      SysfsUtils::SetInt("/sys/class/amhdmitx/amhdmitx0/aspect", 2);
       CServiceBroker::GetWinSystem()->GetGfxContext().SetFullScreenVideo(false);
     }
 #ifdef TARGET_DARWIN_EMBEDDED
