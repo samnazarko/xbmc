@@ -80,7 +80,9 @@ macro(buildFFMPEG)
                  -DPKG_CONFIG_PATH=${CMAKE_BINARY_DIR}/${CORE_BUILD_DIR}/lib/pkgconfig)
   set(PATCH_COMMAND ${CMAKE_COMMAND} -E copy
                     ${CMAKE_SOURCE_DIR}/tools/depends/target/ffmpeg/CMakeLists.txt
-                    <SOURCE_DIR>)
+                    <SOURCE_DIR> &&
+                    /bin/bash -c "patch -p1 < ${CMAKE_SOURCE_DIR}/tools/depends/target/ffmpeg/0001-added_upstream_mvc_patches.patch"
+)
 
   if(CMAKE_GENERATOR STREQUAL Xcode)
     set(FFMPEG_GENERATOR CMAKE_GENERATOR "Unix Makefiles")
