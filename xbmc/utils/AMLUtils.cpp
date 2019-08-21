@@ -136,6 +136,15 @@ bool aml_permissions()
     {
       CLog::Log(LOGERROR, "AML: no rw on /sys/class/display/mode");
     }
+    if (!SysfsUtils::HasRW("/sys/class/amhdmitx/amhdmitx0/phy"))
+    {
+      CLog::Log(LOGERROR, "AML: no rw on /sys/class/amhdmitx/amhdmitx0/phy");
+    }
+    if (!SysfsUtils::HasRW("/sys/module/amvideo/parameters/framepacking_support"))
+    {
+      CLog::Log(LOGERROR, "AML: no rw on /sys/module/amvideo/parameters/framepacking_support");
+    }
+
   }
 
   return permissions_ok == 1;
