@@ -148,7 +148,10 @@ bool aml_permissions()
     {
       CLog::Log(LOGERROR, "AML: no rw on /sys/module/amvideo/parameters/framepacking_support");
     }
-
+    if (!SysfsUtils::HasRW("/sys/module/amvdec_h264mvc/parameters/view_mode"))
+    {
+      CLog::Log(LOGERROR, "AML: no rw on /sys/module/amvdec_h264mvc/parameters/view_mode");
+    }
   }
 
   return permissions_ok == 1;
