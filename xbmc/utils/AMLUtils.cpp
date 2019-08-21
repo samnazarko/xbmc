@@ -458,6 +458,13 @@ bool aml_get_native_resolution(RESOLUTION_INFO *res)
 
 static void aml_enable_PHY(bool enable)
 {
+    int phy_delay = 0;
+    char *phy_env = getenv("phydelay");
+    if (phy_env != NULL) {
+        phy_delay = atoi(phy_env);
+    }
+    CLog::Log(LOGDEBUG, "Waiting {} milliseconds for PHY toggling", phy_delay);
+    usleep(phy_delay * 1000);
     SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/phy", enable ? "1" : "0");
 }
 
@@ -465,11 +472,14 @@ bool aml_set_native_resolution(const RESOLUTION_INFO &res, std::string framebuff
 {
   bool result = false;
 
-  aml_handle_display_stereo_mode(RENDER_STEREO_MODE_OFF);
-  result = aml_set_display_resolution(res, framebuffer_name);
+  aml_enable_PHY(false);
 
-  aml_handle_scale(res);
   aml_handle_display_stereo_mode(stereo_mode);
+  result = aml_set_display_resolution(res, framebuffer_name);
+  aml_handle_scale(res);
+
+  aml_enable_PHY(true);
+
 
   return result;
 }
