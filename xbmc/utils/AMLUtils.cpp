@@ -528,6 +528,66 @@ bool aml_set_native_resolution(const RESOLUTION_INFO &res, std::string framebuff
   return result;
 }
 
+static void aml_add_resolution(const std::string &mode, std::vector<RESOLUTION_INFO> &resolutions)
+{
+  RESOLUTION_INFO res;
+
+  if (((StringUtils::StartsWith(mode, "4k2k")) && (aml_support_h264_4k2k() > AML_NO_H264_4K2K)) || !(StringUtils::StartsWith(mode, "4k2k")))
+  {
+    if (aml_mode_to_resolution(mode.c_str(), &res))
+      resolutions.push_back(res);
+
+    if (aml_has_frac_rate_policy())
+    {
+      // Add fractional frame rates: 23.976, 29.97 and 59.94 Hz
+      switch ((int)res.fRefreshRate)
+      {
+        case 24:
+        case 30:
+        case 60:
+        res.fRefreshRate /= 1.001;
+        res.strMode       = StringUtils::Format("{}x{} @ {:.2f}{} - Full Screen", res.iScreenWidth, res.iScreenHeight, res.fRefreshRate,
+            res.dwFlags & D3DPRESENTFLAG_INTERLACED ? "i" : "");
+        resolutions.push_back(res);
+      }
+    }
+  }
+}
+
+static bool aml_modes_to_resolutions(const std::vector<std::string> &probe_str, std::vector<RESOLUTION_INFO> &resolutions)
+{
+  resolutions.clear();
+
+  for (std::vector<std::string>::const_iterator i = probe_str.begin(); i != probe_str.end(); ++i)
+  {
+    std::vector<std::string> elem_str = StringUtils::Split(*i, " ");
+    if (elem_str.size() == 1)
+      aml_add_resolution(elem_str[0], resolutions);
+    else
+      for (size_t j = 1; j < elem_str.size(); j++)
+        aml_add_resolution(elem_str[0] + " " + elem_str[j], resolutions);
+  }
+
+  return resolutions.size() > 0;
+}
+
+bool aml_probe_3d_resolutions(std::vector<RESOLUTION_INFO> &resolutions)
+{
+  std::string valstr, dcap3dfile;
+
+  dcap3dfile = CSpecialProtocol::TranslatePath("special://home/userdata/disp_cap_3d");
+
+  if (SysfsUtils::GetString(dcap3dfile, valstr) >= 0 ||
+      SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/disp_cap_3d", valstr) >= 0)
+  {
+    std::vector<std::string> probe_str = StringUtils::Split(valstr, "\n");
+    return aml_modes_to_resolutions(probe_str, resolutions);
+  }
+
+  return false;
+}
+
+
 bool aml_probe_resolutions(std::vector<RESOLUTION_INFO> &resolutions)
 {
   std::string valstr, vesastr, dcapfile;
@@ -550,33 +610,7 @@ bool aml_probe_resolutions(std::vector<RESOLUTION_INFO> &resolutions)
   }
   std::vector<std::string> probe_str = StringUtils::Split(valstr, "\n");
 
-  resolutions.clear();
-  RESOLUTION_INFO res;
-  for (std::vector<std::string>::const_iterator i = probe_str.begin(); i != probe_str.end(); ++i)
-  {
-    if (((StringUtils::StartsWith(i->c_str(), "4k2k")) && (aml_support_h264_4k2k() > AML_NO_H264_4K2K)) || !(StringUtils::StartsWith(i->c_str(), "4k2k")))
-    {
-      if (aml_mode_to_resolution(i->c_str(), &res))
-        resolutions.push_back(res);
-
-      if (aml_has_frac_rate_policy())
-      {
-        // Add fractional frame rates: 23.976, 29.97 and 59.94 Hz
-        switch ((int)res.fRefreshRate)
-        {
-          case 24:
-          case 30:
-          case 60:
-            res.fRefreshRate /= 1.001;
-            res.strMode       = StringUtils::Format("{:d}x{:d} @ {:.2f}{} - Full Screen", res.iScreenWidth, res.iScreenHeight, res.fRefreshRate,
-              res.dwFlags & D3DPRESENTFLAG_INTERLACED ? "i" : "");
-            resolutions.push_back(res);
-            break;
-        }
-      }
-    }
-  }
-  return resolutions.size() > 0;
+  return aml_modes_to_resolutions(probe_str, resolutions);
 }
 
 bool aml_set_display_resolution(const RESOLUTION_INFO &res, std::string framebuffer_name)

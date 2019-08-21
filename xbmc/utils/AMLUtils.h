@@ -54,6 +54,7 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res);
 bool aml_get_native_resolution(RESOLUTION_INFO *res);
 bool aml_set_native_resolution(const RESOLUTION_INFO &res, std::string framebuffer_name, const int stereo_mode);
 bool aml_probe_resolutions(std::vector<RESOLUTION_INFO> &resolutions);
+bool aml_probe_3d_resolutions(std::vector<RESOLUTION_INFO> &resolutions);
 bool aml_set_display_resolution(const RESOLUTION_INFO &res, std::string framebuffer_name);
 void aml_handle_scale(const RESOLUTION_INFO &res);
 void aml_handle_display_stereo_mode(const int stereo_mode);
