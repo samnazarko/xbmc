@@ -234,6 +234,59 @@ bool CWinSystemAmlogic::DestroyWindowSystem()
   return true;
 }
 
+const RESOLUTION_INFO &CWinSystemAmlogic::Choose3dRes(RENDER_STEREO_MODE stereo_mode, const RESOLUTION_INFO &res)
+{
+  if (stereo_mode != RENDER_STEREO_MODE_SPLIT_HORIZONTAL
+      && stereo_mode != RENDER_STEREO_MODE_SPLIT_VERTICAL
+      && stereo_mode != RENDER_STEREO_MODE_HARDWAREBASED)
+  {
+    // unsupported (3D) mode or no 3D mode at all
+    return res;
+  }
+
+  uint32_t flags3d = stereo_mode == RENDER_STEREO_MODE_SPLIT_VERTICAL ? D3DPRESENTFLAG_MODE3DSBS : D3DPRESENTFLAG_MODE3DTB;
+  flags3d |= (res.dwFlags&D3DPRESENTFLAG_INTERLACED);
+
+  CLog::Log(LOGDEBUG, "Search for exact 3D mode match for mode {}", res.strMode);
+
+  for (size_t i = 0; i < resolutions3d.size(); i++)
+  {
+    if ((stereo_mode == RENDER_STEREO_MODE_HARDWAREBASED && resolutions3d[i].iBlanking == 0) ||
+        (stereo_mode != RENDER_STEREO_MODE_HARDWAREBASED && resolutions3d[i].iBlanking != 0))
+      continue;
+
+    if ((resolutions3d[i].dwFlags&D3DPRESENTFLAG_MODEMASK) == flags3d
+        && resolutions3d[i].iScreenWidth == res.iScreenWidth
+        && resolutions3d[i].iScreenHeight == res.iScreenHeight
+        && resolutions3d[i].fRefreshRate == res.fRefreshRate)
+    {
+      CLog::Log(LOGDEBUG, "exact match found: {}", resolutions3d[i].strMode);
+      return resolutions3d[i];
+    }
+  }
+
+  CLog::Log(LOGDEBUG, "Search for 3D mode matching resolution");
+
+  for (size_t i = 0; i < resolutions3d.size(); i++)
+  {
+	if ((stereo_mode == RENDER_STEREO_MODE_HARDWAREBASED && resolutions3d[i].iBlanking == 0) ||
+        (stereo_mode != RENDER_STEREO_MODE_HARDWAREBASED && resolutions3d[i].iBlanking != 0))
+      continue;
+
+    if ((resolutions3d[i].dwFlags&D3DPRESENTFLAG_MODEMASK) == flags3d
+        && resolutions3d[i].iScreenWidth == res.iScreenWidth
+        && resolutions3d[i].iScreenHeight == res.iScreenHeight)
+    {
+      CLog::Log(LOGDEBUG, "matching resolution found: {}", resolutions3d[i].strMode);
+      return resolutions3d[i];
+    }
+  }
+
+   CLog::Log(LOGDEBUG, "No matching 3D mode found, using {}", res.strMode);
+
+  return res;
+}
+
 bool CWinSystemAmlogic::CreateNewWindow(const std::string& name,
                                     bool fullScreen,
                                     RESOLUTION_INFO& res)
@@ -324,6 +377,33 @@ static std::string ModeFlagsToString(unsigned int flags, bool identifier)
   else if(identifier)
     res += "std";
   return res;
+}
+
+void CWinSystemAmlogic::Update3dResolutions()
+{
+  if (!aml_probe_3d_resolutions(resolutions3d) || resolutions3d.empty())
+  {
+    CLog::Log(LOGWARNING, "{}: No valid 3D resolutions found.",__FUNCTION__);
+    return;
+  }
+
+  for (size_t i = 0; i < resolutions3d.size(); i++)
+  {
+    std::string m3d = "<unknown>";
+    if (resolutions3d[i].dwFlags & D3DPRESENTFLAG_MODE3DSBS)
+      m3d = "SBS";
+    else if (resolutions3d[i].dwFlags & D3DPRESENTFLAG_MODE3DTB)
+      m3d = resolutions3d[i].iBlanking ? "FP" : "TAB";
+
+    CLog::Log(LOGINFO, "Found 3D resolution {} x {} with {} x {}{} @ {:f} ({})\n",
+      resolutions3d[i].iWidth,
+      resolutions3d[i].iHeight,
+      resolutions3d[i].iScreenWidth,
+      resolutions3d[i].iScreenHeight,
+      resolutions3d[i].dwFlags & D3DPRESENTFLAG_INTERLACED ? "i" : "",
+      resolutions3d[i].fRefreshRate,
+      m3d);
+  }
 }
 
 void CWinSystemAmlogic::UpdateResolutions()
@@ -422,6 +502,7 @@ void CWinSystemAmlogic::UpdateResolutions()
 
     CDisplaySettings::GetInstance().GetResolutionInfo(RES_DESKTOP) = CDisplaySettings::GetInstance().GetResolutionInfo(ResDesktop);
   }
+  Update3dResolutions();
 }
 
 bool CWinSystemAmlogic::Hide()

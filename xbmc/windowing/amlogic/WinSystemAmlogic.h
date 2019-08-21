@@ -61,4 +61,10 @@ protected:
   void StartMonitorHWEvent();
   void StopMonitorHWEvent();
   std::thread m_monitorThread;
+  const RESOLUTION_INFO &Choose3dRes(RENDER_STEREO_MODE stereo_mode, const RESOLUTION_INFO &res);
+
+private:
+  std::vector<RESOLUTION_INFO> resolutions3d;
+
+  void Update3dResolutions();
 };
