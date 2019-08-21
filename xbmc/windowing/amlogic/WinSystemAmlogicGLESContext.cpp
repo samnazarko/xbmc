@@ -160,3 +160,12 @@ std::unique_ptr<CVideoSync> CWinSystemAmlogicGLESContext::GetVideoSync(CVideoRef
   return pVSync;
 }
 
+bool CWinSystemAmlogicGLESContext::SupportsStereo(RENDER_STEREO_MODE mode) const
+{
+  if (mode == RENDER_STEREO_MODE_HARDWAREBASED) {
+    // yes, we support hardware based MVC decoding
+    return true;
+  }
+
+  return CRenderSystemGLES::SupportsStereo(mode);
+}
