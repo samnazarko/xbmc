@@ -258,6 +258,13 @@ CPoint CGraphicContext::StereoCorrection(const CPoint &point) const
     if(m_stereoView == RENDER_STEREO_VIEW_RIGHT)
       res.y += info.iHeight + info.iBlanking;
   }
+  if (m_stereoMode == RENDER_STEREO_MODE_HARDWAREBASED)
+  {
+    const RESOLUTION_INFO info = GetResInfo();
+
+    if(m_stereoView == RENDER_STEREO_VIEW_RIGHT)
+      res.y += info.iHeight + info.iBlanking;
+  }
   if(m_stereoMode == RENDER_STEREO_MODE_SPLIT_VERTICAL)
   {
     const RESOLUTION_INFO info = GetResInfo();
@@ -613,6 +620,15 @@ const RESOLUTION_INFO CGraphicContext::GetResInfo(RESOLUTION res) const
     info.iSubtitles       = (info.iSubtitles      - info.iBlanking) / 2;
   }
 
+  if (m_stereoMode == RENDER_STEREO_MODE_HARDWAREBASED)
+  {
+    if((info.dwFlags & D3DPRESENTFLAG_MODE3DTB) == 0)
+    {
+      info.iBlanking      = info.iHeight == 1080 ? 45 : 30;
+      info.dwFlags       |= D3DPRESENTFLAG_MODE3DTB;
+    }
+  }
+
   if(m_stereoMode == RENDER_STEREO_MODE_SPLIT_VERTICAL)
   {
     if((info.dwFlags & D3DPRESENTFLAG_MODE3DSBS) == 0)
@@ -649,7 +665,7 @@ void CGraphicContext::SetResInfo(RESOLUTION res, const RESOLUTION_INFO& info)
       curr.fPixelRatio /= 2.0f;
   }
 
-  if(info.dwFlags & D3DPRESENTFLAG_MODE3DTB)
+  if(info.dwFlags & D3DPRESENTFLAG_MODE3DTB && m_stereoMode != RENDER_STEREO_MODE_HARDWAREBASED)
   {
     curr.Overscan.bottom = info.Overscan.bottom * 2 + info.iBlanking;
     curr.iSubtitles      = info.iSubtitles      * 2 + info.iBlanking;
