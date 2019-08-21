@@ -224,7 +224,7 @@ bool CWinSystemAmlogic::InitWindowSystem()
   CRendererAML::Register();
   CScreenshotSurfaceAML::Register();
 
-  aml_set_framebuffer_resolution(1920, 1080, m_framebuffer_name);
+  aml_set_framebuffer_resolution(1920, 2205, m_framebuffer_name);
 
   return CWinSystemBase::InitWindowSystem();
 }

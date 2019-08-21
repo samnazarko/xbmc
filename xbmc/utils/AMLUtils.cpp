@@ -750,7 +750,7 @@ void aml_set_framebuffer_resolution(int width, int height, std::string framebuff
         // virtual resolutions other than those originally set when libMali was
         // initialized.
         vinfo.xres_virtual = 1920;
-        vinfo.yres_virtual = 2160;
+        vinfo.yres_virtual = 4410;
       }
 
       vinfo.bits_per_pixel = 32;
