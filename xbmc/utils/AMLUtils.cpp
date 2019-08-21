@@ -350,6 +350,8 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
   if (StringUtils::EndsWith(fromMode, "*"))
     fromMode.erase(fromMode.size() - 1);
 
+  int rrate = 60;
+
   if (StringUtils::EqualsNoCase(fromMode, "panel"))
   {
     res->iWidth = aml_axis_value(AML_DISPLAY_AXIS_PARAM_WIDTH);
@@ -370,7 +372,7 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
   }
   else
   {
-    int width = 0, height = 0, rrate = 60;
+    int width = 0, height = 0;
     char smode = 'p';
 
     if (sscanf(fromMode.c_str(), "%dx%dp%dhz", &width, &height, &rrate) == 3)
@@ -442,6 +444,41 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
   res->strId         = fromMode;
   res->strMode       = StringUtils::Format("{:d}x{:d} @ {:.2f}{} - Full Screen", res->iScreenWidth, res->iScreenHeight, res->fRefreshRate,
     res->dwFlags & D3DPRESENTFLAG_INTERLACED ? "i" : "");
+
+  if (fromMode.find("FramePacking") != std::string::npos)
+  {
+    /* add corrections for some special case modes frame packing modes */
+
+    if (res->iScreenWidth == 1920)
+    {
+      res->iHeight = 2205;
+      res->iBlanking = 45;
+    }
+
+    if (res->iScreenWidth == 1280)
+    {
+      res->iHeight = 1470;
+      res->iBlanking = 30;
+    }
+
+    res->strId = StringUtils::Format("{}fp{}hz", res->iScreenHeight, rrate);
+    res->dwFlags |= D3DPRESENTFLAG_MODE3DTB;
+  }
+
+  if (fromMode.find("TopBottom") != std::string::npos)
+  {
+    res->fPixelRatio     /= 2;
+    res->iBlanking        = 0;
+    res->dwFlags         |= D3DPRESENTFLAG_MODE3DTB;
+  }
+
+  if (fromMode.find("SidebySide") != std::string::npos)
+  {
+    res->fPixelRatio     *= 2;
+    res->iBlanking        = 0;
+    res->dwFlags         |= D3DPRESENTFLAG_MODE3DSBS;
+  }
+
 
   return res->iWidth > 0 && res->iHeight> 0;
 }
