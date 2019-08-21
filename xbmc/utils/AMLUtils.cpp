@@ -654,6 +654,9 @@ void aml_handle_display_stereo_mode(const int stereo_mode)
     case RENDER_STEREO_MODE_SPLIT_HORIZONTAL:
       command = "3dtb";
       break;
+    case RENDER_STEREO_MODE_HARDWAREBASED:
+      command = "3dfp";
+      break;
     default:
       // nothing - command is already initialised to "3doff"
       break;
@@ -695,8 +698,6 @@ void aml_enable_freeScale(const RESOLUTION_INFO &res)
   SysfsUtils::SetInt("/sys/class/graphics/fb0/free_scale", 0);
   SysfsUtils::SetString("/sys/class/graphics/fb0/free_scale_axis", fsaxis_str);
   SysfsUtils::SetString("/sys/class/graphics/fb0/window_axis", waxis_str);
-  SysfsUtils::SetInt("/sys/class/graphics/fb0/scale_width", res.iWidth);
-  SysfsUtils::SetInt("/sys/class/graphics/fb0/scale_height", res.iHeight);
   SysfsUtils::SetInt("/sys/class/graphics/fb0/free_scale", 0x10001);
 }
 
