@@ -456,6 +456,11 @@ bool aml_get_native_resolution(RESOLUTION_INFO *res)
   return result;
 }
 
+static void aml_enable_PHY(bool enable)
+{
+    SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/phy", enable ? "1" : "0");
+}
+
 bool aml_set_native_resolution(const RESOLUTION_INFO &res, std::string framebuffer_name, const int stereo_mode)
 {
   bool result = false;
