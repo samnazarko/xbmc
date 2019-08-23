@@ -11,6 +11,7 @@
 #include "utils/log.h"
 #include "threads/SingleLock.h"
 #include "windowing/WindowSystemFactory.h"
+#include "windowing/GraphicContext.h"
 
 using namespace KODI;
 using namespace KODI::WINDOWING::AML;
@@ -103,8 +104,12 @@ bool CWinSystemAmlogicGLESContext::ResizeWindow(int newWidth, int newHeight, int
 
 bool CWinSystemAmlogicGLESContext::SetFullScreen(bool fullScreen, RESOLUTION_INFO& res, bool blankOtherDisplays)
 {
-  CreateNewWindow("", fullScreen, res);
-  CRenderSystemGLES::ResetRenderSystem(res.iWidth, res.iHeight);
+  RENDER_STEREO_MODE stereo_mode = CServiceBroker::GetWinSystem()->GetGfxContext().GetStereoMode();
+  RESOLUTION_INFO myRes = Choose3dRes(stereo_mode, res);
+
+  CreateNewWindow("", fullScreen, myRes);
+
+  CRenderSystemGLES::ResetRenderSystem(myRes.iWidth, myRes.iHeight);
   return true;
 }
 
