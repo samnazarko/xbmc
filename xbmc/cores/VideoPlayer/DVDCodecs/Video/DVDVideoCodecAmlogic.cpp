@@ -160,7 +160,8 @@ bool CDVDVideoCodecAmlogic::Open(CDVDStreamInfo &hints, CDVDCodecOptions &option
         // 4K is supported only on Amlogic S802/S812 chip
         goto FAIL;
       }
-      m_pFormatName = "am-h264";
+      m_pFormatName = CAMLCodec::IsMvc(m_hints) ? "am-h264mvc" : "am-h264";
+
       // convert h264-avcC to h264-annex-b as h264-avcC
       // under streamers can have issues when seeking.
       if (m_hints.extradata && *(uint8_t*)m_hints.extradata == 1)
