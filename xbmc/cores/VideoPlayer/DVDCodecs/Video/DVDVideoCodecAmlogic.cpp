@@ -317,6 +317,9 @@ bool CDVDVideoCodecAmlogic::AddData(const DemuxPacket &packet)
   uint8_t *pData(packet.pData);
   int iSize(packet.iSize);
 
+  if (iSize == 0) // we ignore empty packets
+    return true;
+
   if (pData)
   {
     if (m_bitstream)
