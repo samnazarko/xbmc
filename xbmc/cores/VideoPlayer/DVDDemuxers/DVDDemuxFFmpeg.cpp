@@ -603,17 +603,6 @@ bool CDVDDemuxFFmpeg::Open(const std::shared_ptr<CDVDInputStream>& pInput, bool 
   if (!programProp.isNull())
     m_initialProgramNumber = static_cast<int>(programProp.asInteger());
 
- if (!fileinfo)
-  {
-    const std::shared_ptr<CDVDInputStream::IExtentionStream> pExt = std::dynamic_pointer_cast<CDVDInputStream::IExtentionStream>(m_pInput);
-    if (pExt && pExt->HasExtention())
-    {
-      delete m_pSSIF;
-      m_pSSIF = new CDemuxStreamSSIF();
-      m_pSSIF->SetBluRay(pExt);
-    }
-  }
-
   // in case of mpegts and we have not seen pat/pmt, defer creation of streams
   if (!skipCreateStreams || m_pFormatContext->nb_programs > 0)
   {
@@ -1677,7 +1666,6 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
       {
         if (pStream->codecpar->codec_id == AV_CODEC_ID_H264_MVC)
         {
-          // ignore MVC extension streams, they are handled specially
           stream = new CDemuxStream();
           stream->type = STREAM_DATA;
           stream->disabled = true;
@@ -1831,32 +1819,43 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
         }
         if (av_dict_get(pStream->metadata, "title", NULL, 0))
           st->m_description = av_dict_get(pStream->metadata, "title", NULL, 0)->value;
-
-        if (pStream->codec->codec_id == AV_CODEC_ID_H264)
+        if (pStream->codecpar->codec_id == AV_CODEC_ID_H264)
         {
           if (CDVDCodecUtils::IsH264AnnexB(m_pFormatContext->iformat->name, pStream))
           {
-            if (m_pSSIF)
+            int mvcIndex;
+            AVStream *mvcStream = nullptr;
+            const std::shared_ptr<CDVDInputStream::IExtentionStream> pExt = std::dynamic_pointer_cast<CDVDInputStream::IExtentionStream>(m_pInput);
+
+            if (pExt && pExt->HasExtention())
             {
+              delete m_pSSIF;
+              m_pSSIF = new CDemuxStreamSSIF();
               m_pSSIF->SetH264StreamId(streamIdx);
+              m_pSSIF->SetBluRay(pExt);
+
+              st->stereo_mode = pExt && pExt->AreEyesFlipped() ? "block_rl" : "block_lr";
+              mvcStream = static_cast<CDemuxMVC*>(pExt->GetExtentionDemux())->GetAVStream();
+            }
+            else if (CDVDCodecUtils::GetH264MvcStreamIndex(m_pFormatContext, &mvcIndex))
+            {
+              if (!m_pSSIF)
+                m_pSSIF = new CDemuxStreamSSIF();
+              m_pSSIF->SetH264StreamId(streamIdx);
+              m_pSSIF->SetMVCStreamId(mvcIndex);
+
+              st->stereo_mode = "block_lr"; // can't tell whether lr or br
+              mvcStream = m_pFormatContext->streams[m_pSSIF->GetMVCStreamId()];
+            }
+
+            if (mvcStream)
+            {
               pStream->codecpar->codec_tag = MKTAG('A', 'M', 'V', 'C');
 
-              AVStream* mvcStream = nullptr;
-              const std::shared_ptr<CDVDInputStream::IExtentionStream> pExt = std::dynamic_pointer_cast<CDVDInputStream::IExtentionStream>(m_pInput);
-              if (pExt)
-              {
-                if (pExt->HasExtention())
-                {
-                  st->stereo_mode = pExt->AreEyesFlipped() ? "block_rl" : "block_lr";
-                  mvcStream = static_cast<CDemuxMVC*>(pExt->GetExtentionDemux())->GetAVStream();
-                }
-              }
-              else
-                mvcStream = m_pFormatContext->streams[m_pSSIF->GetMVCStreamId()];
-
-              if (mvcStream && pStream->codecpar->extradata_size > 0 && mvcStream->codecpar->extradata_size > 0)
+              if (pStream->codecpar->extradata_size > 0 && mvcStream->codecpar->extradata_size > 0)
               {
                 uint8_t* extr = pStream->codecpar->extradata;
+
                 pStream->codecpar->extradata = (uint8_t*)av_mallocz(pStream->codecpar->extradata_size + mvcStream->codecpar->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
                 memcpy(pStream->codecpar->extradata, extr, pStream->codecpar->extradata_size);
                 memcpy(pStream->codecpar->extradata + pStream->codecpar->extradata_size, mvcStream->codecpar->extradata, mvcStream->codecpar->extradata_size);
