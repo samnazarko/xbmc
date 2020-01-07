@@ -575,10 +575,8 @@ bool CAESinkALSA::Initialize(AEAudioFormat &format, std::string &device)
           break;
       }
     }
-
-    if (device.find("M8AUDIO") != std::string::npos) {
-        device = "@:CARD=AMLM8AUDIO,DEV=0";
-    }
+    else if (device.find("AML") != std::string::npos)
+        device = "default";
 
     aml_set_audio_passthrough(m_passthrough);
     SysfsUtils::SetInt("/sys/class/audiodsp/digital_codec", aml_digital_codec);
@@ -1585,6 +1583,10 @@ void CAESinkALSA::EnumerateDevice(AEDeviceInfoList &list, const std::string &dev
       info.m_streamTypes.push_back(CAEStreamInfo::STREAM_TYPE_DTS_512);
       info.m_dataFormats.push_back(AE_FMT_RAW);
     }
+    else if (info.m_displayName.find("AML") != std::string::npos)
+    {
+      info.m_displayNameExtra = "HDMI, S/PDIF & analogue";
+    }
     else if (info.m_displayNameExtra.empty())
     {
       /* for USB audio, it gets a bit confusing as there is
@@ -1599,7 +1601,7 @@ void CAESinkALSA::EnumerateDevice(AEDeviceInfoList &list, const std::string &dev
     if (device == "@" || device == "default")
     {
       /* Make it "Default (whatever)" */
-      info.m_displayName = "Default (" + info.m_displayName + (info.m_displayNameExtra.empty() ? "" : " " + info.m_displayNameExtra + ")");
+      info.m_displayName = "Default (" + info.m_displayName + (info.m_displayNameExtra.empty() ? "" : ": " + info.m_displayNameExtra + ")");
       info.m_displayNameExtra = "";
     }
 
@@ -1695,11 +1697,6 @@ void CAESinkALSA::EnumerateDevice(AEDeviceInfoList &list, const std::string &dev
 
     if (snd_pcm_hw_params_test_format(pcmhandle, hwparams, fmt) >= 0)
       info.m_dataFormats.push_back(i);
-  }
-
-  if (info.m_displayName.find("M8AUDIO") != std::string::npos && info.m_deviceType != AE_DEVTYPE_HDMI)
-  {
-    info.m_displayNameExtra = "PCM";
   }
 
   if (info.m_deviceType == AE_DEVTYPE_HDMI)
