@@ -629,6 +629,22 @@ void aml_disable_freeScale()
   SysfsUtils::SetInt("/sys/class/graphics/fb1/free_scale", 0);
 }
 
+static bool isMaliBug()
+{
+  std::string model;
+
+  SysfsUtils::GetString("/proc/device-tree/model", model);
+  if (model.rfind("Vero4K", 0) == 0)
+  {
+    std::string buggyMali;
+
+    SysfsUtils::GetString("/sys/firmware/devicetree/base/buggymali", buggyMali);
+    return buggyMali.rfind("true", 0) == 0;
+  }
+
+  return false;
+}
+
 void aml_set_framebuffer_resolution(const RESOLUTION_INFO &res, std::string framebuffer_name)
 {
   aml_set_framebuffer_resolution(res.iWidth, res.iHeight, framebuffer_name);
@@ -646,8 +662,18 @@ void aml_set_framebuffer_resolution(int width, int height, std::string framebuff
     {
       vinfo.xres = width;
       vinfo.yres = height;
-      vinfo.xres_virtual = 1920;
-      vinfo.yres_virtual = 2160;
+      vinfo.xres_virtual = width;
+      vinfo.yres_virtual = height*2;
+
+      if (isMaliBug())
+      {
+        // There seems to be a bug in libMali or the Mali driver which can't handle
+        // virtual resolutions other than those originally set when libMali was
+        // initialized.
+        vinfo.xres_virtual = 1920;
+        vinfo.yres_virtual = 2160;
+      }
+
       vinfo.bits_per_pixel = 32;
       vinfo.activate = FB_ACTIVATE_ALL;
       ioctl(fd0, FBIOPUT_VSCREENINFO, &vinfo);
