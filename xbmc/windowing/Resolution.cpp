@@ -145,7 +145,7 @@ void CResolutionUtils::FindResolutionFromWhitelist(float fps, int width, int hei
     // allow macroblock alignment / padding errors (e.g. 1080 mod16 == 8)
     if (((height == info.iScreenHeight && width <= info.iScreenWidth + 8) ||
          (width == info.iScreenWidth && height <= info.iScreenHeight + 8)) &&
-        (info.dwFlags & D3DPRESENTFLAG_MODEMASK) == (curr.dwFlags & D3DPRESENTFLAG_MODEMASK) &&
+        ! (info.dwFlags & D3DPRESENTFLAG_MODEMASK) &&
         MathUtils::FloatEquals(info.fRefreshRate, fps, 0.01f))
     {
       CLog::Log(LOGDEBUG,
@@ -179,7 +179,7 @@ void CResolutionUtils::FindResolutionFromWhitelist(float fps, int width, int hei
       // allow macroblock alignment / padding errors (e.g. 1080 mod16 == 8)
       if (((height == info.iScreenHeight && width <= info.iScreenWidth + 8) ||
            (width == info.iScreenWidth && height <= info.iScreenHeight + 8)) &&
-          (info.dwFlags & D3DPRESENTFLAG_MODEMASK) == (curr.dwFlags & D3DPRESENTFLAG_MODEMASK) &&
+        ! (info.dwFlags & D3DPRESENTFLAG_MODEMASK) &&
           MathUtils::FloatEquals(info.fRefreshRate, fps * 2, 0.01f))
       {
         CLog::Log(LOGDEBUG,
@@ -218,7 +218,7 @@ void CResolutionUtils::FindResolutionFromWhitelist(float fps, int width, int hei
       // allow macroblock alignment / padding errors (e.g. 1080 mod16 == 8)
       if (((height == info.iScreenHeight && width <= info.iScreenWidth + 8) ||
            (width == info.iScreenWidth && height <= info.iScreenHeight + 8)) &&
-          (info.dwFlags & D3DPRESENTFLAG_MODEMASK) == (curr.dwFlags & D3DPRESENTFLAG_MODEMASK) &&
+          ! (info.dwFlags & D3DPRESENTFLAG_MODEMASK) &&
           MathUtils::FloatEquals(info.fRefreshRate, fps * 2.5f, 0.01f))
       {
         CLog::Log(
@@ -277,7 +277,7 @@ void CResolutionUtils::FindResolutionFromWhitelist(float fps, int width, int hei
 
     // allow resolutions that are desktop resolution but have the correct refresh rate
     if (info.iScreenWidth == desktop_info.iScreenWidth &&
-        (info.dwFlags & D3DPRESENTFLAG_MODEMASK) == (desktop_info.dwFlags & D3DPRESENTFLAG_MODEMASK) &&
+        ! (info.dwFlags & D3DPRESENTFLAG_MODEMASK) &&
         MathUtils::FloatEquals(info.fRefreshRate, fps, 0.01f))
     {
       CLog::Log(LOGDEBUG,
@@ -303,8 +303,7 @@ void CResolutionUtils::FindResolutionFromWhitelist(float fps, int width, int hei
 
       // allow resolutions that are desktop resolution but have double the refresh rate
       if (info.iScreenWidth == desktop_info.iScreenWidth &&
-          (info.dwFlags & D3DPRESENTFLAG_MODEMASK) ==
-              (desktop_info.dwFlags & D3DPRESENTFLAG_MODEMASK) &&
+        ! (info.dwFlags & D3DPRESENTFLAG_MODEMASK) &&
           MathUtils::FloatEquals(info.fRefreshRate, fps * 2, 0.01f))
       {
         CLog::Log(LOGDEBUG,
@@ -332,8 +331,7 @@ void CResolutionUtils::FindResolutionFromWhitelist(float fps, int width, int hei
 
       // allow resolutions that are desktop resolution but have 2.5 times the refresh rate
       if (info.iScreenWidth == desktop_info.iScreenWidth &&
-          (info.dwFlags & D3DPRESENTFLAG_MODEMASK) ==
-              (desktop_info.dwFlags & D3DPRESENTFLAG_MODEMASK) &&
+        ! (info.dwFlags & D3DPRESENTFLAG_MODEMASK) &&
           MathUtils::FloatEquals(info.fRefreshRate, fps * 2.5f, 0.01f))
       {
         CLog::Log(
