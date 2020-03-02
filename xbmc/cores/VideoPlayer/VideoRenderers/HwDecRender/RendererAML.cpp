@@ -78,7 +78,7 @@ bool CRendererAML::RenderCapture(int index, CRenderCapture* capture)
 {
   capture->BeginRender();
   capture->EndRender();
-  CScreenshotAML::CaptureVideoFrame((unsigned char *)capture->GetRenderBuffer(), capture->GetWidth(), capture->GetHeight());
+  CScreenshotAML::CaptureVideoFrame((unsigned char *)capture->GetRenderBuffer(), capture->GetWidth(), capture->GetHeight(), false);
   return true;
 }
 

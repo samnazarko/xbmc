@@ -51,7 +51,7 @@ void CScreenshotAML::CaptureVideoFrame(unsigned char *buffer, int iWidth, int iH
     {
       if (!bBlendToBuffer)
       {
-        memset(buffer, 0xff, buffSize);
+        memset(buffer, 0xff, iHeight * iWidth * 4);
       }
 
       for (int y = 0; y < iHeight; ++y)
