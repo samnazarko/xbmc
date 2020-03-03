@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The second and third generation OSMC remotes use i and c keys that stop functioning with some keyboard languages in OSMC.				 -->
+<!-- We have remapped those keys to kpleftparen and kprightparen with udev to overcome this issue. This file fixes what that change breaks	 -->
+<!-- as well as emulates the original remote behavior it had while using lirc. The behaviors that were not emulated was the home key during	 -->
+<!-- fullscreen video and visualazation playback. The modified layout maps in Kodi as...													 -->
+<!-- 																																		 -->
+<!-- Home  = escape        <key id="61467">																									 -->
+<!-- Info  = leftbracket   <key id="61480">																									 -->
+<!-- Up    = up            <key id="61568">																									 -->
+<!-- Down  = down          <key id="61569">																									 -->
+<!-- Left  = left          <key id="61570">																									 -->
+<!-- Right = right         <key id="61571">																									 -->
+<!-- OK    = return        <key id="61453">																									 -->
+<!-- Back  = browser_back  <key id="61616">																									 -->
+<!-- Menu  = rightbracket  <key id="61481">																									 -->
+<!-- Play  = play_pause    <key id="61629">																									 -->
+<!-- Stop  = stop          <key id="61628">																									 -->
+<!-- Vol-  = volume_down   <key id="61624">																									 -->
+<!-- Vol+  = volume_up     <key id="61625">																									 -->
+<!-- 																																		 -->
+<!-- Keymap created by DarwinDesign version 24-08-24																						 -->
+<!-- 																																		 -->
+<keymap>
+	<global>
+		<keyboard>
+			<leftbracket>Info</leftbracket> <!-- I Button -->
+			<rightbracket>ContextMenu</rightbracket> <!-- Menu Button -->
+			<f2>Notification(OSMC $LOCALIZE[790],$LOCALIZE[13050],5000,DefaultIconerror.png)</f2> <!-- OSMC Remote Control, Running low on battery -->
+		</keyboard>
+	</global>
+	<Home>
+		<keyboard>
+			<leftbracket>info</leftbracket> <!-- I Button -->
+		</keyboard>
+	</Home>
+	<FullscreenVideo>
+		<keyboard>
+			<leftbracket>info</leftbracket> <!-- I Button -->
+			<rightbracket>PlayerProcessInfo</rightbracket> <!-- Menu Button -->
+			<!-- <escape>PreviousMenu</escape> --> <!-- Old Remote Behavior -->
+		</keyboard>
+	</FullscreenVideo>
+	<FullscreenGame>
+		<keyboard>
+			<leftbracket>info</leftbracket> <!-- I Button -->
+			<rightbracket>CodecInfo</rightbracket> <!-- Menu Button -->
+		</keyboard>
+	</FullscreenGame>
+	<FullscreenInfo>
+		<keyboard>
+			<leftbracket>Back</leftbracket> <!-- I Button -->
+			<rightbracket>PlayerProcessInfo</rightbracket> <!-- Menu Button -->
+		</keyboard>
+	</FullscreenInfo>
+	<Visualisation>
+		<keyboard>
+			<leftbracket>info</leftbracket> <!-- I Button -->
+			<rightbracket>PlayerProcessInfo</rightbracket> <!-- Menu Button -->
+			<!-- <escape>PreviousMenu</escape> --> <!-- Old Remote Behavior -->
+		</keyboard>
+	</Visualisation>
+	<MusicOSD>
+		<keyboard>
+			<leftbracket>PlayerProcessInfo</leftbracket> <!-- I Button -->
+			<rightbracket>Info</rightbracket> <!-- Menu Button -->
+		</keyboard>
+	</MusicOSD>
+	<VisualisationPresetList>
+		<keyboard>
+			<leftbracket>info</leftbracket> <!-- I Button -->
+		</keyboard>
+	</VisualisationPresetList>
+	<slideshow>
+		<keyboard>
+			<leftbracket>info</leftbracket> <!-- I Button -->
+			<rightbracket>info</rightbracket> <!-- Menu Button -->
+		</keyboard>
+	</slideshow>
+	<VideoOSD>
+		<keyboard>
+			<leftbracket>info</leftbracket> <!-- I Button -->
+		</keyboard>
+	</VideoOSD>
+	<VideoMenu>
+		<keyboard>
+			<leftbracket>info</leftbracket> <!-- I Button -->
+			<rightbracket>PlayerProcessInfo</rightbracket> <!-- Menu Button -->
+			<!-- <escape>PreviousMenu</escape> --> <!-- Old Remote Behavior -->
+		</keyboard>
+	</VideoMenu>
+	<OSDVideoSettings>
+		<keyboard>
+			<leftbracket>info</leftbracket> <!-- I Button -->
+		</keyboard>
+	</OSDVideoSettings>
+	<OSDAudioSettings>
+		<keyboard>
+			<leftbracket>info</leftbracket> <!-- I Button -->
+		</keyboard>
+	</OSDAudioSettings>
+	<ContextMenu>
+		<keyboard>
+			<rightbracket>Back</rightbracket> <!-- Menu Button -->
+		</keyboard>
+	</ContextMenu>
+	<MusicInformation>
+		<keyboard>
+			<leftbracket>Back</leftbracket> <!-- I Button -->
+		</keyboard>
+	</MusicInformation>
+	<MovieInformation>
+		<keyboard>
+			<leftbracket>Back</leftbracket> <!-- I Button -->
+		</keyboard>
+	</MovieInformation>
+	<PictureInfo>
+		<keyboard>
+			<leftbracket>Back</leftbracket> <!-- I Button -->
+		</keyboard>
+	</PictureInfo>
+	<FullscreenLiveTV>
+		<keyboard>
+			<rightbracket>ActivateWindow(PVROSDChannels)</rightbracket> <!-- Menu Button -->
+		</keyboard>
+	</FullscreenLiveTV>
+	<FullscreenRadio>
+		<keyboard>
+			<rightbracket>ActivateWindow(PVROSDChannels)</rightbracket> <!-- Menu Button -->
+		</keyboard>
+	</FullscreenRadio>
+	<AddonInformation>
+		<keyboard>
+			<leftbracket>Back</leftbracket> <!-- I Button -->
+		</keyboard>
+	</AddonInformation>
+	<PlayerProcessInfo>
+		<keyboard>
+			<rightbracket>PlayerProcessInfo</rightbracket> <!-- Menu Button -->
+		</keyboard>
+	</PlayerProcessInfo>
+</keymap>
