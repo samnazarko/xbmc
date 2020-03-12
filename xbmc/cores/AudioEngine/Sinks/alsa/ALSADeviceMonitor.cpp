@@ -54,6 +54,13 @@ void CALSADeviceMonitor::Start()
       goto err_unref_monitor;
     }
 
+    err = udev_monitor_filter_add_match_subsystem_devtype(m_udevMonitor, "bluetooth", NULL);
+    if (err)
+    {
+      CLog::Log(LOGERROR, "CALSADeviceMonitor::Start - udev_monitor_filter_add_match_subsystem_devtype() for bluetooth failed");
+      goto err_unref_monitor;
+    }
+
     err = udev_monitor_enable_receiving(m_udevMonitor);
     if (err)
     {
@@ -102,7 +109,7 @@ void CALSADeviceMonitor::FDEventCallback(int id, int fd, short revents, void *da
     const char* action = udev_device_get_action(device);
     const char* soundInitialized = udev_device_get_property_value(device, "SOUND_INITIALIZED");
 
-    if (!action || !soundInitialized)
+    if (!action || (!soundInitialized && strcmp(udev_device_get_subsystem(device),"sound") == 0))
       continue;
 
     /* cardX devices emit a "change" event when ready (i.e. all subdevices added) */
@@ -110,6 +117,11 @@ void CALSADeviceMonitor::FDEventCallback(int id, int fd, short revents, void *da
     {
       CLog::Log(LOGDEBUG, "CALSADeviceMonitor - ALSA card added (\"{}\", \"{}\")",
                 udev_device_get_syspath(device), udev_device_get_devpath(device));
+      audioDevicesChanged = true;
+    }
+    else if (strcmp(action, "add") == 0 && strcmp(udev_device_get_subsystem(device),"bluetooth") == 0)
+    {
+      usleep(4000 * 1000); // really need to probe dbus here
       audioDevicesChanged = true;
     }
     else if (strcmp(action, "remove") == 0)

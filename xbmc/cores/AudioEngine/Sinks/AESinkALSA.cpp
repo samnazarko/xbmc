@@ -1359,6 +1359,7 @@ void CAESinkALSA::EnumerateDevice(AEDeviceInfoList &list, const std::string &dev
   if (!OpenPCMDevice(device, "", ALSA_MAX_CHANNELS, &pcmhandle, config))
     return;
 
+  CLog::Log(LOGINFO, "CAESinkALSA::EnumerateDevice - device {} description {}", device, description);
   snd_pcm_info_t *pcminfo;
   snd_pcm_info_alloca(&pcminfo);
   memset(pcminfo, 0, snd_pcm_info_sizeof());
