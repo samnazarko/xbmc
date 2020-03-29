@@ -10,6 +10,7 @@
 
 #include "cores/FFmpeg.h"
 #include "cores/VideoPlayer/Interface/TimingConstants.h"
+#include "utils/log.h"
 
 #include <array>
 #include <assert.h>
@@ -134,4 +135,27 @@ bool CDVDCodecUtils::ProcessH264MVCExtradata(uint8_t *data, uint32_t data_size, 
     }
   }
   return false;
+}
+
+bool CDVDCodecUtils::GetH264MvcStreamIndex(AVFormatContext *fmt, int *mvcIndex)
+{
+  *mvcIndex = -1;
+
+  for (size_t i = 0; i < fmt->nb_streams; i++)
+  {
+    AVStream *st = fmt->streams[i];
+
+    if (st->codecpar->codec_id == AV_CODEC_ID_H264_MVC)
+    {
+      if (*mvcIndex != -1)
+      {
+        CLog::Log(LOGDEBUG, "multiple h264 mvc extension streams aren't supported");
+        return false;
+      }
+
+      *mvcIndex = i;
+    }
+  }
+
+  return *mvcIndex >= 0;
 }
