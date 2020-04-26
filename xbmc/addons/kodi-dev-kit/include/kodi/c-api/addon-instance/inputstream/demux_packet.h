@@ -98,6 +98,11 @@ extern "C"
 
     //------------------------------------------
 
+    /// @brief The 3D MVC subtitle plane
+    int subtitlePlane;
+
+    //------------------------------------------
+
     /// @brief Optional data to allow decryption at processing site if
     /// necessary.
     ///

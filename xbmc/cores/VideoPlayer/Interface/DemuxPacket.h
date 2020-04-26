@@ -38,6 +38,8 @@ extern "C"
       dispTime = 0;
       recoveryPoint = false;
 
+      subtitlePlane = 0;
+
       cryptoInfo = nullptr;
     }
 
