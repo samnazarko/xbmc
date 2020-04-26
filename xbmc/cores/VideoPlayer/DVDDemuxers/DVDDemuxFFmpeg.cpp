@@ -1894,6 +1894,11 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
           if (av_dict_get(pStream->metadata, "title", NULL, 0))
             st->m_description = av_dict_get(pStream->metadata, "title", NULL, 0)->value;
 
+          AVDictionaryEntry *tag = av_dict_get(pStream->metadata, "3d-plane", NULL, AV_DICT_IGNORE_SUFFIX);
+          if (tag && tag->value && *tag->value) {
+            st->m_3dSubtitlePlane = std::atoi(tag->value);
+          }
+
           break;
         }
       }
