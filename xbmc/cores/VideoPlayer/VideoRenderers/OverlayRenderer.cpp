@@ -241,7 +241,7 @@ void CRenderer::Render(COverlay* o)
     }
   }
 
-  state.x += GetStereoscopicDepth();
+  state.x += GetStereoscopicDepth(o->m_pgsSubtitle, o->m_3dSubtitleDepth);
 
   o->Render(state);
 }
@@ -574,6 +574,12 @@ std::shared_ptr<COverlay> CRenderer::Convert(CDVDOverlay& o, double pts)
     r = COverlay::Create(static_cast<CDVDOverlayImage&>(o), m_rs);
   else if (o.IsOverlayType(DVDOVERLAY_TYPE_SPU))
     r = COverlay::Create(static_cast<CDVDOverlaySpu&>(o));
+
+  if (r)
+  {
+    r->m_3dSubtitleDepth = o.m_3dSubtitleDepth;
+    r->m_pgsSubtitle = o.IsOverlayType(DVDOVERLAY_TYPE_IMAGE);
+  }
 
   m_textureCache[m_textureid] = r;
   o.m_textureid = m_textureid;

@@ -36,6 +36,7 @@ public:
     bForced = false;
     replace = false;
     m_textureid = 0;
+    m_3dSubtitleDepth = 0;
     m_enableTextAlign = false;
     m_overlayContainerFlushable = true;
     m_setForcedMargins = false;
@@ -49,6 +50,7 @@ public:
     bForced       = src.bForced;
     replace = src.replace;
     m_textureid = 0;
+    m_3dSubtitleDepth = 0;
     m_enableTextAlign = src.m_enableTextAlign;
     m_overlayContainerFlushable = src.m_overlayContainerFlushable;
     m_setForcedMargins = src.m_setForcedMargins;
@@ -102,6 +104,8 @@ public:
   bool bForced; // display, no matter what
   bool replace; // replace by next nomatter what stoptime it has
   unsigned long m_textureid;
+
+  int m_3dSubtitleDepth;
 
 protected:
   DVDOverlayType m_type;
