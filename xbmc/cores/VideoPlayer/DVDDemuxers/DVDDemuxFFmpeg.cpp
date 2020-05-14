@@ -1899,6 +1899,11 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
             st->m_3dSubtitlePlane = std::atoi(tag->value);
           }
 
+          if (m_pInput->IsStreamType(DVDSTREAM_TYPE_BLURAY)) {
+            st->m_3dSubtitlePlane = std::static_pointer_cast<CDVDInputStreamBluray>(m_pInput)->Get3dSubtitlePlane(pStream->id);
+          }
+
+          CLog::Log(LOGDEBUG, "{} - 3d subtitle plane = #{}", __FUNCTION__, st->m_3dSubtitlePlane);
           break;
         }
       }
