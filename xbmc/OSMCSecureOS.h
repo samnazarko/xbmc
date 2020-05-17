@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <stdint.h>
+#include <stddef.h>
 #include "threads/CriticalSection.h"
 #include <stdarg.h>
 
@@ -30,4 +32,8 @@ public:
 
 	std::string getKeyId() const;
 	std::string getTOTP() const;
+
+	int getMvcSubtitleDepth(double pts) const;
+
+	void parseFrame(uint32_t codecTag, uint8_t subtitlePlane, int64_t pts, const uint8_t *data, size_t size) const;
 };
