@@ -306,8 +306,15 @@ CAEChannelInfo CAESinkALSA::ALSAchmapToAEChannelMap(snd_pcm_chmap_t* alsaMap)
   CAEChannelInfo info;
 
   for (unsigned int i = 0; i < alsaMap->channels; i++)
-    info += ALSAChannelToAEChannel(alsaMap->pos[i]);
-
+  {
+    /* handle double side speaker quirk */
+    if (alsaMap->pos[i] == SND_CHMAP_SL && info.HasChannel(AE_CH_SL))
+      info += AE_CH_BL;
+    else if (alsaMap->pos[i] == SND_CHMAP_SR && info.HasChannel(AE_CH_SR))
+      info += AE_CH_BR;
+    else
+      info += ALSAChannelToAEChannel(alsaMap->pos[i]);
+  }
   return info;
 }
 
