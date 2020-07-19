@@ -52,6 +52,10 @@ bool aml_permissions()
   {
     permissions_ok = 1;
 
+    if (!SysfsUtils::HasRW("/dev/tee0"))
+    {
+      CLog::Log(LOGWARNING, "AML: no rw on /dev/tee0");
+    }
     if (!SysfsUtils::HasRW("/dev/amvideo"))
     {
       CLog::Log(LOGERROR, "AML: no rw on /dev/amvideo");
