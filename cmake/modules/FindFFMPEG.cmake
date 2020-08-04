@@ -81,7 +81,8 @@ macro(buildFFMPEG)
   set(PATCH_COMMAND ${CMAKE_COMMAND} -E copy
                     ${CMAKE_SOURCE_DIR}/tools/depends/target/ffmpeg/CMakeLists.txt
                     <SOURCE_DIR> &&
-                    /bin/bash -c "patch -p1 < ${CMAKE_SOURCE_DIR}/tools/depends/target/ffmpeg/0001-added_upstream_mvc_patches.patch"
+                    /bin/bash -c "patch -p1 < ${CMAKE_SOURCE_DIR}/tools/depends/target/ffmpeg/0001-added_upstream_mvc_patches.patch" &&
+                    /bin/bash -c "patch -p1 < ${CMAKE_SOURCE_DIR}/tools/depends/target/ffmpeg/0002-MKV-added-basic-block-addition-mapping-support-for-m.patch"
 )
 
   if(CMAKE_GENERATOR STREQUAL Xcode)
