@@ -16,6 +16,7 @@ set(SOURCES AutoSwitch.cpp
             LangInfo.cpp
             MediaSource.cpp
             NfoFile.cpp
+            OSMCSecureOS.cpp
             OSMCHelper.cpp
             PasswordManager.cpp
             PlayListPlayer.cpp
@@ -59,6 +60,7 @@ set(HEADERS AutoSwitch.h
             LockType.h
             MediaSource.h
             NfoFile.h
+            OSMCSecureOS.h
 	    OSMCHelper.h
             PartyModeManager.h
             PasswordManager.h
