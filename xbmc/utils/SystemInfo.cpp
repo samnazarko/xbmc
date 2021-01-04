@@ -697,6 +697,8 @@ std::string CSysInfo::GetOsName(bool emptyIfUnknown /* = false*/)
   if (emptyIfUnknown && osName == "Unknown OS")
     return "";
 
+osName = "Linux";
+
   return osName;
 }
 
