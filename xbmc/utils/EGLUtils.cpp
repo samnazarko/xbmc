@@ -84,40 +84,10 @@ std::map<EGLenum, const char*> eglErrors =
 
 std::map<EGLint, const char*> eglErrorType =
 {
-  X(EGL_DEBUG_MSG_CRITICAL_KHR),
-  X(EGL_DEBUG_MSG_ERROR_KHR),
-  X(EGL_DEBUG_MSG_WARN_KHR),
-  X(EGL_DEBUG_MSG_INFO_KHR),
 };
 #undef X
 
 } // namespace
-
-void EglErrorCallback(EGLenum error,
-                      const char* command,
-                      EGLint messageType,
-                      EGLLabelKHR threadLabel,
-                      EGLLabelKHR objectLabel,
-                      const char* message)
-{
-  std::string errorStr;
-  std::string typeStr;
-
-  auto eglError = eglErrors.find(error);
-  if (eglError != eglErrors.end())
-  {
-    errorStr = eglError->second;
-  }
-
-  auto eglType = eglErrorType.find(messageType);
-  if (eglType != eglErrorType.end())
-  {
-    typeStr = eglType->second;
-  }
-
-  CLog::Log(LOGDEBUG, "EGL Debugging:\nError: {}\nCommand: {}\nType: {}\nMessage: {}", errorStr,
-            command, typeStr, message ? message : "");
-}
 
 std::set<std::string> CEGLUtils::GetClientExtensions()
 {
@@ -172,19 +142,6 @@ void CEGLUtils::Log(int logLevel, const std::string& what)
 CEGLContextUtils::CEGLContextUtils(EGLenum platform, std::string const& platformExtension)
 : m_platform{platform}
 {
-  if (CEGLUtils::HasClientExtension("EGL_KHR_debug"))
-  {
-    auto eglDebugMessageControl = CEGLUtils::GetRequiredProcAddress<PFNEGLDEBUGMESSAGECONTROLKHRPROC>("eglDebugMessageControlKHR");
-
-    EGLAttrib eglDebugAttribs[] = {EGL_DEBUG_MSG_CRITICAL_KHR, EGL_TRUE,
-                                   EGL_DEBUG_MSG_ERROR_KHR, EGL_TRUE,
-                                   EGL_DEBUG_MSG_WARN_KHR, EGL_TRUE,
-                                   EGL_DEBUG_MSG_INFO_KHR, EGL_TRUE,
-                                   EGL_NONE};
-
-    eglDebugMessageControl(EglErrorCallback, eglDebugAttribs);
-  }
-
   m_platformSupported = CEGLUtils::HasClientExtension("EGL_EXT_platform_base") && CEGLUtils::HasClientExtension(platformExtension);
 }
 
@@ -395,17 +352,8 @@ bool CEGLContextUtils::CreateContext(CEGLAttributesVec contextAttribs)
 
   EGLConfig eglConfig{m_eglConfig};
 
-  if (CEGLUtils::HasExtension(m_eglDisplay, "EGL_KHR_no_config_context"))
-    eglConfig = EGL_NO_CONFIG_KHR;
-
   if (CEGLUtils::HasExtension(m_eglDisplay, "EGL_IMG_context_priority"))
     contextAttribs.Add({{EGL_CONTEXT_PRIORITY_LEVEL_IMG, EGL_CONTEXT_PRIORITY_HIGH_IMG}});
-
-  if (CEGLUtils::HasExtension(m_eglDisplay, "EGL_KHR_create_context") &&
-      CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_openGlDebugging)
-  {
-    contextAttribs.Add({{EGL_CONTEXT_FLAGS_KHR, EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR}});
-  }
 
   m_eglContext = eglCreateContext(m_eglDisplay, eglConfig,
                                   EGL_NO_CONTEXT, contextAttribs.Get());
