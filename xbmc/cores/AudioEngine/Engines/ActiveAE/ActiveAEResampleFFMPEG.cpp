@@ -8,6 +8,8 @@
 
 #include "cores/AudioEngine/Utils/AEUtil.h"
 #include "ActiveAEResampleFFMPEG.h"
+#include "settings/Settings.h"
+#include "ServiceBroker.h"
 #include "utils/log.h"
 #include "settings/SettingsComponent.h"
 #include "settings/Settings.h"
@@ -107,6 +109,12 @@ bool CActiveAEResampleFFMPEG::Init(SampleConfig dstConfig, SampleConfig srcConfi
   if (m_dst_fmt == AV_SAMPLE_FMT_S32 || m_dst_fmt == AV_SAMPLE_FMT_S32P)
   {
     av_opt_set_int(m_pContext, "output_sample_bits", m_dst_bits, 0);
+  }
+  int boost_center = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt("audiooutput.boostcenter");
+  if (boost_center)
+  {
+    float gain = pow(10.0f, ((float)(-3 + boost_center))/20.0f);
+    av_opt_set_double(m_pContext, "center_mix_level", gain, 0);
   }
 
   // tell resampler to clamp float values
