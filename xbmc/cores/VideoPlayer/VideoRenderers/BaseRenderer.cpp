@@ -210,6 +210,14 @@ void CBaseRenderer::CalcDestRect(float offsetX,
       newWidth = std::min(width, height);
       newHeight = newWidth * outputFrameRatio;
     }
+    if (CServiceBroker::GetWinSystem()->GetGfxContext().GetResInfo().iWidth == 720) {
+      if (CServiceBroker::GetWinSystem()->GetGfxContext().GetResInfo().iHeight == 576)
+        newWidth *= (225.0f / 256.0f);
+      if (CServiceBroker::GetWinSystem()->GetGfxContext().GetResInfo().iHeight == 480)
+        newWidth *= (81.0f / 64.0f);
+      if (MathUtils::FloatEquals(inputFrameRatio, 1.7777f, 0.01f))
+        newWidth *= (9.0f / 16.0f);
+    }
   }
 
   // Scale the movie up by set zoom amount
