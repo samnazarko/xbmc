@@ -4920,15 +4920,7 @@ void CVideoPlayer::UpdatePlayState(double timeout)
 
     bool realtime = m_pInputStream->IsRealtime();
 
-    if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_VIDEOPLAYER_USEDISPLAYASCLOCK) &&
-        !realtime)
-    {
-      state.cantempo = true;
-    }
-    else
-    {
-      state.cantempo = false;
-    }
+    state.cantempo = false;
 
     m_processInfo->SetStateRealtime(realtime);
   }

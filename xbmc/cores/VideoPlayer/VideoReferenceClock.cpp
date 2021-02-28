@@ -46,8 +46,10 @@ CVideoReferenceClock::~CVideoReferenceClock()
 
 void CVideoReferenceClock::Start()
 {
-  if(CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_VIDEOPLAYER_USEDISPLAYASCLOCK) && !IsRunning())
-    Create();
+  //if(CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_VIDEOPLAYER_USEDISPLAYASCLOCK) && !IsRunning())
+    //Create();
+  /* We don't use this on AML */
+  return;
 }
 
 void CVideoReferenceClock::UpdateClock(int NrVBlanks, uint64_t time)
