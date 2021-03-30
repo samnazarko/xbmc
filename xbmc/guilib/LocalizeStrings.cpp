@@ -116,7 +116,11 @@ static bool LoadStr2Mem(const std::string &pathname_in, const std::string &langu
 
   bool useSourceLang = StringUtils::EqualsNoCase(language, LANGUAGE_DEFAULT) || StringUtils::EqualsNoCase(language, LANGUAGE_OLD_DEFAULT);
 
-  return LoadPO(URIUtils::AddFileToFolder(pathname, "strings.po"), strings, encoding, offset, useSourceLang);
+  int ret = LoadPO(URIUtils::AddFileToFolder(pathname, "strings.po"), strings, encoding, offset, useSourceLang);
+
+  LoadPO(URIUtils::AddFileToFolder(pathname, "strings-osmc.po"), strings, encoding, offset, useSourceLang);
+
+  return ret;
 }
 
 static bool LoadWithFallback(const std::string& path, const std::string& language, std::map<uint32_t, LocStr>& strings)
