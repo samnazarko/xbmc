@@ -89,15 +89,18 @@ OSMCSecureOS::OSMCSecureOS()
 	m_dll = new LibsecureOSMC();
 	if (!m_dll->Load()) {
 		CLog::Log(LOGWARNING, "OSMCSecureOS::OSMCSecureOS: unable to load libsecureOSMC");
-		delete m_dll;
-		m_dll = nullptr;
+		delete m_dll, m_dll = nullptr;
 		return;
 	}
 
 	m_osmcCtxt = m_dll->osmc_init(osmcsecureos_logf);
-	if (m_osmcCtxt) {
-		CLog::Log(LOGWARNING, "OSMCSecureOS: key-id = {}", getKeyId());
+	if (!m_osmcCtxt) {
+		CLog::Log(LOGERROR, "OSMCSecureOS: unable to initialize libsecureOSMC");
+		delete m_dll, m_dll = nullptr;
+		return;
 	}
+
+	CLog::Log(LOGWARNING, "OSMCSecureOS: key-id = {}", getKeyId());
 }
 
 OSMCSecureOS::~OSMCSecureOS()
@@ -131,7 +134,7 @@ std::string OSMCSecureOS::getKeyId() const
 	char id[65];
 	uint32_t idLength = sizeof(id);
 
-	if (m_dll->auth_get_key_id(m_osmcCtxt, id, &idLength)) {
+	if (!m_dll || m_dll->auth_get_key_id(m_osmcCtxt, id, &idLength)) {
 		CLog::Log(LOGWARNING, "OSMCSecureOS::getKeyId: unable to get key id");
 		return "<unknown>";
 	}
@@ -144,7 +147,7 @@ std::string OSMCSecureOS::getTOTP() const
 	char totp[9];
 	uint32_t totpLength = sizeof(totp);
 
-	if (m_dll->auth_get_totp(m_osmcCtxt, totp, &totpLength)) {
+	if (!m_dll || m_dll->auth_get_totp(m_osmcCtxt, totp, &totpLength)) {
 		CLog::Log(LOGWARNING, "OSMCSecureOS::getTOTP: unable to get totp");
 		return "<unknown>";
 	}
@@ -154,10 +157,12 @@ std::string OSMCSecureOS::getTOTP() const
 
 int OSMCSecureOS::getMvcSubtitleDepth(double pts) const
 {
-	return m_dll->mvcsub_get_depth(m_osmcCtxt, pts);
+	return !m_dll ? 0 : m_dll->mvcsub_get_depth(m_osmcCtxt, pts);
 }
 
 void OSMCSecureOS::parseFrame(uint32_t codecTag, uint8_t subtitlePlane, int64_t pts, const uint8_t *data, size_t size) const
 {
-	(void) m_dll->parse_frame(m_osmcCtxt, codecTag, subtitlePlane, pts, data, size);
+	if (m_dll) {
+		(void) m_dll->parse_frame(m_osmcCtxt, codecTag, subtitlePlane, pts, data, size);
+	}
 }
