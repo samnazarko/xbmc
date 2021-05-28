@@ -18,10 +18,18 @@
 #include "cores/VideoPlayer/VideoRenderers/RenderFactory.h"
 #include "cores/VideoPlayer/VideoRenderers/RenderFlags.h"
 #include "settings/AdvancedSettings.h"
+#include "settings/DisplaySettings.h"
+
+#include "windowing/GraphicContext.h"
+#include "ServiceBroker.h"
+
+#include <chrono>
+#include <thread>
 
 CRendererAML::CRendererAML()
  : m_prevVPts(-1)
  , m_bConfigured(false)
+ , m_sleepDurationInMs(0)
 {
   CLog::Log(LOGINFO, "Constructing CRendererAML");
 }
@@ -44,11 +52,41 @@ bool CRendererAML::Register()
   return true;
 }
 
+float CRendererAML::GetVideoRefreshRate() const
+{
+  RESOLUTION res = CServiceBroker::GetWinSystem()->GetGfxContext().GetVideoResolution();
+  const RESOLUTION_INFO& video_res_info = CDisplaySettings::GetInstance().GetResolutionInfo(res);
+
+  return video_res_info.fRefreshRate;
+}
+
 bool CRendererAML::Configure(const VideoPicture &picture, float fps, unsigned int orientation)
 {
   m_sourceWidth = picture.iWidth;
   m_sourceHeight = picture.iHeight;
   m_renderOrientation = orientation;
+
+  // Calculate the thread sleep duration in ms.
+  //
+  // The render thread is used to sleep between frames. This keeps the CPU load and CPU
+  // temperature low. When polling is being used to let the thread sleep until the next
+  // vsync event occurs, the Linux scheduler wakeup latency might be too high (around 6 ms)
+  // and could cause some glitches like frame skips. Further, that thread needs another (up
+  // to) 6 ms to prepare the next frame before it is being displayed. This gives a total
+  // (worst case) latency of about 12 ms.
+  //
+  // The resulting sleep duration depends on the fps. For instance, for 24 fps (42 ms per
+  // frame) the thread should sleep for 42 - 6 - 6 = 30 ms. BUT: if Kodi sets a different
+  // refresh rate (eg. 50 Hz instead of 25 Hz) we must rely on that refresh rate.
+  //
+  // It doesn't matter that the thread doesn't send a frame exactly every e.g. 42 ms. The
+  // kernel will display frames only when a vsync event occurs. We just have to make sure
+  // that there's at least one frame available when the kernel needs it.
+  m_sleepDurationInMs = int(1000.0 / GetVideoRefreshRate() - 0.5) - 6 - 6;
+  if (m_sleepDurationInMs < 2) {
+	  // if the sleep duration is too low, we do not sleep at all
+	  m_sleepDurationInMs = 0;
+  }
 
   m_iFlags = GetFlagsChromaPosition(picture.chroma_position) |
              GetFlagsColorMatrix(picture.color_space, picture.iWidth, picture.iHeight) |
@@ -181,5 +219,20 @@ void CRendererAML::RenderUpdate(int index, int index2, bool clear, unsigned int 
       m_prevVPts = pts;
     }
   }
+
+#if 0
+  // Use polling to sync with the kernel's vsync IRQ. It turned out that the
+  // Linux schedulers wakeup latency varies too much. Wakeup delays of up to 6 ms
+  // are too big and are causing 'stutters' like skipped/dropped frames. However,
+  // this can be avoided if we let Kodi run with realtime priority.
+  //
   CAMLCodec::PollFrame();
+#else
+  // We do not use polling in this case. The vsync IRQ will handle 'ready' frames anyway.
+  // Just sleep a bit here to avoid high CPU usage and temperature.
+  //
+  // Note: you want to use polling if you enable the 'sync-to-display' option.
+  //
+  std::this_thread::sleep_for(std::chrono::milliseconds(m_sleepDurationInMs));
+#endif
 }

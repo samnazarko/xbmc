@@ -43,6 +43,8 @@ public:
 private:
   void Reset();
 
+  float GetVideoRefreshRate() const;
+
   static const int m_numRenderBuffers = 8;
 
   struct BUFFER
@@ -54,4 +56,5 @@ private:
 
   int m_prevVPts;
   bool m_bConfigured;
+  int m_sleepDurationInMs;
 };
