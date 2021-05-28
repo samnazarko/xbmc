@@ -3177,7 +3177,7 @@
         </setting>
         <setting id="videoscreen.whitelistpulldown" type="boolean" parent="videoscreen.whitelist" label="14127" help="36444">
           <level>3</level>
-          <default>false</default>
+          <default>true</default>
           <dependencies>
             <dependency type="enable" setting="videoscreen.whitelist" operator="!is"></dependency>
           </dependencies>
@@ -3185,7 +3185,7 @@
         </setting>
         <setting id="videoscreen.whitelistdoublerefreshrate" type="boolean" parent="videoscreen.whitelist" label="14128" help="36445">
           <level>3</level>
-          <default>false</default>
+          <default>true</default>
           <dependencies>
             <dependency type="enable" setting="videoscreen.whitelist" operator="!is"></dependency>
           </dependencies>
