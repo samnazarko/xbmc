@@ -1979,10 +1979,10 @@ void CVideoPlayer::HandlePlaySpeed()
         if (m_CurrentAudio.id >= 0)
         {
           double adjust = -1.0; // a unique value
-          if (m_clock.GetSpeedAdjust() >= 0 && m_VideoPlayerAudio->GetLevel() < 5)
+          if (m_clock.GetSpeedAdjust() >= 0 && m_VideoPlayerAudio->GetLevel() < 15)
             adjust = -0.05;
 
-          if (m_clock.GetSpeedAdjust() < 0 && m_VideoPlayerAudio->GetLevel() > 10)
+          if (m_clock.GetSpeedAdjust() < 0 && m_VideoPlayerAudio->GetLevel() > 20)
             adjust = 0.0;
 
           if (adjust != -1.0)
