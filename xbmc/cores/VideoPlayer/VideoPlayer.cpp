@@ -4028,7 +4028,9 @@ void CVideoPlayer::FlushBuffers(double pts, bool accurate, bool sync)
     }
   }
 
-  m_CurrentVideo.lastdts = DVD_NOPTS_VALUE;
+  if(pts != DVD_NOPTS_VALUE && sync)
+    m_clock.Discontinuity(pts - DVD_TIME_BASE/2);
+
   UpdatePlayState(0);
 
   m_demuxerSpeed = DVD_PLAYSPEED_NORMAL;
