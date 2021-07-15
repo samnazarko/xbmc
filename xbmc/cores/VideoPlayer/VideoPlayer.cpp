@@ -3982,6 +3982,7 @@ void CVideoPlayer::FlushBuffers(double pts, bool accurate, bool sync)
   m_CurrentVideo.dts         = DVD_NOPTS_VALUE;
   m_CurrentVideo.startpts    = startpts;
   m_CurrentVideo.packets = 0;
+  m_CurrentVideo.lastdts = DVD_NOPTS_VALUE;
 
   m_CurrentSubtitle.dts      = DVD_NOPTS_VALUE;
   m_CurrentSubtitle.startpts = startpts;
