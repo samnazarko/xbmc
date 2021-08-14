@@ -497,7 +497,7 @@ void CGraphicContext::SetVideoResolutionInternal(RESOLUTION res, bool forceUpdat
     SetStereoView(RENDER_STEREO_VIEW_OFF);
 
     // update anyone that relies on sizing information
-    CServiceBroker::GetInputManager().SetMouseResolution(info_org.iWidth, info_org.iHeight, 1, 1);
+    CServiceBroker::GetInputManager().SetMouseResolution(info_org.iScreenWidth, info_org.iScreenHeight, 1, 1);
 
     CGUIComponent *gui = CServiceBroker::GetGUI();
     if (gui)
@@ -610,10 +610,18 @@ void CGraphicContext::ResetScreenParameters(RESOLUTION res)
 {
   RESOLUTION_INFO& info = CDisplaySettings::GetInstance().GetResolutionInfo(res);
 
-  info.iSubtitles = info.iHeight;
-  info.fPixelRatio = 1.0f;
-  info.iScreenWidth = info.iWidth;
-  info.iScreenHeight = info.iHeight;
+  switch (res)
+  {
+  case RES_WINDOW:
+    info.iSubtitles = (int)(0.965 * info.iHeight);
+    info.fPixelRatio = 1.0;
+    break;
+  default:
+    break;
+  }
+
+  CLog::Log(LOGWARNING, "CGraphicContext::ResetScreenParameters: Should reset resolutions? {}/{} vs. {}/{}",
+		  info.iWidth, info.iHeight, info.iScreenWidth, info.iScreenHeight);
   ResetOverscan(res, info.Overscan);
 }
 
@@ -635,42 +643,6 @@ void CGraphicContext::ApplyStateBlock()
 const RESOLUTION_INFO CGraphicContext::GetResInfo(RESOLUTION res) const
 {
   RESOLUTION_INFO info = CDisplaySettings::GetInstance().GetResolutionInfo(res);
-
-  if(m_stereoMode == RENDER_STEREO_MODE_SPLIT_HORIZONTAL)
-  {
-    if((info.dwFlags & D3DPRESENTFLAG_MODE3DTB) == 0)
-    {
-      info.fPixelRatio     /= 2;
-      info.iBlanking        = 0;
-      info.dwFlags         |= D3DPRESENTFLAG_MODE3DTB;
-    }
-    info.iHeight          = (info.iHeight         - info.iBlanking) / 2;
-    info.Overscan.top    /= 2;
-    info.Overscan.bottom  = (info.Overscan.bottom - info.iBlanking) / 2;
-    info.iSubtitles       = (info.iSubtitles      - info.iBlanking) / 2;
-  }
-
-  if (m_stereoMode == RENDER_STEREO_MODE_HARDWAREBASED)
-  {
-    if((info.dwFlags & D3DPRESENTFLAG_MODE3DTB) == 0)
-    {
-      info.iBlanking      = info.iHeight == 1080 ? 45 : 30;
-      info.dwFlags       |= D3DPRESENTFLAG_MODE3DTB;
-    }
-  }
-
-  if(m_stereoMode == RENDER_STEREO_MODE_SPLIT_VERTICAL)
-  {
-    if((info.dwFlags & D3DPRESENTFLAG_MODE3DSBS) == 0)
-    {
-      info.fPixelRatio     *= 2;
-      info.iBlanking        = 0;
-      info.dwFlags         |= D3DPRESENTFLAG_MODE3DSBS;
-    }
-    info.iWidth           = (info.iWidth         - info.iBlanking) / 2;
-    info.Overscan.left   /= 2;
-    info.Overscan.right   = (info.Overscan.right - info.iBlanking) / 2;
-  }
 
   if (res == m_Resolution && m_fFPSOverride != 0)
   {
@@ -695,7 +667,7 @@ void CGraphicContext::SetResInfo(RESOLUTION res, const RESOLUTION_INFO& info)
       curr.fPixelRatio /= 2.0f;
   }
 
-  if(info.dwFlags & D3DPRESENTFLAG_MODE3DTB && m_stereoMode != RENDER_STEREO_MODE_HARDWAREBASED)
+  if(info.dwFlags & D3DPRESENTFLAG_MODE3DTB)
   {
     curr.Overscan.bottom = info.Overscan.bottom * 2 + info.iBlanking;
     curr.iSubtitles      = info.iSubtitles      * 2 + info.iBlanking;
