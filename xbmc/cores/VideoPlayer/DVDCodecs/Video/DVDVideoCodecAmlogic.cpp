@@ -278,6 +278,7 @@ bool CDVDVideoCodecAmlogic::Open(CDVDStreamInfo &hints, CDVDCodecOptions &option
   m_processInfo.SetVideoDimensions(m_hints.width, m_hints.height);
   m_processInfo.SetVideoDeintMethod("hardware");
   m_processInfo.SetVideoDAR(m_hints.aspect);
+  m_processInfo.SetVideoStereoMode(m_hints.stereo_mode);
 
   m_has_keyframe = false;
 
