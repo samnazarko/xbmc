@@ -1233,8 +1233,15 @@ bool CApplication::OnAction(const CAction &action)
   }
 
   // forward action to graphic context and see if it can handle it
-  if (CServiceBroker::GetGUI()->GetStereoscopicsManager().OnAction(action))
-    return true;
+  RENDER_STEREO_MODE oldRsm = CServiceBroker::GetGUI()->GetStereoscopicsManager().GetStereoMode();
+  if (CServiceBroker::GetGUI()->GetStereoscopicsManager().OnAction(action)) {
+    RENDER_STEREO_MODE newRsm = CServiceBroker::GetGUI()->GetStereoscopicsManager().GetStereoMode();
+    if (oldRsm != newRsm) {
+      // stereo mode changed
+      appPlayer->TriggerUpdateResolution();
+    }
+  return true;
+  }
 
   if (appPlayer->IsPlaying())
   {

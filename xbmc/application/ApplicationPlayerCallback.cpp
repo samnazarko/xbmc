@@ -248,7 +248,18 @@ void CApplicationPlayerCallback::OnAVChange()
 {
   CLog::LogF(LOGDEBUG, "CApplication::OnAVChange");
 
+  RENDER_STEREO_MODE oldRsm = CServiceBroker::GetGUI()->GetStereoscopicsManager().GetStereoMode();
+
   CServiceBroker::GetGUI()->GetStereoscopicsManager().OnStreamChange();
+
+  RENDER_STEREO_MODE newRsm = CServiceBroker::GetGUI()->GetStereoscopicsManager().GetStereoMode();
+
+  if (oldRsm != newRsm) {
+    // stereo mode changed
+    auto& components = CServiceBroker::GetAppComponents();
+    const auto appPlayer = components.GetComponent<CApplicationPlayer>();
+    appPlayer->TriggerUpdateResolution();
+  }
 
   CGUIMessage msg(GUI_MSG_PLAYBACK_AVCHANGE, 0, 0);
   CServiceBroker::GetGUI()->GetWindowManager().SendThreadMessage(msg);
