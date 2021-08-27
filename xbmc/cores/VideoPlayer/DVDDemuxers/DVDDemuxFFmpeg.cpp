@@ -1867,6 +1867,7 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
           else if (CDVDCodecUtils::ProcessH264MVCExtradata(pStream->codecpar->extradata, pStream->codecpar->extradata_size))
           {
             pStream->codecpar->codec_tag = MKTAG('M', 'V', 'C', '1');
+            st->stereo_mode = "block_lr"; // can't tell whether lr or br
           }
         }
         break;
