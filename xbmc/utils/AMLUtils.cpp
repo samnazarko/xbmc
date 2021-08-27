@@ -577,7 +577,10 @@ bool aml_probe_3d_resolutions(std::vector<RESOLUTION_INFO> &resolutions)
 
   dcap3dfile = CSpecialProtocol::TranslatePath("special://home/userdata/disp_cap_3d");
 
-  if (SysfsUtils::GetString(dcap3dfile, valstr) >= 0 ||
+  if (!SysfsUtils::Has(dcap3dfile))
+    CLog::Log(LOGINFO, "{} is not accessible", dcap3dfile);
+
+  if ((SysfsUtils::Has(dcap3dfile) && SysfsUtils::GetString(dcap3dfile, valstr) >= 0) ||
       SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/disp_cap_3d", valstr) >= 0)
   {
     std::vector<std::string> probe_str = StringUtils::Split(valstr, "\n");
@@ -593,7 +596,10 @@ bool aml_probe_resolutions(std::vector<RESOLUTION_INFO> &resolutions)
   std::string valstr, vesastr, dcapfile;
   dcapfile = CSpecialProtocol::TranslatePath("special://home/userdata/disp_cap");
 
-  if (SysfsUtils::GetString(dcapfile, valstr) < 0)
+  if (!SysfsUtils::Has(dcapfile))
+    CLog::Log(LOGINFO, "{} is not accessible", dcapfile);
+
+  if (!SysfsUtils::Has(dcapfile) || SysfsUtils::GetString(dcapfile, valstr) < 0)
   {
     if (SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/disp_cap", valstr) < 0 || valstr.length() == 0)
     {
