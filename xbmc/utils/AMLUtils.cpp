@@ -578,7 +578,7 @@ bool aml_probe_3d_resolutions(std::vector<RESOLUTION_INFO> &resolutions)
   dcap3dfile = CSpecialProtocol::TranslatePath("special://home/userdata/disp_cap_3d");
 
   if (!SysfsUtils::Has(dcap3dfile))
-    CLog::Log(LOGINFO, "{} is not accessible", dcap3dfile);
+    CLog::Log(LOGINFO, "No {} to read", dcap3dfile);
 
   if ((SysfsUtils::Has(dcap3dfile) && SysfsUtils::GetString(dcap3dfile, valstr) >= 0) ||
       SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/disp_cap_3d", valstr) >= 0)
@@ -597,11 +597,11 @@ bool aml_probe_resolutions(std::vector<RESOLUTION_INFO> &resolutions)
   dcapfile = CSpecialProtocol::TranslatePath("special://home/userdata/disp_cap");
 
   if (!SysfsUtils::Has(dcapfile))
-    CLog::Log(LOGINFO, "{} is not accessible", dcapfile);
+    CLog::Log(LOGINFO, "No {} to read", dcapfile);
 
   if (!SysfsUtils::Has(dcapfile) || SysfsUtils::GetString(dcapfile, valstr) < 0)
   {
-    if (SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/disp_cap", valstr) < 0 || valstr.length() == 0)
+    if (SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/disp_cap", valstr) < 0 || valstr.empty())
     {
       CLog::Log(LOGDEBUG, "Cannot read EDID - falling back to current display mode");
       if (SysfsUtils::GetString("/sys/class/display/mode", valstr) < 0)
@@ -610,10 +610,30 @@ bool aml_probe_resolutions(std::vector<RESOLUTION_INFO> &resolutions)
         return false;
       }
     }
+  }
 
-    if (SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/vesa_cap", vesastr) == 0)
+  if (SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/vesa_cap", vesastr) == 0 && !vesastr.empty())
+  {
+    // If EDID returns VESA modes then check if we should override them
+    std::string vesacapfile = CSpecialProtocol::TranslatePath("special://home/userdata/vesa_cap");
+
+    if (SysfsUtils::Has(vesacapfile))
+    {
+      if (SysfsUtils::GetString(vesacapfile, vesastr) == 0)
+        CLog::Log(LOGINFO, "Using {} to override VESA modes reported by EDID", vesacapfile);
+      else
+      {
+        CLog::Log(LOGERROR, "Error reading {}", vesacapfile);
+        vesastr.clear();
+      }
+    }
+    else
+      CLog::Log(LOGINFO, "No {} to read", vesacapfile);
+
+    if (!vesastr.empty())
       valstr += "\n" + vesastr;
   }
+
   std::vector<std::string> probe_str = StringUtils::Split(valstr, "\n");
 
   return aml_modes_to_resolutions(probe_str, resolutions);
