@@ -73,6 +73,7 @@ public:
   RESOLUTION_INFO& GetCurrentResolutionInfo() { return GetResolutionInfo(m_currentResolution); }
   RESOLUTION GetResFromString(const std::string &strResolution) { return GetResolutionFromString(strResolution); }
   std::string GetStringFromRes(const RESOLUTION resolution, float refreshrate = 0.0f) { return GetStringFromResolution(resolution, refreshrate); }
+  std::string GetDisplayStringFromRes(const RESOLUTION resolution, bool hiDpi = false, bool withRefreshRate = true) const;
 
   void ApplyCalibrations();
   void UpdateCalibrations();

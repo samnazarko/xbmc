@@ -729,6 +729,33 @@ RESOLUTION CDisplaySettings::GetResolutionFromString(const std::string &strResol
   return RES_DESKTOP;
 }
 
+std::string CDisplaySettings::GetDisplayStringFromRes(const RESOLUTION res, bool hiDpi, bool withRefreshRate) const
+{
+  RESOLUTION_INFO info = GetResolutionInfo(res);
+
+  std::string stereo = "(2D)";
+
+  if (info.dwFlags & D3DPRESENTFLAG_MODE3DMASK)
+  {
+    stereo = "(3D ";
+    if (info.dwFlags & D3DPRESENTFLAG_MODE3DSBS)
+      stereo += "SBS)";
+    else if(info.dwFlags & D3DPRESENTFLAG_MODE3DTB)
+      stereo += "TAB)";
+    else if(info.dwFlags & D3DPRESENTFLAG_MODE3DFP)
+      stereo += "FP)";
+  }
+
+  std::string refRate = "";
+  if (withRefreshRate) {
+	  refRate = StringUtils::Format("{:0.2f} Hz ", info.fRefreshRate);
+  }
+
+  return StringUtils::Format("{}x{}{} {}{}{}",
+      info.iScreenWidth, info.iScreenHeight, info.dwFlags & D3DPRESENTFLAG_INTERLACED ? 'i' : 'p',
+      refRate, stereo, hiDpi ? " (HiDPI)" : "");
+}
+
 std::string CDisplaySettings::GetStringFromResolution(RESOLUTION resolution, float refreshrate /* = 0.0f */)
 {
   if (resolution == RES_WINDOW)
@@ -769,14 +796,8 @@ void CDisplaySettings::SettingOptionsModesFiller(const std::shared_ptr<const CSe
     const auto mode = CDisplaySettings::GetInstance().GetResolutionInfo(index);
 
     if (mode.dwFlags ^ D3DPRESENTFLAG_INTERLACED)
-    {
-      auto setting = GetStringFromResolution((RESOLUTION)index, mode.fRefreshRate);
-
-      list.emplace_back(
-          StringUtils::Format("{}x{}{} {:0.2f}Hz", mode.iScreenWidth, mode.iScreenHeight,
-                              ModeFlagsToString(mode.dwFlags, false), mode.fRefreshRate),
-          setting);
-    }
+      list.emplace_back(CDisplaySettings::GetInstance().GetDisplayStringFromRes((RESOLUTION)index),
+                        GetStringFromResolution((RESOLUTION)index, mode.fRefreshRate));
   }
 
   std::sort(list.begin(), list.end(), ModeSort);
@@ -848,15 +869,8 @@ void CDisplaySettings::SettingOptionsResolutionsFiller(const SettingConstPtr& se
     std::vector<RESOLUTION_WHR> resolutions = CServiceBroker::GetWinSystem()->ScreenResolutions(info.fRefreshRate);
     for (std::vector<RESOLUTION_WHR>::const_iterator resolution = resolutions.begin(); resolution != resolutions.end(); ++resolution)
     {
-      const std::string resLabel =
-          StringUtils::Format("{}x{}{}{}", resolution->m_screenWidth, resolution->m_screenHeight,
-                              ModeFlagsToString(resolution->flags, false),
-                              resolution->width > resolution->m_screenWidth &&
-                                      resolution->height > resolution->m_screenHeight
-                                  ? " (HiDPI)"
-                                  : "");
-      list.emplace_back(resLabel, resolution->ResInfo_Index);
-
+      bool hiDpi = resolution->width > resolution->m_screenWidth && resolution->height > resolution->m_screenHeight;
+      list.emplace_back(CDisplaySettings::GetInstance().GetDisplayStringFromRes((RESOLUTION)resolution->ResInfo_Index, hiDpi, false), resolution->ResInfo_Index);
       resolutionInfos.insert(std::make_pair((RESOLUTION)resolution->ResInfo_Index, CDisplaySettings::GetInstance().GetResolutionInfo(resolution->ResInfo_Index)));
     }
 
