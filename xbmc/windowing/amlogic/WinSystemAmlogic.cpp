@@ -503,6 +503,7 @@ void CWinSystemAmlogic::UpdateResolutions()
     CDisplaySettings::GetInstance().GetResolutionInfo(RES_DESKTOP) = CDisplaySettings::GetInstance().GetResolutionInfo(ResDesktop);
   }
   Update3dResolutions();
+  CDisplaySettings::GetInstance().ApplyCalibrations();
 }
 
 bool CWinSystemAmlogic::Hide()
