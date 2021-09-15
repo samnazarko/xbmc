@@ -548,6 +548,30 @@ bool CVariant::operator==(const CVariant &rhs) const
   return m_data == rhs.m_data;
 }
 
+bool CVariant::operator<(const CVariant &rhs) const
+{
+  if (type() == rhs.type())
+  {
+    switch (type())
+    {
+    case VariantTypeInteger:
+      return asInteger() < rhs.asInteger();
+    case VariantTypeUnsignedInteger:
+      return asUnsignedInteger() < rhs.asUnsignedInteger();
+    case VariantTypeDouble:
+      return asDouble() < rhs.asDouble();
+    case VariantTypeString:
+      return asString() < rhs.asString();
+    case VariantTypeWideString:
+      return asWideString() < rhs.asWideString();
+    default:
+      break;
+    }
+  }
+
+  return false;
+}
+
 void CVariant::reserve(size_t length)
 {
   if (type() == VariantTypeNull)
