@@ -26,6 +26,8 @@
 #include "utils/log.h"
 #include "windowing/GraphicContext.h"
 #include "windowing/WinSystem.h"
+#include "guilib/GUIComponent.h"
+#include "guilib/StereoscopicsManager.h"
 
 #include <memory>
 #include <mutex>
@@ -680,8 +682,12 @@ RESOLUTION CRenderManager::GetResolution()
     return res;
 
   if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOPLAYER_ADJUSTREFRESHRATE) != ADJUST_REFRESHRATE_OFF)
-    res = CResolutionUtils::ChooseBestResolution(m_fps, m_picture.iWidth, m_picture.iHeight,
-                                                 !m_picture.stereoMode.empty());
+
+  {
+    RENDER_STEREO_MODE rsm = CServiceBroker::GetGUI()->GetStereoscopicsManager().GetStereoMode();
+    uint32_t mode3dFlags = CServiceBroker::GetWinSystem()->GetGfxContext().ConvertRenderStereoModeToMode3dFlags(rsm);
+    res = CResolutionUtils::ChooseBestResolution(m_fps, m_width, m_height, mode3dFlags);
+  }
 
   return res;
 }
@@ -884,8 +890,10 @@ void CRenderManager::UpdateResolution()
     {
       if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOPLAYER_ADJUSTREFRESHRATE) != ADJUST_REFRESHRATE_OFF && m_fps > 0.0f)
       {
-        RESOLUTION res = CResolutionUtils::ChooseBestResolution(
-            m_fps, m_picture.iWidth, m_picture.iHeight, !m_picture.stereoMode.empty());
+        RENDER_STEREO_MODE rsm = CServiceBroker::GetGUI()->GetStereoscopicsManager().GetStereoMode();
+        uint32_t mode3dFlags = CServiceBroker::GetWinSystem()->GetGfxContext().ConvertRenderStereoModeToMode3dFlags(rsm);
+        RESOLUTION res = CResolutionUtils::ChooseBestResolution(m_fps, m_width, m_height, mode3dFlags);
+
         CServiceBroker::GetWinSystem()->GetGfxContext().SetVideoResolution(res, false);
         UpdateLatencyTweak();
         if (m_pRenderer)

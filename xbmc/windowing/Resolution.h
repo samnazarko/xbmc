@@ -10,6 +10,9 @@
 
 #include <stdint.h>
 #include <string>
+#include <vector>
+
+class CVariant;
 
 typedef int DisplayMode;
 #define DM_WINDOWED     -1
@@ -120,7 +123,7 @@ public:
 class CResolutionUtils
 {
 public:
-  static RESOLUTION ChooseBestResolution(float fps, int width, int height, bool is3D);
+  static RESOLUTION ChooseBestResolution(float fps, int width, int height, const uint32_t modeflag3d);
   static bool HasWhitelist();
   static void PrintWhitelist();
 
@@ -132,7 +135,8 @@ public:
   static void GetMaxAllowedScreenResolution(unsigned int& width, unsigned int& height);
 
 protected:
-  static void FindResolutionFromWhitelist(float fps, int width, int height, bool is3D, RESOLUTION &resolution);
-  static bool FindResolutionFromOverride(float fps, int width, bool is3D, RESOLUTION &resolution, float& weight, bool fallback);
+  static void FindResolutionFromWhitelist(float fps, int width, int height, uint32_t modeflag3d, RESOLUTION &resolution);
+  static bool FindResolutionFromOverride(float fps, int width, uint32_t modeflag3d, RESOLUTION &resolution, float& weight, bool fallback);
+  static bool Find3dResolution(float fps, int width, int height, uint32_t modeflag3d, std::vector<CVariant> &indexList, RESOLUTION &resolution);
   static float RefreshWeight(float refresh, float fps);
 };

@@ -68,16 +68,16 @@ float RESOLUTION_INFO::DisplayRatio() const
   return iWidth * fPixelRatio / iHeight;
 }
 
-RESOLUTION CResolutionUtils::ChooseBestResolution(float fps, int width, int height, bool is3D)
+RESOLUTION CResolutionUtils::ChooseBestResolution(float fps, int width, int height, const uint32_t modeflag3d)
 {
   RESOLUTION res = CServiceBroker::GetWinSystem()->GetGfxContext().GetVideoResolution();
   float weight = 0.0f;
 
-  if (!FindResolutionFromOverride(fps, width, is3D, res, weight, false)) //find a refreshrate from overrides
+  if (!FindResolutionFromOverride(fps, width, modeflag3d, res, weight, false)) //find a refreshrate from overrides
   {
-    if (!FindResolutionFromOverride(fps, width, is3D, res, weight, true)) //if that fails find it from a fallback
+    if (!FindResolutionFromOverride(fps, width, modeflag3d, res, weight, true)) //if that fails find it from a fallback
     {
-      FindResolutionFromWhitelist(fps, width, height, is3D, res); //find a refreshrate from whitelist
+      FindResolutionFromWhitelist(fps, width, height, modeflag3d, res); //find a refreshrate from whitelist
     }
   }
 
@@ -91,12 +91,12 @@ static inline bool ModeSort(CVariant i, CVariant j)
   return (i < j);
 }
 
-void CResolutionUtils::FindResolutionFromWhitelist(float fps, int width, int height, bool is3D, RESOLUTION &resolution)
+void CResolutionUtils::FindResolutionFromWhitelist(float fps, int width, int height, uint32_t modeflag3d, RESOLUTION &resolution)
 {
   RESOLUTION_INFO curr = CServiceBroker::GetWinSystem()->GetGfxContext().GetResInfo(resolution);
   CLog::Log(LOGINFO,
             "[WHITELIST] Searching the whitelist for: width: {}, height: {}, fps: {:0.3f}, 3D: {}",
-            width, height, fps, is3D ? "true" : "false");
+            width, height, fps, modeflag3d ? "true" : "false");
 
   std::vector<CVariant> indexList = CServiceBroker::GetSettingsComponent()->GetSettings()->GetList(CSettings::SETTING_VIDEOSCREEN_WHITELIST);
 
@@ -114,7 +114,7 @@ void CResolutionUtils::FindResolutionFromWhitelist(float fps, int width, int hei
     {
       info = CServiceBroker::GetWinSystem()->GetGfxContext().GetResInfo(c);
       if (info.iScreenHeight >= curr.iScreenHeight && info.iScreenWidth >= curr.iScreenWidth &&
-          (info.dwFlags & D3DPRESENTFLAG_MODEMASK) == (curr.dwFlags & D3DPRESENTFLAG_MODEMASK))
+          (!(info.dwFlags & D3DPRESENTFLAG_MODEMASK) || (info.dwFlags & modeflag3d)))
       {
         // do not add half refreshrates (25, 29.97 by default) as kodi cannot cope with
         // them on playback start. Especially interlaced content is not properly detected
@@ -130,6 +130,13 @@ void CResolutionUtils::FindResolutionFromWhitelist(float fps, int width, int hei
   }
 
   std::sort(indexList.begin(), indexList.end(), ModeSort);
+
+  if (modeflag3d)
+  {
+    if (Find3dResolution(fps, width, height, modeflag3d, indexList, resolution))
+      return;
+	CLog::Log(LOGDEBUG, "[WHITELIST 3D] No match for a 3D resolution");
+  }
 
   CLog::Log(LOGDEBUG, "[WHITELIST] Searching for an exact resolution with an exact refresh rate");
 
@@ -347,10 +354,19 @@ void CResolutionUtils::FindResolutionFromWhitelist(float fps, int width, int hei
               "[WHITELIST] No match for a desktop resolution with a 3:2 pulldown refresh rate");
   }
 
+  if (!(modeflag3d & D3DPRESENTFLAG_MODE3DMASK) && (curr.dwFlags & D3DPRESENTFLAG_MODE3DMASK))
+  {
+    CLog::Log(LOGDEBUG, "[WHITELIST] No resolution matched, use RES_DESKTOP as 2D resolution fallback");
+    // we're searching for a 2D resolution but the current one is 3D, so we need to use a 2D
+    // fallback now
+    resolution = RES_DESKTOP;
+    return;
+  }
+
   CLog::Log(LOGDEBUG, "[WHITELIST] No resolution matched");
 }
 
-bool CResolutionUtils::FindResolutionFromOverride(float fps, int width, bool is3D, RESOLUTION &resolution, float& weight, bool fallback)
+bool CResolutionUtils::FindResolutionFromOverride(float fps, int width, uint32_t modeflag3d, RESOLUTION &resolution, float& weight, bool fallback)
 {
   RESOLUTION_INFO curr = CServiceBroker::GetWinSystem()->GetGfxContext().GetResInfo(resolution);
 
@@ -501,4 +517,85 @@ void CResolutionUtils::GetMaxAllowedScreenResolution(unsigned int& width, unsign
 
   width = maxWidth;
   height = maxHeight;
+}
+
+bool CResolutionUtils::Find3dResolution(float fps, int width, int height, uint32_t modeflag3d, std::vector<CVariant> &indexList, RESOLUTION &resolution)
+{
+  CLog::Log(LOGDEBUG, "[WHITELIST 3D] Searching for an exact 3D resolution with an exact refresh rate");
+
+  for (const auto &mode : indexList)
+  {
+	RESOLUTION i = CDisplaySettings::GetInstance().GetResFromString(mode.asString());
+	const RESOLUTION_INFO info = CServiceBroker::GetWinSystem()->GetGfxContext().GetResInfo(i);
+
+	// allow resolutions that are exact and have the correct refresh rate
+	// allow macroblock alignement / padding errors (e.g. 1080 mod16 == 8)
+	if (((height == info.iScreenHeight && width <= info.iScreenWidth + 8) ||
+		 (width == info.iScreenWidth && height <= info.iScreenHeight + 8)) &&
+		 (info.dwFlags & modeflag3d) &&
+		MathUtils::FloatEquals(info.fRefreshRate, fps, 0.01f))
+	{
+	  CLog::Log(LOGDEBUG, "[WHITELIST 3D] Matched an exact 3D resolution with an exact refresh rate {} ({})", info.strMode, i);
+	  resolution = i;
+	  return true;
+	}
+  }
+
+  CLog::Log(LOGDEBUG, "[WHITELIST 3D] No match for an exact 3D resolution with an exact refresh rate, searching for double refresh rate now");
+
+  for (const auto &mode : indexList)
+  {
+	RESOLUTION i = CDisplaySettings::GetInstance().GetResFromString(mode.asString());
+	const RESOLUTION_INFO info = CServiceBroker::GetWinSystem()->GetGfxContext().GetResInfo(i);
+
+	// allow resolutions that are exact and have the double refresh rate
+	// allow macroblock alignement / padding errors (e.g. 1080 mod16 == 8)
+	if (((height == info.iScreenHeight && width <= info.iScreenWidth + 8) ||
+		 (width == info.iScreenWidth && height <= info.iScreenHeight + 8)) &&
+		 (info.dwFlags & modeflag3d) &&
+		MathUtils::FloatEquals(info.fRefreshRate, fps * 2, 0.01f))
+	{
+	  CLog::Log(LOGDEBUG, "[WHITELIST 3D] Matched an exact 3D resolution with double refresh rate {} ({})", info.strMode, i);
+	  resolution = i;
+	  return true;
+	}
+  }
+
+  CLog::Log(LOGDEBUG, "[WHITELIST 3D] No match for an exact 3D resolution with double refresh rate, searching for higher resolution with exact refresh rate now");
+
+  for (const auto &mode : indexList)
+  {
+	RESOLUTION i = CDisplaySettings::GetInstance().GetResFromString(mode.asString());
+	const RESOLUTION_INFO info = CServiceBroker::GetWinSystem()->GetGfxContext().GetResInfo(i);
+
+	// allow resolutions that are higher and have the correct refresh rate
+	if ((height <= info.iScreenHeight || width <= info.iScreenWidth) &&
+		 (info.dwFlags & modeflag3d) &&
+		MathUtils::FloatEquals(info.fRefreshRate, fps, 0.01f))
+	{
+	  CLog::Log(LOGDEBUG, "[WHITELIST 3D] Matched a higher 3D resolution with exact refresh rate {} ({})", info.strMode, i);
+	  resolution = i;
+	  return true;
+	}
+  }
+
+  CLog::Log(LOGDEBUG, "[WHITELIST 3D] No match for a higher 3D resolution with exact refresh rate, searching for higher resolution with double refresh rate now");
+
+  for (const auto &mode : indexList)
+  {
+	RESOLUTION i = CDisplaySettings::GetInstance().GetResFromString(mode.asString());
+	const RESOLUTION_INFO info = CServiceBroker::GetWinSystem()->GetGfxContext().GetResInfo(i);
+
+	// allow resolutions that are higher and have the double refresh rate
+	if ((height <= info.iScreenHeight || width <= info.iScreenWidth) &&
+		 (info.dwFlags & modeflag3d) &&
+		MathUtils::FloatEquals(info.fRefreshRate, fps * 2, 0.01f))
+	{
+	  CLog::Log(LOGDEBUG, "[WHITELIST 3D] Matched a higher 3D resolution with double refresh rate {} ({})", info.strMode, i);
+	  resolution = i;
+	  return true;
+	}
+  }
+
+  return false;
 }
