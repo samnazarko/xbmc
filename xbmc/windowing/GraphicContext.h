@@ -88,7 +88,6 @@ public:
 
   void Flip(bool rendered, bool videoLayer);
 
-  // gfx context interface
   int GetWidth() const;
   int GetHeight() const;
   bool SetViewPort(float fx, float fy , float fwidth, float fheight, bool intersectPrevious = false);
@@ -107,6 +106,9 @@ public:
   void ApplyStateBlock();
   void Clear(UTILS::COLOR::Color color = 0);
   void GetAllowedResolutions(std::vector<RESOLUTION> &res);
+  uint32_t ConvertRenderStereoModeToMode3dFlags(RENDER_STEREO_MODE stereo_mode) const;
+  RENDER_STEREO_MODE ConvertMode3dFlagsToRenderStereoMode(uint32_t mode3dFlags) const;
+  RENDER_STEREO_MODE GetRenderStereoModeFromResolution(RESOLUTION resolution) const;
 
   /* \brief Get UI scaling information from a given resolution to the screen resolution.
    Takes account of overscan and UI zooming.

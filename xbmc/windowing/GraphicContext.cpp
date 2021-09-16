@@ -389,6 +389,36 @@ bool CGraphicContext::IsValidResolution(RESOLUTION res)
   return false;
 }
 
+uint32_t CGraphicContext::ConvertRenderStereoModeToMode3dFlags(RENDER_STEREO_MODE stereo_mode) const
+{
+  if (stereo_mode == RENDER_STEREO_MODE_SPLIT_HORIZONTAL)
+    return D3DPRESENTFLAG_MODE3DTB;
+  else if (stereo_mode == RENDER_STEREO_MODE_SPLIT_VERTICAL)
+    return D3DPRESENTFLAG_MODE3DSBS;
+  else if (stereo_mode == RENDER_STEREO_MODE_HARDWAREBASED)
+    return D3DPRESENTFLAG_MODE3DFP;
+
+  return 0;
+}
+
+RENDER_STEREO_MODE CGraphicContext::ConvertMode3dFlagsToRenderStereoMode(uint32_t mode3dFlags) const
+{
+  if (mode3dFlags & D3DPRESENTFLAG_MODE3DTB)
+    return RENDER_STEREO_MODE_SPLIT_HORIZONTAL;
+  else if (mode3dFlags & D3DPRESENTFLAG_MODE3DSBS)
+    return RENDER_STEREO_MODE_SPLIT_VERTICAL;
+  else if (mode3dFlags & D3DPRESENTFLAG_MODE3DFP)
+    return RENDER_STEREO_MODE_HARDWAREBASED;
+
+  return RENDER_STEREO_MODE_OFF;
+}
+
+RENDER_STEREO_MODE CGraphicContext::GetRenderStereoModeFromResolution(RESOLUTION resolution) const
+{
+  RESOLUTION_INFO info = GetResInfo(resolution);
+  return ConvertMode3dFlagsToRenderStereoMode(info.dwFlags);
+}
+
 // call SetVideoResolutionInternal and ensure its done from mainthread
 void CGraphicContext::SetVideoResolution(RESOLUTION res, bool forceUpdate)
 {
