@@ -542,24 +542,6 @@ void CDisplaySettings::AddResolutionInfo(const RESOLUTION_INFO &resolution)
   std::unique_lock<CCriticalSection> lock(m_critical);
   RESOLUTION_INFO res(resolution);
 
-  if((res.dwFlags & D3DPRESENTFLAG_MODE3DTB) == 0)
-  {
-    /* add corrections for some special case modes frame packing modes */
-
-    if(res.iScreenWidth  == 1920
-    && res.iScreenHeight == 2205)
-    {
-      res.iBlanking = 45;
-      res.dwFlags  |= D3DPRESENTFLAG_MODE3DTB;
-    }
-
-    if(res.iScreenWidth  == 1280
-    && res.iScreenHeight == 1470)
-    {
-      res.iBlanking = 30;
-      res.dwFlags  |= D3DPRESENTFLAG_MODE3DTB;
-    }
-  }
   m_resolutions.push_back(res);
 }
 

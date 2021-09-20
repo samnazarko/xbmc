@@ -402,6 +402,9 @@ void CWinSystemAmlogic::Update3dResolutions()
     else if (resolutions3d[i].dwFlags & D3DPRESENTFLAG_MODE3DFP)
       m3d = "FP";
 
+    CServiceBroker::GetWinSystem()->GetGfxContext().ResetOverscan(resolutions3d[i]);
+    CDisplaySettings::GetInstance().AddResolutionInfo(resolutions3d[i]);
+
     CLog::Log(LOGINFO, "Found 3D resolution {} x {} with {} x {}{} @ {:f} ({})\n",
       resolutions3d[i].iWidth,
       resolutions3d[i].iHeight,
