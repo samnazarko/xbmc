@@ -61,7 +61,7 @@ protected:
   void StartMonitorHWEvent();
   void StopMonitorHWEvent();
   std::thread m_monitorThread;
-  const RESOLUTION_INFO &Choose3dRes(RENDER_STEREO_MODE stereo_mode, const RESOLUTION_INFO &res);
+  void CalculateFrameBufferResolution(const RESOLUTION_INFO &res, int &width, int &height);
 
 private:
   std::vector<RESOLUTION_INFO> resolutions3d;

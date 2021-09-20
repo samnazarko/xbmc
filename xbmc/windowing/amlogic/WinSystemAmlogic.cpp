@@ -234,57 +234,9 @@ bool CWinSystemAmlogic::DestroyWindowSystem()
   return true;
 }
 
-const RESOLUTION_INFO &CWinSystemAmlogic::Choose3dRes(RENDER_STEREO_MODE stereo_mode, const RESOLUTION_INFO &res)
+void CWinSystemAmlogic::CalculateFrameBufferResolution(const RESOLUTION_INFO &res, int &width, int &height)
 {
-  if (stereo_mode != RENDER_STEREO_MODE_SPLIT_HORIZONTAL
-      && stereo_mode != RENDER_STEREO_MODE_SPLIT_VERTICAL
-      && stereo_mode != RENDER_STEREO_MODE_HARDWAREBASED)
-  {
-    // unsupported (3D) mode or no 3D mode at all
-    return res;
-  }
-
-  uint32_t flags3d = stereo_mode == RENDER_STEREO_MODE_SPLIT_VERTICAL ? D3DPRESENTFLAG_MODE3DSBS : D3DPRESENTFLAG_MODE3DTB;
-  flags3d |= (res.dwFlags&D3DPRESENTFLAG_INTERLACED);
-
-  CLog::Log(LOGDEBUG, "Search for exact 3D mode match for mode {}", res.strMode);
-
-  for (size_t i = 0; i < resolutions3d.size(); i++)
-  {
-    if ((stereo_mode == RENDER_STEREO_MODE_HARDWAREBASED && resolutions3d[i].iBlanking == 0) ||
-        (stereo_mode != RENDER_STEREO_MODE_HARDWAREBASED && resolutions3d[i].iBlanking != 0))
-      continue;
-
-    if ((resolutions3d[i].dwFlags&D3DPRESENTFLAG_MODEMASK) == flags3d
-        && resolutions3d[i].iScreenWidth == res.iScreenWidth
-        && resolutions3d[i].iScreenHeight == res.iScreenHeight
-        && resolutions3d[i].fRefreshRate == res.fRefreshRate)
-    {
-      CLog::Log(LOGDEBUG, "exact match found: {}", resolutions3d[i].strMode);
-      return resolutions3d[i];
-    }
-  }
-
-  CLog::Log(LOGDEBUG, "Search for 3D mode matching resolution");
-
-  for (size_t i = 0; i < resolutions3d.size(); i++)
-  {
-	if ((stereo_mode == RENDER_STEREO_MODE_HARDWAREBASED && resolutions3d[i].iBlanking == 0) ||
-        (stereo_mode != RENDER_STEREO_MODE_HARDWAREBASED && resolutions3d[i].iBlanking != 0))
-      continue;
-
-    if ((resolutions3d[i].dwFlags&D3DPRESENTFLAG_MODEMASK) == flags3d
-        && resolutions3d[i].iScreenWidth == res.iScreenWidth
-        && resolutions3d[i].iScreenHeight == res.iScreenHeight)
-    {
-      CLog::Log(LOGDEBUG, "matching resolution found: {}", resolutions3d[i].strMode);
-      return resolutions3d[i];
-    }
-  }
-
-   CLog::Log(LOGDEBUG, "No matching 3D mode found, using {}", res.strMode);
-
-  return res;
+	aml_calc_framebuffer_resolution(res, width, height);
 }
 
 bool CWinSystemAmlogic::CreateNewWindow(const std::string& name,
@@ -331,9 +283,12 @@ bool CWinSystemAmlogic::CreateNewWindow(const std::string& name,
   m_bFullScreen = fullScreen;
 
 #ifdef _FBDEV_WINDOW_H_
+  int fbWidth, fbHeight;
+  CalculateFrameBufferResolution(res, fbWidth, fbHeight);
+
   fbdev_window *nativeWindow = new fbdev_window;
-  nativeWindow->width = res.iWidth;
-  nativeWindow->height = res.iHeight;
+  nativeWindow->width = (ushort) fbWidth;
+  nativeWindow->height = (ushort) fbHeight;
   m_nativeWindow = static_cast<EGLNativeWindowType>(nativeWindow);
 #endif
 
@@ -405,7 +360,7 @@ void CWinSystemAmlogic::Update3dResolutions()
     CServiceBroker::GetWinSystem()->GetGfxContext().ResetOverscan(resolutions3d[i]);
     CDisplaySettings::GetInstance().AddResolutionInfo(resolutions3d[i]);
 
-    CLog::Log(LOGINFO, "Found 3D resolution {} x {} with {} x {}{} @ {:f} ({})\n",
+    CLog::Log(LOGINFO, "Found 3D resolution {} x {} with {} x {}{} @ {:f} ({})",
       resolutions3d[i].iWidth,
       resolutions3d[i].iHeight,
       resolutions3d[i].iScreenWidth,

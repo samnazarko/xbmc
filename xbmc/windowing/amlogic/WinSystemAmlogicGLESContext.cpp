@@ -104,12 +104,13 @@ bool CWinSystemAmlogicGLESContext::ResizeWindow(int newWidth, int newHeight, int
 
 bool CWinSystemAmlogicGLESContext::SetFullScreen(bool fullScreen, RESOLUTION_INFO& res, bool blankOtherDisplays)
 {
-  RENDER_STEREO_MODE stereo_mode = CServiceBroker::GetWinSystem()->GetGfxContext().GetStereoMode();
-  RESOLUTION_INFO myRes = Choose3dRes(stereo_mode, res);
+  CreateNewWindow("", fullScreen, res);
 
-  CreateNewWindow("", fullScreen, myRes);
+  int fbWidth, fbHeight;
+  CalculateFrameBufferResolution(res, fbWidth, fbHeight);
 
-  CRenderSystemGLES::ResetRenderSystem(myRes.iWidth, myRes.iHeight);
+  CRenderSystemGLES::ResetRenderSystem(fbWidth, fbHeight);
+
   return true;
 }
 
