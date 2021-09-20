@@ -463,22 +463,22 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
 
     if (res->iScreenWidth == 1920)
     {
-      res->iHeight = 2205;
       res->iBlanking = 45;
     }
 
     if (res->iScreenWidth == 1280)
     {
-      res->iHeight = 1470;
       res->iBlanking = 30;
     }
 
     res->strId = StringUtils::Format("{}fp{}hz", res->iScreenHeight, rrate);
-    res->dwFlags |= D3DPRESENTFLAG_MODE3DTB;
+    res->dwFlags |= D3DPRESENTFLAG_MODE3DFP;
   }
 
   if (fromMode.find("TopBottom") != std::string::npos)
   {
+    res->iHeight         /= 2;
+    res->iSubtitles      /= 2;
     res->fPixelRatio     /= 2;
     res->iBlanking        = 0;
     res->dwFlags         |= D3DPRESENTFLAG_MODE3DTB;
@@ -486,11 +486,11 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
 
   if (fromMode.find("SidebySide") != std::string::npos)
   {
+    res->iWidth          /= 2;
     res->fPixelRatio     *= 2;
     res->iBlanking        = 0;
     res->dwFlags         |= D3DPRESENTFLAG_MODE3DSBS;
   }
-
 
   return res->iWidth > 0 && res->iHeight> 0;
 }
@@ -762,9 +762,23 @@ static bool isMaliBug()
   return false;
 }
 
+void aml_calc_framebuffer_resolution(const RESOLUTION_INFO &res, int &width, int &height)
+{
+  width = res.iWidth;
+  height = res.iHeight;
+
+  if (res.dwFlags & (D3DPRESENTFLAG_MODE3DTB | D3DPRESENTFLAG_MODE3DFP))
+    height = res.iHeight * 2 + res.iBlanking;
+  else if (res.dwFlags & (D3DPRESENTFLAG_MODE3DSBS))
+    width = res.iWidth * 2 + res.iBlanking;
+}
+
 void aml_set_framebuffer_resolution(const RESOLUTION_INFO &res, std::string framebuffer_name)
 {
-  aml_set_framebuffer_resolution(res.iWidth, res.iHeight, framebuffer_name);
+  int fbWidth, fbHeight;
+
+  aml_calc_framebuffer_resolution(res, fbWidth, fbHeight);
+  aml_set_framebuffer_resolution(fbWidth, fbHeight, framebuffer_name);
 }
 
 void aml_set_framebuffer_resolution(int width, int height, std::string framebuffer_name)
