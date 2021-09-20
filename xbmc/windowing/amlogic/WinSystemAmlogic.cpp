@@ -374,6 +374,8 @@ static std::string ModeFlagsToString(unsigned int flags, bool identifier)
     res += "sbs";
   else if(flags & D3DPRESENTFLAG_MODE3DTB)
     res += "tab";
+  else if(flags & D3DPRESENTFLAG_MODE3DFP)
+    res += "fp";
   else if(identifier)
     res += "std";
   return res;
@@ -389,11 +391,16 @@ void CWinSystemAmlogic::Update3dResolutions()
 
   for (size_t i = 0; i < resolutions3d.size(); i++)
   {
+	if (resolutions3d[i].dwFlags & D3DPRESENTFLAG_INTERLACED) // ignore interlaced 3D resolutions
+	  continue;
+
     std::string m3d = "<unknown>";
     if (resolutions3d[i].dwFlags & D3DPRESENTFLAG_MODE3DSBS)
       m3d = "SBS";
     else if (resolutions3d[i].dwFlags & D3DPRESENTFLAG_MODE3DTB)
-      m3d = resolutions3d[i].iBlanking ? "FP" : "TAB";
+      m3d = "TAB";
+    else if (resolutions3d[i].dwFlags & D3DPRESENTFLAG_MODE3DFP)
+      m3d = "FP";
 
     CLog::Log(LOGINFO, "Found 3D resolution {} x {} with {} x {}{} @ {:f} ({})\n",
       resolutions3d[i].iWidth,

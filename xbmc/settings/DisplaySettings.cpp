@@ -74,6 +74,8 @@ static std::string ModeFlagsToString(unsigned int flags, bool identifier)
     res += "sbs";
   else if(flags & D3DPRESENTFLAG_MODE3DTB)
     res += "tab";
+  else if(flags & D3DPRESENTFLAG_MODE3DFP)
+    res += "fp";
   else if(identifier)
     res += "std";
   return res;
@@ -704,6 +706,8 @@ RESOLUTION CDisplaySettings::GetResolutionFromString(const std::string &strResol
       flags |= D3DPRESENTFLAG_MODE3DSBS;
     else if(StringUtils::Mid(strResolution, 20,3) == "tab")
       flags |= D3DPRESENTFLAG_MODE3DTB;
+    else if(StringUtils::Mid(strResolution, 20, 2) == "fp")
+      flags |= D3DPRESENTFLAG_MODE3DFP;
 
     std::map<RESOLUTION, RESOLUTION_INFO> resolutionInfos;
     for (size_t resolution = RES_DESKTOP; resolution < CDisplaySettings::GetInstance().ResolutionInfoSize(); resolution++)
