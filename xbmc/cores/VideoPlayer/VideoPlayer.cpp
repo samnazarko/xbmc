@@ -3758,28 +3758,6 @@ bool CVideoPlayer::OpenVideoStream(CDVDStreamInfo& hint, bool reset)
   if (hint.flags & AV_DISPOSITION_ATTACHED_PIC)
     return false;
 
-  // set desired refresh rate
-  if (m_CurrentVideo.id < 0 && m_playerOptions.fullscreen &&
-      CServiceBroker::GetWinSystem()->GetGfxContext().IsFullScreenRoot() && hint.fpsrate != 0 &&
-      hint.fpsscale != 0)
-  {
-    if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOPLAYER_ADJUSTREFRESHRATE) != ADJUST_REFRESHRATE_OFF)
-    {
-      const double framerate = DVD_TIME_BASE / CDVDCodecUtils::NormalizeFrameduration(
-                                                   (double)DVD_TIME_BASE * hint.fpsscale /
-                                                   (hint.fpsrate * (hint.interlaced ? 2 : 1)));
-
-      CServiceBroker::GetGUI()->GetStereoscopicsManager().OnStreamChange();
-      RENDER_STEREO_MODE rsm = CServiceBroker::GetGUI()->GetStereoscopicsManager().GetStereoMode();
-      uint32_t mode3dFlags = CServiceBroker::GetWinSystem()->GetGfxContext().ConvertRenderStereoModeToMode3dFlags(rsm);
-
-      RESOLUTION res = CResolutionUtils::ChooseBestResolution(static_cast<float>(framerate), hint.width, hint.height, mode3dFlags);
-
-      CServiceBroker::GetWinSystem()->GetGfxContext().SetVideoResolution(res, false);
-      m_renderManager.TriggerUpdateResolution(framerate, hint.width, hint.height, hint.stereo_mode);
-    }
-  }
-
   IDVDStreamPlayer* player = GetStreamPlayer(m_CurrentVideo.player);
   if(player == nullptr)
     return false;
@@ -3792,6 +3770,24 @@ bool CVideoPlayer::OpenVideoStream(CDVDStreamInfo& hint, bool reset)
 
     if (!player->OpenStream(hint))
       return false;
+
+    // set desired refresh rate
+    if (m_playerOptions.fullscreen && CServiceBroker::GetWinSystem()->GetGfxContext().IsFullScreenRoot() &&
+        hint.fpsrate != 0 && hint.fpsscale != 0)
+    {
+      if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOPLAYER_ADJUSTREFRESHRATE) != ADJUST_REFRESHRATE_OFF)
+      {
+        double framerate = DVD_TIME_BASE / CDVDCodecUtils::NormalizeFrameduration((double)DVD_TIME_BASE * hint.fpsscale / hint.fpsrate);
+
+        CServiceBroker::GetGUI()->GetStereoscopicsManager().OnStreamChange();
+        RENDER_STEREO_MODE rsm = CServiceBroker::GetGUI()->GetStereoscopicsManager().GetStereoMode();
+        uint32_t mode3dFlags = CServiceBroker::GetWinSystem()->GetGfxContext().ConvertRenderStereoModeToMode3dFlags(rsm);
+
+        RESOLUTION res = CResolutionUtils::ChooseBestResolution(static_cast<float>(framerate), hint.width, hint.height, mode3dFlags);
+        CServiceBroker::GetWinSystem()->GetGfxContext().SetVideoResolution(res, false);
+        m_renderManager.TriggerUpdateResolution(framerate, hint.width, hint.height, hint.stereo_mode);
+      }
+    }
 
     player->SendMessage(std::make_shared<CDVDMsgBool>(CDVDMsg::GENERAL_PAUSE, m_displayLost), 1);
 
