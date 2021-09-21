@@ -14,6 +14,7 @@
 #include "application/ApplicationPlayer.h"
 #include "guilib/GUIComponent.h"
 #include "guilib/GUIWindowManager.h"
+#include "guilib/StereoscopicsManager.h"
 #include "guilib/TextureManager.h"
 #include "guilib/gui3d.h"
 #include "input/InputManager.h"
@@ -470,9 +471,18 @@ void CGraphicContext::SetVideoResolutionInternal(RESOLUTION res, bool forceUpdat
   int origScreenWidth = m_iScreenWidth;
   int origScreenHeight = m_iScreenHeight;
   float origFPSOverride = m_fFPSOverride;
+  RENDER_STEREO_MODE origStereoMode = m_stereoMode;
 
   UpdateInternalStateWithResolution(res);
   RESOLUTION_INFO info_org  = CDisplaySettings::GetInstance().GetResolutionInfo(res);
+
+  // Get render stereo mode from flags
+  m_stereoMode = ConvertMode3dFlagsToRenderStereoMode(info_org.dwFlags);
+  if (m_stereoMode == RENDER_STEREO_MODE_OFF
+	  && CServiceBroker::GetGUI() != nullptr && CServiceBroker::GetGUI()->GetStereoscopicsManager().GetStereoMode() != RENDER_STEREO_MODE_OFF) {
+    // Stereoscopics manager has asked for a 3D mode but we've got a 2D resolution => switch to mono
+    m_stereoMode = RENDER_STEREO_MODE_MONO;
+  }
 
   bool switched = false;
   if (CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_fullScreen)
@@ -509,6 +519,8 @@ void CGraphicContext::SetVideoResolutionInternal(RESOLUTION res, bool forceUpdat
     m_iScreenWidth = origScreenWidth;
     m_iScreenHeight = origScreenHeight;
     m_fFPSOverride = origFPSOverride;
+    m_stereoMode = origStereoMode;
+
     if (IsValidResolution(lastRes))
     {
       m_Resolution = lastRes;
@@ -1003,13 +1015,6 @@ const std::string& CGraphicContext::GetMediaDir() const
 void CGraphicContext::Flip(bool rendered, bool videoLayer)
 {
   CServiceBroker::GetRenderSystem()->PresentRender(rendered, videoLayer);
-
-  if(m_stereoMode != m_nextStereoMode)
-  {
-    m_stereoMode = m_nextStereoMode;
-    SetVideoResolution(GetVideoResolution(), true);
-    CServiceBroker::GetGUI()->GetWindowManager().SendMessage(GUI_MSG_NOTIFY_ALL, 0, 0, GUI_MSG_RENDERER_RESET);
-  }
 }
 
 void CGraphicContext::GetAllowedResolutions(std::vector<RESOLUTION> &res)
