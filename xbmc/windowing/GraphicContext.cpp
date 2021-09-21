@@ -443,6 +443,12 @@ void CGraphicContext::SetVideoResolutionInternal(RESOLUTION res, bool forceUpdat
     res = RES_DESKTOP;
   }
 
+  if (CServiceBroker::GetGUI() != nullptr && CServiceBroker::GetGUI()->GetStereoscopicsManager().GetStereoMode() != m_stereoMode)
+  {
+    // stereo mode has changed, so we do need to update now
+    forceUpdate = 1;
+  }
+
   // If we are switching to the same resolution and same window/full-screen, no need to do anything
   if (!forceUpdate && res == lastRes && m_bFullScreenRoot == CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_fullScreen)
   {
