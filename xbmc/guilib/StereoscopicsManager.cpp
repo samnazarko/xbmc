@@ -130,9 +130,59 @@ void CStereoscopicsManager::SetStereoMode(const RENDER_STEREO_MODE &mode)
   RENDER_STEREO_MODE currentMode = GetStereoMode();
   RENDER_STEREO_MODE applyMode = mode;
 
+  const auto& components = CServiceBroker::GetAppComponents();
+  const auto appPlayer = components.GetComponent<CApplicationPlayer>();
+
   // resolve automatic mode before applying
   if (mode == RENDER_STEREO_MODE_AUTO)
     applyMode = GetStereoModeOfPlayingVideo();
+
+  // Check if we're allowed to switch the stereo mode
+  if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOPLAYER_ADJUSTREFRESHRATE) == ADJUST_REFRESHRATE_OFF)
+  {
+    // mode switches are not allowed
+    if (currentMode == RENDER_STEREO_MODE_MONO || currentMode == RENDER_STEREO_MODE_OFF)
+    {
+      // we are in 2D mode
+      if (IsVideoStereoscopic())
+      {
+        // no mode switches allowed, but we've got a 3D video and are running in 2D then set the stereo mode to mono
+        applyMode = RENDER_STEREO_MODE_MONO;
+      }
+    }
+    else if (IsVideoStereoscopic())
+    {
+      // no mode switches allowed, and we've got a 3D video and are running in 3D => done
+      applyMode = currentMode;
+    }
+    else
+    {
+      // TODO: we're in 3D mode, the video is 2D and mode switching is not allowed,
+      // then we've a bit of bad luck because we can't do anything about it :-(
+      applyMode = currentMode;
+    }
+
+    CLog::Log(LOGDEBUG, "StereoscopicsManager: mode switching not allowed, using stereo mode {}", ConvertGuiStereoModeToString(applyMode));
+  }
+  else if (appPlayer->IsPlaying() && IsVideoStereoscopic())
+  {
+    // a 3D video is playing, let's check if we really support the requested stereoscopic mode
+    float fps = CServiceBroker::GetDataCacheCore().GetVideoFps();
+    int width = CServiceBroker::GetDataCacheCore().GetVideoWidth();
+    int height = CServiceBroker::GetDataCacheCore().GetVideoHeight();
+
+    // request a matching resolution
+    uint32_t mode3dFlags = CServiceBroker::GetWinSystem()->GetGfxContext().ConvertRenderStereoModeToMode3dFlags(applyMode);
+    RESOLUTION res = CResolutionUtils::ChooseBestResolution(static_cast<float>(fps), width, height, mode3dFlags);
+    RENDER_STEREO_MODE rsm = CServiceBroker::GetWinSystem()->GetGfxContext().GetRenderStereoModeFromResolution(res);
+
+    // check if we've got what we've requested
+    if (rsm != applyMode && rsm == RENDER_STEREO_MODE_OFF)
+    {
+      // nope, so we start as 2D
+      applyMode = RENDER_STEREO_MODE_MONO;
+    }
+  }
 
   if (applyMode != currentMode && applyMode >= RENDER_STEREO_MODE_OFF)
   {
