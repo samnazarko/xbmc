@@ -502,8 +502,7 @@ bool CPlayerController::OnAction(const CAction &action)
           for (const CVariant &mode : indexList)
           {
             auto res = CDisplaySettings::GetInstance().GetResFromString(mode.asString());
-            const RESOLUTION_INFO info = CServiceBroker::GetWinSystem()->GetGfxContext().GetResInfo(res);
-            dialog->Add(info.strMode);
+            dialog->Add(CDisplaySettings::GetInstance().GetStringFromRes(res));
             if (res == currentRes)
               current = idx;
             idx++;
