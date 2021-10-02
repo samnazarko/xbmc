@@ -502,7 +502,7 @@ bool CPlayerController::OnAction(const CAction &action)
           for (const CVariant &mode : indexList)
           {
             auto res = CDisplaySettings::GetInstance().GetResFromString(mode.asString());
-            dialog->Add(CDisplaySettings::GetInstance().GetStringFromRes(res));
+            dialog->Add(CDisplaySettings::GetInstance().GetDisplayStringFromRes(res));
             if (res == currentRes)
               current = idx;
             idx++;
