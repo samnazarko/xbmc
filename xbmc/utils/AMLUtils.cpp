@@ -148,6 +148,18 @@ bool aml_permissions()
     {
       CLog::Log(LOGERROR, "AML: no rw on /sys/module/amvideo/parameters/framepacking_support");
     }
+    if (!SysfsUtils::HasRW("/sys/module/amvideo/parameters/framepacking_width"))
+    {
+      CLog::Log(LOGERROR, "AML: no rw on /sys/module/amvideo/parameters/framepacking_width");
+    }
+    if (!SysfsUtils::HasRW("/sys/module/amvideo/parameters/framepacking_height"))
+    {
+      CLog::Log(LOGERROR, "AML: no rw on /sys/module/amvideo/parameters/framepacking_height");
+    }
+    if (!SysfsUtils::HasRW("/sys/module/amvideo/parameters/framepacking_blank"))
+    {
+      CLog::Log(LOGERROR, "AML: no rw on /sys/module/amvideo/parameters/framepacking_blank");
+    }
     if (!SysfsUtils::HasRW("/sys/module/amvdec_h264mvc/parameters/view_mode"))
     {
       CLog::Log(LOGERROR, "AML: no rw on /sys/module/amvdec_h264mvc/parameters/view_mode");
