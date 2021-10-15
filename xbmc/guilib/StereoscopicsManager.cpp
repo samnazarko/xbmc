@@ -179,8 +179,24 @@ void CStereoscopicsManager::SetStereoMode(const RENDER_STEREO_MODE &mode)
     // check if we've got what we've requested
     if (rsm != applyMode && rsm == RENDER_STEREO_MODE_OFF)
     {
-      // nope, so we start as 2D
-      applyMode = RENDER_STEREO_MODE_MONO;
+      // nope, check for possible fallbacks in case of MVC/FP playback
+      if (applyMode == RENDER_STEREO_MODE_HARDWAREBASED)
+      {
+        // check SBS fallback for MVC/FP output
+   	    res = CResolutionUtils::ChooseBestResolution(static_cast<float>(fps), width, height, D3DPRESENTFLAG_MODE3DSBS);
+   	    rsm = CServiceBroker::GetWinSystem()->GetGfxContext().GetRenderStereoModeFromResolution(res);
+   	    if (rsm != RENDER_STEREO_MODE_SPLIT_VERTICAL)
+   	    {
+          // check TAB fallback for MVC/FP output
+   	      res = CResolutionUtils::ChooseBestResolution(static_cast<float>(fps), width, height, D3DPRESENTFLAG_MODE3DTB);
+   	      rsm = CServiceBroker::GetWinSystem()->GetGfxContext().GetRenderStereoModeFromResolution(res);
+          if (rsm != RENDER_STEREO_MODE_SPLIT_HORIZONTAL)
+        	rsm = RENDER_STEREO_MODE_MONO;
+   	    }
+      	applyMode = rsm;
+      }
+      else
+        applyMode = RENDER_STEREO_MODE_MONO;
     }
   }
 
