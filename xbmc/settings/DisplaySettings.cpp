@@ -290,10 +290,21 @@ bool CDisplaySettings::OnSettingChanging(const std::shared_ptr<const CSetting>& 
     // in which case we don't show any prompt to the user
     if (oldRes != RES_WINDOW && newRes != RES_WINDOW && oldRes != newRes)
     {
-      if (!m_resolutionChangeAborted)
-      {
-        if (HELPERS::ShowYesNoDialogText(CVariant{13110}, CVariant{13111}, CVariant{""},
-                                         CVariant{""}, 15000) != DialogResponse::CHOICE_YES)
+        if (!m_resolutionChangeAborted)
+        {
+          /* If new resolution is 4K, then warn user this is not advised */
+          RESOLUTION_INFO resInfo = GetResolutionInfo(newRes);
+          if (resInfo.iScreenHeight >= 2160)
+          {
+            CLog::Log(LOGWARNING, "The user has chosen a UHD resolution. We will warn them not to apply this");
+            if (HELPERS::ShowYesNoDialogText(CVariant{13110}, CVariant{40064}, CVariant{""}, CVariant{""}, 15000) != DialogResponse::CHOICE_YES)
+            {
+              m_resolutionChangeAborted = true;
+              return false;
+            }
+        }
+        if (HELPERS::ShowYesNoDialogText(CVariant{13110}, CVariant{13111}, CVariant{""}, CVariant{""}, 15000) !=
+          DialogResponse::CHOICE_YES)
         {
           m_resolutionChangeAborted = true;
           return false;
