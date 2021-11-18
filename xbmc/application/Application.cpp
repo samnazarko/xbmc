@@ -1611,7 +1611,7 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
     if (! appPlayer->IsPlayingVideo()) {
       CDisplaySettings::GetInstance().ClearCustomResolutions();
       CServiceBroker::GetWinSystem()->UpdateResolutions();
-      CDisplaySettings::GetInstance().SetCurrentResolution(RES_DESKTOP, true);
+      CDisplaySettings::GetInstance().SetCurrentResolution(RES_DESKTOP);
       CServiceBroker::GetWinSystem()->GetGfxContext().SetVideoResolution(RES_DESKTOP, true);
       CLog::Log(LOGINFO, "Updated resolutions and set desktop");
     }
