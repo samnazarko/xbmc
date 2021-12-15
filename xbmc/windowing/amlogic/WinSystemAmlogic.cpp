@@ -459,11 +459,7 @@ void CWinSystemAmlogic::UpdateResolutions()
   // set RES_DESKTOP
   if (ResDesktop != RES_INVALID)
   {
-    CLog::Log(LOGINFO, "Found ({:d}x{:d}{}@{:f}) at {:d}, setting to RES_DESKTOP at {:d}",
-      resDesktop.iWidth, resDesktop.iHeight,
-      resDesktop.dwFlags & D3DPRESENTFLAG_INTERLACED ? "i" : "",
-      resDesktop.fRefreshRate,
-      (int)ResDesktop, (int)RES_DESKTOP);
+    CLog::Log(LOGINFO, "Found {} at {:d}, setting to RES_DESKTOP at {:d}", newRes, (int) ResDesktop, (int) RES_DESKTOP);
 
     CDisplaySettings::GetInstance().GetResolutionInfo(RES_DESKTOP) = CDisplaySettings::GetInstance().GetResolutionInfo(ResDesktop);
   }
