@@ -13,8 +13,12 @@ endif()
 
 if(AML_FOUND)
   list(APPEND SOURCES AMLCodec.cpp
+                      amlogic/LibAmcodec.cpp
                       DVDVideoCodecAmlogic.cpp)
   list(APPEND HEADERS AMLCodec.h
+                      amlogic/LibAmcodec.h
+                      amlogic/namespace.h
+                      amlogic/PosixFile.h
                       DVDVideoCodecAmlogic.h)
 endif()
 
