@@ -15,6 +15,7 @@ if(AML_FOUND)
   list(APPEND SOURCES amlogic/AMLCodecList.cpp
                       amlogic/AMLInsecureVideoCodec.cpp
                       amlogic/AMLVideoCodec.cpp
+                      amlogic/AV1Codec.cpp
                       amlogic/H264Codec.cpp
                       amlogic/HEVCCodec.cpp
                       amlogic/LibAmcodec.cpp
@@ -30,6 +31,7 @@ if(AML_FOUND)
                       amlogic/AMLVideoCodecConstants.h
                       amlogic/AMLVideoCodecDataTypes.h
                       amlogic/AMLVideoCodecInfo.h
+                      amlogic/AV1Codec.h
                       amlogic/H264Codec.h
                       amlogic/HEVCCodec.h
                       amlogic/LibAmcodec.h
