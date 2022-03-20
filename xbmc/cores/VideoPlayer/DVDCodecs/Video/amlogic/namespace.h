@@ -9,6 +9,7 @@
 #pragma once
 
 namespace amlogic {
+	class AMLCodecList;
 	class AMLInsecureVideoCodec;
 	class AMLVideoCodec;
 	class AMLVideoCodecInfo;
