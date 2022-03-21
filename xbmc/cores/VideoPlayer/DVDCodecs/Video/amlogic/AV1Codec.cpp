@@ -14,6 +14,10 @@
 
 #include "utils/log.h"
 #include "utils/AMLUtils.h"
+#include "utils/log.h"
+#include "settings/Settings.h"
+#include "ServiceBroker.h"
+#include "settings/SettingsComponent.h"
 
 using namespace amlogic;
 
@@ -75,8 +79,8 @@ public:
 			return false;
 		}
 
-		if (!aml_support_av1()) {
-			// AV-1 is only supported on Vero V or later
+		if (!aml_support_av1() || CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOPLAYER_USEAMCODECAV1)) {
+			// AV1 playback is either not supported or intentionally deactivated
 			return false;
 		}
 
