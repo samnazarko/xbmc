@@ -9,6 +9,7 @@
 #pragma once
 
 namespace amlogic {
+	// base classes
 	class AMLCodecList;
 	class AMLInsecureVideoCodec;
 	class AMLVideoCodec;
@@ -16,4 +17,7 @@ namespace amlogic {
 	class DllLibAmCodec;
 	class LibAmcodec;
 	class PosixFile;
+
+	// insecure decoders
+	class VC1Codec;
 }

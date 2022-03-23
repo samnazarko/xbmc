@@ -17,6 +17,7 @@ if(AML_FOUND)
                       amlogic/AMLInsecureVideoCodec.cpp
                       amlogic/AMLVideoCodec.cpp
                       amlogic/LibAmcodec.cpp
+                      amlogic/VC1Codec.cpp
                       DVDVideoCodecAmlogic.cpp)
   list(APPEND HEADERS AMLCodec.h
                       amlogic/AMLCodecList.h
@@ -28,6 +29,7 @@ if(AML_FOUND)
                       amlogic/LibAmcodec.h
                       amlogic/namespace.h
                       amlogic/PosixFile.h
+                      amlogic/VC1Codec.h
                       DVDVideoCodecAmlogic.h)
 endif()
 
