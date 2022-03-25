@@ -16,6 +16,7 @@ if(AML_FOUND)
                       amlogic/AMLCodecList.cpp
                       amlogic/AMLInsecureVideoCodec.cpp
                       amlogic/AMLVideoCodec.cpp
+                      amlogic/HEVCCodec.cpp
                       amlogic/LibAmcodec.cpp
                       amlogic/VC1Codec.cpp
                       DVDVideoCodecAmlogic.cpp)
@@ -26,6 +27,7 @@ if(AML_FOUND)
                       amlogic/AMLVideoCodecConstants.h
                       amlogic/AMLVideoCodecDataTypes.h
                       amlogic/AMLVideoCodecInfo.h
+                      amlogic/HEVCCodec.h
                       amlogic/LibAmcodec.h
                       amlogic/namespace.h
                       amlogic/PosixFile.h
