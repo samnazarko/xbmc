@@ -19,6 +19,7 @@ namespace amlogic {
 	class PosixFile;
 
 	// insecure decoders
+	class H264Codec;
 	class HEVCCodec;
 	class VC1Codec;
 }
