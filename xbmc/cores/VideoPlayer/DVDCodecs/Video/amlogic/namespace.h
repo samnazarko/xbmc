@@ -21,5 +21,6 @@ namespace amlogic {
 	// insecure decoders
 	class H264Codec;
 	class HEVCCodec;
+	class MPEG12Codec;
 	class VC1Codec;
 }
