@@ -19,6 +19,7 @@ if(AML_FOUND)
                       amlogic/H264Codec.cpp
                       amlogic/HEVCCodec.cpp
                       amlogic/LibAmcodec.cpp
+                      amlogic/MJPEGCodec.cpp
                       amlogic/MPEG12Codec.cpp
                       amlogic/MPEG4Codec.cpp
                       amlogic/VC1Codec.cpp
@@ -34,6 +35,7 @@ if(AML_FOUND)
                       amlogic/H264Codec.h
                       amlogic/HEVCCodec.h
                       amlogic/LibAmcodec.h
+                      amlogic/MJPEGCodec.h
                       amlogic/MPEG12Codec.h
                       amlogic/MPEG4Codec.h
                       amlogic/namespace.h
