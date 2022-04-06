@@ -15,11 +15,7 @@
 
 #include <set>
 #include <atomic>
-
-class CAMLCodec;
-struct mpeg2_sequence;
-class CBitstreamParser;
-class CBitstreamConverter;
+#include "amlogic/AMLVideoCodec.h"
 
 class CDVDVideoCodecAmlogic;
 
@@ -27,7 +23,7 @@ class CAMLVideoBuffer : public CVideoBuffer
 {
 public:
   CAMLVideoBuffer(int id) : CVideoBuffer(id) {};
-  void Set(CDVDVideoCodecAmlogic *codec, std::shared_ptr<CAMLCodec> amlcodec, int omxPts, int amlDuration, uint32_t bufferIndex)
+  void Set(CDVDVideoCodecAmlogic *codec, std::shared_ptr<amlogic::AMLVideoCodec> amlcodec, int omxPts, int amlDuration, uint32_t bufferIndex)
   {
     m_codec = codec;
     m_amlCodec = amlcodec;
@@ -37,7 +33,7 @@ public:
   }
 
   CDVDVideoCodecAmlogic* m_codec;
-  std::shared_ptr<CAMLCodec> m_amlCodec;
+  std::shared_ptr<amlogic::AMLVideoCodec> m_amlCodec;
   int m_omxPts, m_amlDuration;
   uint32_t m_bufferIndex;
 };
@@ -77,25 +73,16 @@ public:
 
 protected:
   void            Dispose(void);
-  void            FrameRateTracking(uint8_t *pData, int iSize, double dts, double pts);
-  //void            RemoveInfo(CDVDAmlogicInfo* info);
 
-  std::shared_ptr<CAMLCodec> m_Codec;
+  std::shared_ptr<amlogic::AMLVideoCodec> m_codec;
 
   const char     *m_pFormatName;
   VideoPicture m_videobuffer;
   bool            m_opened;
   int             m_codecControlFlags;
   CDVDStreamInfo  m_hints;
-  double          m_framerate;
-  int             m_video_rate;
   float           m_aspect_ratio;
-  mpeg2_sequence *m_mpeg2_sequence;
-  double          m_mpeg2_sequence_pts;
-  bool            m_has_keyframe;
 
-  CBitstreamParser *m_bitparser;
-  CBitstreamConverter *m_bitstream;
 private:
   std::shared_ptr<CAMLVideoBufferPool> m_videoBufferPool;
   static std::atomic<bool> m_InstanceGuard;

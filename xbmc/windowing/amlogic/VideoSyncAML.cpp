@@ -19,7 +19,7 @@
 #include <chrono>
 #include <thread>
 
-extern CEvent g_aml_sync_event;
+extern CEvent g_aml_codec_sync_event;
 
 CVideoSyncAML::CVideoSyncAML(CVideoReferenceClock *clock)
 : CVideoSync(clock)
@@ -54,7 +54,7 @@ void CVideoSyncAML::Run(CEvent& stopEvent)
   while (!stopEvent.Signaled() && !m_abort)
   {
     int countVSyncs(1);
-    if( !g_aml_sync_event.Wait(std::chrono::milliseconds(waittime)))
+    if( !g_aml_codec_sync_event.Wait(std::chrono::milliseconds(waittime)))
     {
       std::chrono::milliseconds elapsed(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - now).count());
       uint64_t curVBlanks = (m_fps * elapsed.count()) / 1000;

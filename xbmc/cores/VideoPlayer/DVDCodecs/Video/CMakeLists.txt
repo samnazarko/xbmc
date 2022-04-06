@@ -12,8 +12,7 @@ if(NOT ENABLE_EXTERNAL_LIBAV)
 endif()
 
 if(AML_FOUND)
-  list(APPEND SOURCES AMLCodec.cpp
-                      amlogic/AMLCodecList.cpp
+  list(APPEND SOURCES amlogic/AMLCodecList.cpp
                       amlogic/AMLInsecureVideoCodec.cpp
                       amlogic/AMLVideoCodec.cpp
                       amlogic/H264Codec.cpp
@@ -25,8 +24,7 @@ if(AML_FOUND)
                       amlogic/VC1Codec.cpp
                       amlogic/VP9Codec.cpp
                       DVDVideoCodecAmlogic.cpp)
-  list(APPEND HEADERS AMLCodec.h
-                      amlogic/AMLCodecList.h
+  list(APPEND HEADERS amlogic/AMLCodecList.h
                       amlogic/AMLInsecureVideoCodec.h
                       amlogic/AMLVideoCodec.h
                       amlogic/AMLVideoCodecConstants.h
