@@ -364,6 +364,8 @@ void AMLInsecureVideoCodec::setupVideoCodecParams(aml_generic_param &params) con
 	params.video_type   = m_am_private->video_format;
 	params.stream_type  = STREAM_TYPE_ES_VIDEO;
 	params.decoder_type = DECODER_TYPE_SINGLE_MODE;
+	params.video_path   = FRAME_BASE_PATH_AMVIDEO;
+	params.display_mode	= DISPLAY_MODE_AMVIDEO;
 	params.format       = m_am_private->video_codec_type;
 	params.width        = m_am_private->video_width;
 	params.height       = m_am_private->video_height;

@@ -24,20 +24,22 @@ typedef enum {
 } video_mode_3d_t;
 
 typedef struct {
-  bool           noblock;
-  int            video_pid;
-  int            video_type;
-  stream_type_t  stream_type;
-  decoder_type_t decoder_type;
-  unsigned int   format;
-  unsigned int   width;
-  unsigned int   height;
-  unsigned int   rate;
-  unsigned int   extra;
-  unsigned int   status;
-  unsigned int   ratio;
-  unsigned long long ratio64;
-  void *param;
+	bool noblock;
+	int video_pid;
+	int video_type;
+	enum FRAME_BASE_VIDEO_PATH video_path;
+	stream_type_t stream_type;
+	decoder_type_t decoder_type;
+	display_mode_type_t display_mode;
+	unsigned int format;
+	unsigned int width;
+	unsigned int height;
+	unsigned int rate;
+	unsigned int extra;
+	unsigned int status;
+	unsigned int ratio;
+	unsigned long long ratio64;
+	void *param;
 } aml_generic_param;
 
 class amlogic::LibAmcodec

@@ -184,8 +184,10 @@ int LibAmcodec::init(const aml_generic_param &gparam)
 	m_codec->noblock			= gparam.noblock;
 	m_codec->video_pid			= gparam.video_pid;
 	m_codec->video_type			= gparam.video_type;
+	m_codec->video_path			= gparam.video_path;
 	m_codec->stream_type		= gparam.stream_type;
 	m_codec->decoder_type		= gparam.decoder_type;
+	m_codec->display_mode		= gparam.display_mode;
 	m_codec->am_sysinfo.format	= gparam.format;
 	m_codec->am_sysinfo.width	= gparam.width;
 	m_codec->am_sysinfo.height	= gparam.height;
