@@ -1844,7 +1844,8 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
               m_pSSIF->SetH264StreamId(streamIdx);
               m_pSSIF->SetMVCStreamId(mvcIndex);
 
-              st->stereo_mode = "block_lr"; // can't tell whether lr or br
+              // use lr if we don't know what the stereo mode is
+              st->stereo_mode = stereoMode.empty() ? "block_lr" : stereoMode;
               mvcStream = m_pFormatContext->streams[m_pSSIF->GetMVCStreamId()];
             }
 
@@ -1867,7 +1868,9 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
           else if (CDVDCodecUtils::ProcessH264MVCExtradata(pStream->codecpar->extradata, pStream->codecpar->extradata_size))
           {
             pStream->codecpar->codec_tag = MKTAG('M', 'V', 'C', '1');
-            st->stereo_mode = "block_lr"; // can't tell whether lr or br
+
+            // use lr if we don't know what the stereo mode is
+            st->stereo_mode = stereoMode.empty() ? "block_lr" : stereoMode;
           }
         }
         break;
