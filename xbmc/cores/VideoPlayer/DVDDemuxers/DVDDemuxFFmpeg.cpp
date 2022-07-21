@@ -1835,7 +1835,10 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
               m_pSSIF->SetBluRay(pExt);
 
               st->stereo_mode = pExt && pExt->AreEyesFlipped() ? "block_rl" : "block_lr";
-              mvcStream = static_cast<CDemuxMVC*>(pExt->GetExtentionDemux())->GetAVStream();
+
+              CDemuxMVC *extDemux = static_cast<CDemuxMVC*>(pExt->GetExtentionDemux());
+              extDemux->SetStartTime(m_pFormatContext->start_time);
+              mvcStream = extDemux->GetAVStream();
             }
             else if (CDVDCodecUtils::GetH264MvcStreamIndex(m_pFormatContext, &mvcIndex))
             {

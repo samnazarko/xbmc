@@ -249,8 +249,12 @@ double CDemuxMVC::ConvertTimestamp(int64_t pts, int den, int num)
   double timestamp = (double)pts * num / den;
   double starttime = 0.0f;
 
-  /*if (m_MVCFormatContext->start_time != (int64_t)AV_NOPTS_VALUE)
-  starttime = (double)m_MVCFormatContext->start_time / AV_TIME_BASE;*/
+  CDVDInputStream::IMenus *menu = dynamic_cast<CDVDInputStream::IMenus*>(m_pInput);
+  if ((!menu || menu->GetSupportedMenuType() != MenuType::NATIVE) &&
+      m_pFormatContext->start_time != static_cast<int64_t>(AV_NOPTS_VALUE))
+  {
+    starttime = static_cast<double>(m_start_time) / AV_TIME_BASE;
+  }
 
   if (timestamp > starttime)
     timestamp -= starttime;

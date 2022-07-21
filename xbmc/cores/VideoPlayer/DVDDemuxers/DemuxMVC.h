@@ -44,6 +44,9 @@ public:
   virtual int GetNrOfStreams() const override { return 1; };
   virtual std::string GetFileName();
 
+  void SetStartTime(int64_t start_time) { m_start_time = start_time; }
+  int64_t GetStartTime() const { return m_start_time; }
+
   AVStream* GetAVStream();
   CDVDInputStream*    m_pInput;
 
@@ -54,4 +57,5 @@ private:
   AVIOContext        *m_ioContext = nullptr;
   AVFormatContext    *m_pFormatContext = nullptr;
   int                 m_nStreamIndex = -1;
+  int64_t			  m_start_time = 0;
 };

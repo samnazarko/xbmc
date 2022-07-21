@@ -1307,8 +1307,28 @@ bool CDVDInputStreamBluray::OpenNextStream()
   int clip = m_clipQueue.front();
   m_clipQueue.pop();
 
+  CDemuxMVC *pMVCDemux = dynamic_cast<CDemuxMVC*>(m_pMVCDemux);
+  if (!pMVCDemux) {
+    // either it's not a CDemuxMVC or it's 2D playback
+    CloseMVCDemux();
+    return OpenMVCDemux(clip);
+  }
+
+  // save start time for the next clip
+  int64_t start_time = pMVCDemux->GetStartTime();
+
   CloseMVCDemux();
-  return OpenMVCDemux(clip);
+
+  bool res = OpenMVCDemux(clip);
+  if (res) {
+    CDemuxMVC *nextDemux = dynamic_cast<CDemuxMVC*>(m_pMVCDemux);
+    if (nextDemux) {
+      // set start time for next clip
+      nextDemux->SetStartTime(start_time);
+    }
+  }
+
+  return res;
 }
 
 bool CDVDInputStreamBluray::OpenMVCDemux(int playItem)
