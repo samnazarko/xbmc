@@ -269,6 +269,7 @@ void AMLInsecureVideoCodec::getExtradata(const CDVDStreamInfo &hints, uint8_t *&
 
 	extradata = (uint8_t*)malloc(hints.extrasize);
 	extrasize = hints.extrasize;
+	memcpy(extradata, hints.extradata, hints.extrasize);
 }
 
 bool AMLInsecureVideoCodec::handleMasteringMetadata(const CDVDStreamInfo &hints) const

@@ -48,8 +48,6 @@ public:
 		} else {
 			size = newSize;
 		}
-
-		size = 0;
 	}
 
 	void free() {
