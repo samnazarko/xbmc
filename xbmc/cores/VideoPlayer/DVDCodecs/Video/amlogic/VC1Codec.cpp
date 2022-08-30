@@ -85,10 +85,73 @@ void VC1Codec::setupVideoCodecParams(aml_generic_param &params) const
 
 bool VC1Codec::prepareFrame(CDVDStreamInfo &hints, uint8_t *&data, size_t &size, double dts, double pts)
 {
-	if (m_processInfo.GetVideoSettings().m_InterlaceMethod == VS_INTERLACEMETHOD_NONE) {
-		SysfsUtils::SetInt("/sys/module/amvdec_vc1/parameters/force_prog", 1);
-	} else {
-		SysfsUtils::SetInt("/sys/module/amvdec_vc1/parameters/force_prog", 0);
+	char fcm;
+	std::string FCM;
+	bool interlaced = true;
+	unsigned int i;
+	int progressive, frameinterlace, hdr_start = 0;
+
+	if ( !((data) && (size >= 4)
+		&& (data[0] == 0) && (data[1] == 0)
+		&& (data[2] == 1) && (data[3] == 0xd || data[3] == 0xf)))
+	{
+		CLog::Log(LOGDEBUG, "VC1Codec::prepareFrame No start code at start of packet");
+		// nothing to do here
+		return true;
+	}
+
+	if (data[3] == 0xf && size > 9) {
+		interlaced = data[9] & 0x40;
+		// sequence start - look for the first frame
+		for (i=4; i < size - 5; i++)
+		{
+			if ((data[i] << 24 | data[i+1] << 16 | data[i+2] << 8 | data[i+3]) == 0x0000010d)
+			{
+				hdr_start = i + 4;
+				break;
+			}
+		}
+		if (hdr_start == 0)
+			return true;
+	}
+	else if (data[3] == 0xd  && size > 4)
+		hdr_start = 4;
+
+	fcm = 0;
+	if (interlaced)
+		fcm = data[hdr_start] >> 6;
+	if (fcm < 0x2)
+		fcm = 0;
+
+	if (fcm == 0)
+		FCM = "Progressive";
+	else if (fcm == 0x2)
+		FCM = "Frame interlace";
+	else
+		FCM = "Field interlace";
+
+	if (hdr_start > 4)
+	{
+		if ( SysfsUtils::GetInt("/sys/module/amvdec_vc1/parameters/force_frameint", frameinterlace))
+			return true;
+		if (m_processInfo.GetVideoSettings().m_InterlaceMethod == VS_INTERLACEMETHOD_DEINTERLACE)
+		{
+			progressive = 0;
+			FCM = "Field interlace";
+		}
+		else if (m_processInfo.GetVideoSettings().m_InterlaceMethod == VS_INTERLACEMETHOD_NONE)
+		{
+			progressive = 1;
+			FCM = "Frame interlace/progressive";
+		}
+		else
+			progressive = fcm < 3 ? 1 : 0;
+
+		if (frameinterlace != progressive)
+		{
+			SysfsUtils::SetInt("/sys/module/amvdec_vc1/parameters/force_frameint", progressive);
+			CLog::Log(LOGDEBUG, "VC1Codec::prepareFrame deinterlace changed to {}", FCM);
+		}
 	}
 
 	return true;
