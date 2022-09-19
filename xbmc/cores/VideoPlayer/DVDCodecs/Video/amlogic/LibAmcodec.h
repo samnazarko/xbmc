@@ -40,6 +40,8 @@ typedef struct {
 	unsigned int ratio;
 	unsigned long long ratio64;
 	void *param;
+	int config_len;
+	char *config;
 } aml_generic_param;
 
 class amlogic::LibAmcodec
@@ -74,6 +76,7 @@ public:
 	int setControlSyncThreshold(unsigned int threshold);
 	int setVideoDelayLimitedMs(int delay);
 	int set3dVideoMode(video_mode_3d_t mode);
+	int setHdr10pMetadata(unsigned char *metadata, int metadata_length);
 	void setNoBlockMode(bool noblock);
 	void setStreamType(stream_type_t type);
 };

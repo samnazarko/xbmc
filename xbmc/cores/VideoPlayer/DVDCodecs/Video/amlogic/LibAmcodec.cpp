@@ -52,6 +52,7 @@ public:
 
   virtual void codec_set_log_callback(void (*logf)(const char *, ...))=0;
   virtual int codec_set_3d_video_mode(codec_para_t *pcodec, video_mode_3d_t mode)=0;
+  virtual int codec_set_hdr10p_metadata(codec_para_t *pcodec, void *metadata, int metadata_size)=0;
 };
 
 class amlogic::DllLibAmCodec : public DllDynamic, LibamCodecInterface
@@ -84,6 +85,7 @@ class amlogic::DllLibAmCodec : public DllDynamic, LibamCodecInterface
 
   DEFINE_METHOD_FP(void, codec_set_log_callback,   (void (*)(const char *, ...)))
   DEFINE_METHOD2(int, codec_set_3d_video_mode, (codec_para_t *p1, video_mode_3d_t p2))
+  DEFINE_METHOD3(int, codec_set_hdr10p_metadata, (codec_para_t *p1, void *p2, int p3))
 
   BEGIN_METHOD_RESOLVE()
     RESOLVE_METHOD(codec_init)
@@ -112,6 +114,7 @@ class amlogic::DllLibAmCodec : public DllDynamic, LibamCodecInterface
 
     RESOLVE_METHOD_OPTIONAL_FP(codec_set_log_callback)
     RESOLVE_METHOD(codec_set_3d_video_mode)
+    RESOLVE_METHOD(codec_set_hdr10p_metadata)
   END_METHOD_RESOLVE()
 
 public:
@@ -188,6 +191,8 @@ int LibAmcodec::init(const aml_generic_param &gparam)
 	m_codec->stream_type		= gparam.stream_type;
 	m_codec->decoder_type		= gparam.decoder_type;
 	m_codec->display_mode		= gparam.display_mode;
+	m_codec->config				= gparam.config;
+	m_codec->config_len			= gparam.config_len;
 	m_codec->am_sysinfo.format	= gparam.format;
 	m_codec->am_sysinfo.width	= gparam.width;
 	m_codec->am_sysinfo.height	= gparam.height;
@@ -249,6 +254,11 @@ bool LibAmcodec::isVCodecBuffering() const
 int LibAmcodec::set3dVideoMode(video_mode_3d_t mode)
 {
 	return m_dll->codec_set_3d_video_mode(m_codec, mode);
+}
+
+int LibAmcodec::setHdr10pMetadata(unsigned char *metadata, int metadata_length)
+{
+	return m_dll->codec_set_hdr10p_metadata(m_codec, metadata, metadata_length);
 }
 
 int LibAmcodec::getVdecState(struct vdec_status &vs) const
