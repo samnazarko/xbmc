@@ -87,6 +87,7 @@ void HEVCCodec::setupVideoCodecParams(aml_generic_param &params) const
 {
 	AMLInsecureVideoCodec::setupVideoCodecParams(params);
 
+	params.decoder_type = DECODER_TYPE_FRAME_MODE;
 	params.param = (void*) EXTERNAL_PTS;
 	if (m_hints.ptsinvalid) {
 		params.param = (void*) (EXTERNAL_PTS | SYNC_OUTSIDE);
