@@ -358,6 +358,12 @@ void AMLInsecureVideoCodec::getDeinterlacingMethods(std::list<EINTERLACEMETHOD> 
 	methods.clear();
 }
 
+std::string AMLInsecureVideoCodec::getCodecPrivateConfiguration() const
+{
+	// nothing to configure yet
+	return "";
+}
+
 void AMLInsecureVideoCodec::setupVideoCodecParams(aml_generic_param &params) const
 {
 	params.noblock      = 0;
@@ -528,6 +534,13 @@ bool AMLInsecureVideoCodec::openDecoder(CDVDStreamInfo &hints)
 
 	// setup video codec parameters
 	setupVideoCodecParams(m_am_private->gcodec);
+
+	// setup private, codec specific configuration
+	std::string codecConfig = getCodecPrivateConfiguration();
+	if (!codecConfig.empty()) {
+		m_am_private->gcodec.config = const_cast<char*> (codecConfig.c_str());
+		m_am_private->gcodec.config_len = (int) codecConfig.size();
+	}
 
 	m_am_private->gcodec.param = (void *)((std::uintptr_t)m_am_private->gcodec.param | (m_am_private->video_rotation_degree << 16));
 

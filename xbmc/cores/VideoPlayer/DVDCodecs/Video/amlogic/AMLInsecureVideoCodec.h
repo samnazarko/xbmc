@@ -109,6 +109,7 @@ protected:
 	virtual void enableCustomMasterDataDisplay(bool enable = true) const;
 	virtual void getDeinterlacingMethods(std::list<EINTERLACEMETHOD> &methods) const;
 	virtual void setupVideoCodecParams(aml_generic_param &params) const;
+	virtual std::string getCodecPrivateConfiguration() const;
 
 	virtual int pre_header_feeding(am_private_t *para, am_packet_t *pkt) const;
 	virtual int set_header_info(am_private_t *para) const;
