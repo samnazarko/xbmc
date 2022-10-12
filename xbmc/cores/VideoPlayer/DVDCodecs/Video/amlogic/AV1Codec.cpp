@@ -133,6 +133,17 @@ void AV1Codec::setupVideoCodecParams(aml_generic_param &params) const
 	}
 }
 
+bool AV1Codec::handleMasteringMetadata(const CDVDStreamInfo &hints) const
+{
+	if (!AMLInsecureVideoCodec::handleMasteringMetadata(hints)) {
+		return false;
+	}
+
+	enableCustomMasterDataDisplay();
+
+	return true;
+}
+
 int AV1Codec::av1_fixup_frame(DataBuffer &db_in)
 {
   uint8_t meta_buffer[1024] = {0};

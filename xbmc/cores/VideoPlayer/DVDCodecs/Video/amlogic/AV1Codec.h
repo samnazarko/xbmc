@@ -44,7 +44,7 @@ private:
 protected:
 	virtual vformat_t getVideoFormat(const CDVDStreamInfo &hints) const;
 	virtual vdec_type_t getVideoCodecType(const CDVDStreamInfo &hints) const;
-
+	virtual bool handleMasteringMetadata(const CDVDStreamInfo &hints) const;
 	virtual void setupVideoCodecParams(aml_generic_param &params) const;
 
 public:
