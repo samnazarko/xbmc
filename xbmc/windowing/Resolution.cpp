@@ -260,8 +260,8 @@ void CResolutionUtils::FindResolutionFromWhitelist(float fps, int width, int hei
       const RESOLUTION_INFO info = CServiceBroker::GetWinSystem()->GetGfxContext().GetResInfo(i);
 
       // pick the lowest resolution that has a matching refresh rate
-      if ((info.iScreenHeight >= height || info.iScreenWidth >= width) &&
-        (info.dwFlags & D3DPRESENTFLAG_MODEMASK) == (curr.dwFlags & D3DPRESENTFLAG_MODEMASK) &&
+      if ((info.iScreenHeight >= height && info.iScreenWidth >= width) &&
+        ! (info.dwFlags & D3DPRESENTFLAG_MODEMASK) &&
           MathUtils::FloatEquals(info.fRefreshRate, fps, 0.01f))
       {
         resolution = i;
