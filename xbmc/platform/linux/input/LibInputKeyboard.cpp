@@ -31,7 +31,7 @@
 
 namespace
 {
-constexpr unsigned int REPEAT_DELAY = 400;
+constexpr unsigned int REPEAT_DELAY = 750;
 constexpr unsigned int REPEAT_RATE = 80;
 
 constexpr auto xkbMap = make_map<xkb_keysym_t, XBMCKey>({
