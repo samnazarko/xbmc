@@ -178,14 +178,6 @@ CDVDVideoCodec::VCReturn H264Codec::getPicture(VideoPicture *pVideoPicture)
 
 	if (m_isMvc && ret == CDVDVideoCodec::VC_PICTURE) {
 		pVideoPicture->m_3dSubtitleDepth = m_secureOSMC->getMvcSubtitleDepth(pVideoPicture->pts/DVD_TIME_BASE);
-
-		pVideoPicture->stereoMode = m_hints.stereo_mode;
-
-		if (pVideoPicture->stereoMode == "block_lr" && m_processInfo.GetVideoSettings().m_StereoInvert) {
-			pVideoPicture->stereoMode = "block_rl";
-		} else if (pVideoPicture->stereoMode == "block_rl" && m_processInfo.GetVideoSettings().m_StereoInvert) {
-			pVideoPicture->stereoMode = "block_lr";
-		}
 	}
 
 	return ret;

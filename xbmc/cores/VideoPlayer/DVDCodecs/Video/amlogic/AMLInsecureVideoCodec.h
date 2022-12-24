@@ -45,8 +45,6 @@ private:
 	void setVideoBrightness(const int brightness) const;
 
 	void setFramepackingResolution(const int width, const int height, const int blanking) const;
-	void setFramepackingSupport(const bool enable) const;
-	void setMvcViewMode(const int viewMode) const;
 
 	int getVideoContrast() const;
 	int getVideoBrightness() const;
@@ -123,6 +121,9 @@ protected:
 	virtual void playbackPause();
 	virtual void playbackResume();
 	virtual void playbackResume(int speed);
+
+	virtual void setVideoMode(std::string videoInputMode, RENDER_STEREO_MODE videoOutputMode);
+	virtual void setPictureStereoMode(VideoPicture *pVideoPicture);
 
 public:
 	AMLInsecureVideoCodec(CProcessInfo &processInfo);

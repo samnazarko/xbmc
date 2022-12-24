@@ -1035,6 +1035,30 @@ DRAIN:
 	return 0;
 }
 
+void AMLInsecureVideoCodec::setPictureStereoMode(VideoPicture *pVideoPicture)
+{
+	pVideoPicture->stereoMode = m_hints.stereo_mode;
+
+	if (pVideoPicture->stereoMode.empty() || !m_processInfo.GetVideoSettings().m_StereoInvert) {
+		// either no stereo mode or it shouldn't be inverted
+		return;
+	}
+
+	if (pVideoPicture->stereoMode == "left_right") {
+		pVideoPicture->stereoMode = "right_left";
+	} else if (pVideoPicture->stereoMode == "right_left") {
+		pVideoPicture->stereoMode = "left_right";
+	} else if (pVideoPicture->stereoMode == "top_bottom") {
+		pVideoPicture->stereoMode = "bottom_top";
+	} else if (pVideoPicture->stereoMode == "bottom_top") {
+		pVideoPicture->stereoMode = "top_bottom";
+	} else if (pVideoPicture->stereoMode == "block_lr") {
+		pVideoPicture->stereoMode = "block_rl";
+	} else if (pVideoPicture->stereoMode == "block_rl") {
+		pVideoPicture->stereoMode = "block_lr";
+	}
+}
+
 CDVDVideoCodec::VCReturn AMLInsecureVideoCodec::getPicture(VideoPicture *pVideoPicture)
 {
 	if (!m_opened) {
@@ -1061,6 +1085,8 @@ CDVDVideoCodec::VCReturn AMLInsecureVideoCodec::getPicture(VideoPicture *pVideoP
 
 		CLog::Log(LOGDEBUG, LOGVIDEO, "AMLInsecureVideoCodec::getPicture: index: {}, pts: {:0.3f}, dur:{:0.3f}ms",
 			m_bufferIndex, pVideoPicture->pts / DVD_TIME_BASE, pVideoPicture->iDuration / 1000);
+
+		setPictureStereoMode(pVideoPicture);
 
 		return CDVDVideoCodec::VC_PICTURE;
 	} else if (m_drain) {
@@ -1124,21 +1150,6 @@ unsigned int AMLInsecureVideoCodec::getDecoderVideoRate() const
 	} else {
 		return 0;
 	}
-}
-
-void AMLInsecureVideoCodec::setMvcViewMode(const int viewMode) const
-{
-  // set MVC view mode:
-  //	0 ... left
-  //	1 ... right
-  //	2 ... left<->right
-  //	3 ... right<->left
-  SysfsUtils::SetInt("/sys/module/amvdec_h264mvc/parameters/view_mode", viewMode);
-}
-
-void AMLInsecureVideoCodec::setFramepackingSupport(const bool enable) const
-{
-  SysfsUtils::SetInt("/sys/module/amvideo/parameters/framepacking_support", enable ? 1 : 0);
 }
 
 void AMLInsecureVideoCodec::setFramepackingResolution(const int width, const int height, const int blanking) const
@@ -1258,32 +1269,7 @@ void AMLInsecureVideoCodec::setVideoRect(const CRect &SrcRect, const CRect &Dest
 		setFramepackingResolution(info.iWidth, info.iHeight, info.iBlanking);
 	}
 
-	bool isMvc = videoStereoMode == "block_lr" || videoStereoMode == "block_rl";
-
-	if (isMvc) {
-		int view_mode = videoStereoMode == "block_lr" ? 3 : 2;
-
-		if (m_guiStereoMode == RENDER_STEREO_MODE_HARDWAREBASED) {
-			setFramepackingSupport(true);
-			m_libamcodec->set3dVideoMode(VIDEO_MODE_3D_MVC_FP);
-			setMvcViewMode(view_mode);
-		} else if (m_guiStereoMode == RENDER_STEREO_MODE_SPLIT_VERTICAL) {
-			setFramepackingSupport(false);
-			m_libamcodec->set3dVideoMode(VIDEO_MODE_3D_MVC_SBS);
-			setMvcViewMode(view_mode);
-		} else if (m_guiStereoMode == RENDER_STEREO_MODE_SPLIT_HORIZONTAL) {
-			setFramepackingSupport(false);
-			m_libamcodec->set3dVideoMode(VIDEO_MODE_3D_MVC_HTAB);
-			setMvcViewMode(view_mode);
-		} else if (m_guiStereoMode == RENDER_STEREO_MODE_MONO || m_guiStereoMode == RENDER_STEREO_MODE_OFF) {
-			setFramepackingSupport(false);
-			m_libamcodec->set3dVideoMode(VIDEO_MODE_3D_MVC_MONO);
-			setMvcViewMode(videoStereoMode == "block_lr" ? 0 : 1);
-		}
-	} else {
-		setFramepackingSupport(false);
-		m_libamcodec->set3dVideoMode(VIDEO_MODE_3D_MVC_MONO);
-	}
+	setVideoMode(videoStereoMode, m_guiStereoMode);
 
 	std::string s_dst_rect = StringUtils::Format("{},{},{},{}", (int) dst_rect.x1, (int) dst_rect.y1, (int) dst_rect.Width(), (int) dst_rect.Height());
 	std::string s_m_dst_rect = StringUtils::Format("{},{},{},{}", (int) m_dst_rect.x1, (int) m_dst_rect.y1, (int) m_dst_rect.Width(),
@@ -1316,6 +1302,51 @@ void AMLInsecureVideoCodec::setVideoRect(const CRect &SrcRect, const CRect &Dest
 	// we only get called once gui has changed to something
 	// that would show video playback, so show it.
 	showMainVideo(true);
+}
+
+void AMLInsecureVideoCodec::setVideoMode(std::string videoInputMode, RENDER_STEREO_MODE videoOutputMode)
+{
+	video_input_mode vimode = VIDEO_INPUT_MODE_2D;
+	video_output_mode vomode = VIDEO_OUTPUT_MODE_2D;
+	bool leftEyeFirst = true;
+
+	if (videoInputMode == "left_right") {
+		vimode = VIDEO_INPUT_MODE_HSBS;
+	} else if (videoInputMode == "right_left") {
+		vimode = VIDEO_INPUT_MODE_HSBS;
+		leftEyeFirst = false;
+	} else if (videoInputMode == "top_bottom") {
+		vimode = VIDEO_INPUT_MODE_HTAB;
+	} else if (videoInputMode == "bottom_top") {
+		vimode = VIDEO_INPUT_MODE_HTAB;
+		leftEyeFirst = false;
+	} else if (videoInputMode == "block_lr") {
+		vimode = VIDEO_INPUT_MODE_MVC;
+	} else if (videoInputMode == "block_rl") {
+		vimode = VIDEO_INPUT_MODE_MVC;
+		leftEyeFirst = false;
+	}
+
+	if (vimode != VIDEO_INPUT_MODE_2D) {
+		switch (videoOutputMode) {
+			case RENDER_STEREO_MODE_SPLIT_VERTICAL:
+				vomode = VIDEO_OUTPUT_MODE_HSBS;
+				break;
+
+			case RENDER_STEREO_MODE_SPLIT_HORIZONTAL:
+				vomode = VIDEO_OUTPUT_MODE_HTAB;
+				break;
+
+			case RENDER_STEREO_MODE_HARDWAREBASED:
+				vomode = VIDEO_OUTPUT_MODE_FP;
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	m_libamcodec->setVideoMode(vimode, vomode, leftEyeFirst);
 }
 
 double AMLInsecureVideoCodec::getAspectRatio() const
