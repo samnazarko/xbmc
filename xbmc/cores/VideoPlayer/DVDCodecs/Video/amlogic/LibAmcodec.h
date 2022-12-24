@@ -23,6 +23,22 @@ typedef enum {
 	VIDEO_MODE_3D_MVC_MONO = 4
 } video_mode_3d_t;
 
+typedef enum {
+	VIDEO_INPUT_MODE_2D = 1,
+	VIDEO_INPUT_MODE_HSBS = 2,
+	VIDEO_INPUT_MODE_HTAB = 3,
+	VIDEO_INPUT_MODE_FSBS = 4,
+	VIDEO_INPUT_MODE_FTAB = 5,
+	VIDEO_INPUT_MODE_MVC = 6
+} video_input_mode;
+
+typedef enum {
+	VIDEO_OUTPUT_MODE_2D = 1,
+	VIDEO_OUTPUT_MODE_HSBS = 2,
+	VIDEO_OUTPUT_MODE_HTAB = 3,
+	VIDEO_OUTPUT_MODE_FP = 4
+} video_output_mode;
+
 typedef struct {
 	bool noblock;
 	int video_pid;
@@ -76,6 +92,7 @@ public:
 	int setControlSyncThreshold(unsigned int threshold);
 	int setVideoDelayLimitedMs(int delay);
 	int set3dVideoMode(video_mode_3d_t mode);
+	int setVideoMode(video_input_mode vimode, video_output_mode vomode, bool leftEyeFirst);
 	int setHdr10pMetadata(unsigned char *metadata, int metadata_length);
 	void setNoBlockMode(bool noblock);
 	void setStreamType(stream_type_t type);

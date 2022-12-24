@@ -52,6 +52,7 @@ public:
 
   virtual void codec_set_log_callback(void (*logf)(const char *, ...))=0;
   virtual int codec_set_3d_video_mode(codec_para_t *pcodec, video_mode_3d_t mode)=0;
+  virtual int codec_set_video_mode(codec_para_t *pcodec, video_input_mode vimode, video_output_mode vomode, int left_eye_first)=0;
   virtual int codec_set_hdr10p_metadata(codec_para_t *pcodec, void *metadata, int metadata_size)=0;
 };
 
@@ -83,8 +84,9 @@ class amlogic::DllLibAmCodec : public DllDynamic, LibamCodecInterface
   DEFINE_METHOD2(int, codec_get_video_delay_limited_ms, (codec_para_t *p1, int *p2))
   DEFINE_METHOD2(int, codec_get_video_cur_delay_ms, (codec_para_t *p1, int *p2))
 
-  DEFINE_METHOD_FP(void, codec_set_log_callback,   (void (*)(const char *, ...)))
-  DEFINE_METHOD2(int, codec_set_3d_video_mode, (codec_para_t *p1, video_mode_3d_t p2))
+  DEFINE_METHOD_FP(void, codec_set_log_callback, (void (*)(const char *, ...)))
+  DEFINE_METHOD2(int, codec_set_3d_video_mode,   (codec_para_t *p1, video_mode_3d_t p2))
+  DEFINE_METHOD4(int, codec_set_video_mode,      (codec_para_t *p1, video_input_mode p2, video_output_mode p3, int p4))
   DEFINE_METHOD3(int, codec_set_hdr10p_metadata, (codec_para_t *p1, void *p2, int p3))
 
   BEGIN_METHOD_RESOLVE()
@@ -114,6 +116,7 @@ class amlogic::DllLibAmCodec : public DllDynamic, LibamCodecInterface
 
     RESOLVE_METHOD_OPTIONAL_FP(codec_set_log_callback)
     RESOLVE_METHOD(codec_set_3d_video_mode)
+    RESOLVE_METHOD(codec_set_video_mode)
     RESOLVE_METHOD(codec_set_hdr10p_metadata)
   END_METHOD_RESOLVE()
 
@@ -254,6 +257,11 @@ bool LibAmcodec::isVCodecBuffering() const
 int LibAmcodec::set3dVideoMode(video_mode_3d_t mode)
 {
 	return m_dll->codec_set_3d_video_mode(m_codec, mode);
+}
+
+int LibAmcodec::setVideoMode(video_input_mode vimode, video_output_mode vomode, bool leftEyeFirst)
+{
+	return m_dll->codec_set_video_mode(m_codec, vimode, vomode, leftEyeFirst ? 1 : 0);
 }
 
 int LibAmcodec::setHdr10pMetadata(unsigned char *metadata, int metadata_length)
