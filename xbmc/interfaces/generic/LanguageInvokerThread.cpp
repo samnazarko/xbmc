@@ -60,6 +60,8 @@ bool CLanguageInvokerThread::execute(const std::string &script, const std::vecto
 
   //Todo wait until running
 
+  SetPriority(ThreadPriority::BELOW_NORMAL);
+
   return true;
 }
 
