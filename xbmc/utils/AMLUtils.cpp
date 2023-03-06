@@ -37,7 +37,7 @@ bool aml_present()
     else
       has_aml = 0;
     if (has_aml)
-      CLog::Log(LOGNOTICE, "AML device detected");
+      CLog::Log(LOGINFO, "AML device detected");
   }
   return has_aml == 1;
 }
