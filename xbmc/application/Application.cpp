@@ -3700,7 +3700,7 @@ void CApplication::SetLoggingIn(bool switchingProfiles)
 void CApplication::PrintStartupLog()
 {
   CLog::Log(LOGINFO, "-----------------------------------------------------------------------");
-  CLog::Log(LOGINFO, "Starting {} ({}). Platform: {} {} {}-bit", CSysInfo::GetAppName(),
+  CLog::Log(LOGINFO, "Starting {} ({}). Platform: {} {} {}-bit (version for Vero)", CSysInfo::GetAppName(),
             CSysInfo::GetVersion(), g_sysinfo.GetBuildTargetPlatformName(),
             g_sysinfo.GetBuildTargetCpuFamily(), g_sysinfo.GetXbmcBitness());
 
