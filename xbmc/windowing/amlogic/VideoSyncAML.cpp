@@ -49,7 +49,7 @@ void CVideoSyncAML::Run(CEvent& stopEvent)
   uint64_t numVBlanks (0);
 
   /* This shouldn't be very busy and timing is important so increase priority */
-  CThread::GetCurrentThread()->SetPriority(CThread::GetCurrentThread()->GetPriority() + 1);
+  CThread::GetCurrentThread()->SetPriority(ThreadPriority::ABOVE_NORMAL);
 
   while (!stopEvent.Signaled() && !m_abort)
   {
