@@ -13,11 +13,21 @@
 #include "utils/GlobalsHandling.h"
 #include "WinSystemAmlogic.h"
 
+namespace KODI
+{
+namespace WINDOWING
+{
+namespace AML
+{
+
 class CWinSystemAmlogicGLESContext : public CWinSystemAmlogic, public CRenderSystemGLES
 {
 public:
   CWinSystemAmlogicGLESContext() = default;
   virtual ~CWinSystemAmlogicGLESContext() = default;
+
+  static void Register();
+  static std::unique_ptr<CWinSystemBase> CreateWinSystem();
 
   // Implementation of CWinSystemBase via CWinSystemAmlogic
   CRenderSystemBase *GetRenderSystem() override { return this; }
@@ -43,3 +53,7 @@ private:
   CEGLContextUtils m_pGLContext;
 
 };
+
+}
+}
+}
