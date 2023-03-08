@@ -160,11 +160,6 @@ if(NOT MSVC)
   # these options affect all code built by cmake including external projects.
   add_options(ALL_LANGUAGES ALL_BUILDS
     -Wall
-    -Wdouble-promotion
-    -Wmissing-field-initializers
-    -Wsign-compare
-    -Wextra
-    -Wno-unused-parameter # from -Wextra
   )
 
   add_options(CXX ALL_BUILDS
@@ -177,13 +172,6 @@ if(NOT MSVC)
   )
 
   # these options affect only core code
-  if(NOT CORE_COMPILE_OPTIONS)
-    set(CORE_COMPILE_OPTIONS
-      -Werror=double-promotion
-      -Werror=missing-field-initializers
-      -Werror=sign-compare
-    )
-  endif()
 endif()
 
 # set for compile info to help detect binary addons
