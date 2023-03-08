@@ -464,8 +464,15 @@ bool aml_probe_resolutions(std::vector<RESOLUTION_INFO> &resolutions)
 
   if (SysfsUtils::GetString(dcapfile, valstr) < 0)
   {
-    if (SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/disp_cap", valstr) < 0)
-      return false;
+    if (SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/disp_cap", valstr) < 0 || valstr.length() == 0)
+    {
+      CLog::Log(LOGDEBUG, "Cannot read EDID - falling back to current display mode");
+      if (SysfsUtils::GetString("/sys/class/display/mode", valstr) < 0)
+      {
+        CLog::Log(LOGDEBUG, "Cannot get current display mode");
+        return false;
+      }
+    }
 
     if (SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/vesa_cap", vesastr) == 0)
       valstr += "\n" + vesastr;

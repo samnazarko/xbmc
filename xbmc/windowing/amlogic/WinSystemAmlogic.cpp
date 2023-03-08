@@ -31,6 +31,14 @@
 #include "utils/log.h"
 #include "utils/SysfsUtils.h"
 #include "threads/SingleLock.h"
+#include "messaging/ApplicationMessenger.h"
+#include <libudev.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <locale.h>
+#include <unistd.h>
+
+using namespace KODI::MESSAGING;
 
 #include <linux/fb.h>
 
@@ -109,6 +117,9 @@ CWinSystemAmlogic::CWinSystemAmlogic() :
  CLog::Log(LOGDEBUG, "CEGLNativeTypeAmlogic::Initialize -- setting max lum to {}", maxlum);
  SysfsUtils::SetInt("/sys/module/am_vecm/parameters/customer_panel_lumin", maxlum);
 
+ SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/rawedid", m_lastEdid);
+ StartMonitorHWEvent();
+
   // Register sink
   AE::CAESinkFactory::ClearSinks();
   CAESinkALSA::Register();
@@ -117,10 +128,88 @@ CWinSystemAmlogic::CWinSystemAmlogic() :
 
 CWinSystemAmlogic::~CWinSystemAmlogic()
 {
+  StopMonitorHWEvent();
+
   if(m_nativeWindow)
   {
     m_nativeWindow = static_cast<EGLNativeWindowType>(NULL);
   }
+}
+
+void hwMon(CWinSystemAmlogic *instance) {
+
+        struct udev *udev;
+        struct udev_device *dev;
+
+        struct udev_monitor *mon;
+        int fd;
+
+        /* Create the udev object */
+        udev = udev_new();
+        if (!udev) {
+                return;
+        }
+
+        mon = udev_monitor_new_from_netlink(udev, "udev");
+        udev_monitor_filter_add_match_subsystem_devtype(mon, "extcon", NULL);
+	udev_monitor_filter_add_match_subsystem_devtype(mon, "switch", NULL);
+
+        udev_monitor_enable_receiving(mon);
+        fd = udev_monitor_get_fd(mon);
+
+        /* Poll for events */
+
+        while (1 && instance->m_monitorEvents) {
+
+                fd_set fds;
+                struct timeval tv;
+                int ret;
+
+                FD_ZERO(&fds);
+                FD_SET(fd, &fds);
+                tv.tv_sec = 0;
+                tv.tv_usec = 0;
+
+                ret = select(fd+1, &fds, NULL, NULL, &tv);
+
+                /* Check if FD has received data */
+
+                if (ret > 0 && FD_ISSET(fd, &fds)) {
+
+                        dev = udev_monitor_receive_device(mon);
+                        if (dev) {
+                                CLog::Log(LOGDEBUG, "CEGLNativeTypeAmlogic: Detected HDMI switch");
+                                int state;
+                                SysfsUtils::GetInt("/sys/class/amhdmitx/amhdmitx0/hpd_state", state);
+				std::string newEdid;
+				SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/rawedid", newEdid);
+
+                                if (state && newEdid != instance->m_lastEdid) {
+                                    CServiceBroker::GetAppMessenger()->PostMsg(TMSG_AML_RESIZE);
+				    instance->m_lastEdid = newEdid;
+				}
+                                udev_device_unref(dev);
+                        }
+                        else {
+                                CLog::Log(LOGERROR, "CEGLNativeTypeAmlogic: can't get device from receive_device");
+                        }
+                }
+                usleep(250*1000);
+        }
+}
+
+void CWinSystemAmlogic::StartMonitorHWEvent() {
+    CLog::Log(LOGDEBUG, "CEGLNativeTypeAmlogic::StartMonitorHWEvent -- starting event monitor for HDMI hotplug events");
+    m_monitorEvents = true;
+    m_monitorThread = std::thread(hwMon, this);
+    return;
+}
+
+void CWinSystemAmlogic::StopMonitorHWEvent() {
+    CLog::Log(LOGDEBUG, "CEGLNativeTypeAmlogic::StopMonitorHWEvent -- stopping event monitor for HDMI hotplug events");
+    m_monitorEvents = false;
+    m_monitorThread.join();
+    return;
 }
 
 bool CWinSystemAmlogic::InitWindowSystem()

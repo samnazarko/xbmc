@@ -14,6 +14,7 @@
 #include "windowing/WinSystem.h"
 #include "threads/SystemClock.h"
 #include "EGL/egl.h"
+#include <thread>
 
 class IDispResource;
 
@@ -37,6 +38,10 @@ public:
   bool Show(bool show = true) override;
   virtual void Register(IDispResource *resource);
   virtual void Unregister(IDispResource *resource);
+
+  bool m_monitorEvents;
+  std::string m_lastEdid;
+  
 protected:
   std::string m_framebuffer_name;
   EGLDisplay m_nativeDisplay;
@@ -53,4 +58,7 @@ protected:
   CCriticalSection m_resourceSection;
   std::vector<IDispResource*> m_resources;
   std::unique_ptr<CLibInputHandler> m_libinput;
+  void StartMonitorHWEvent();
+  void StopMonitorHWEvent();
+  std::thread m_monitorThread;
 };

@@ -1598,6 +1598,18 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
       break;
   }
 
+  case TMSG_AML_RESIZE:
+  {
+    if (! appPlayer->IsPlayingVideo()) {
+      CDisplaySettings::GetInstance().ClearCustomResolutions();
+      CServiceBroker::GetWinSystem()->UpdateResolutions();
+      CDisplaySettings::GetInstance().SetCurrentResolution(RES_DESKTOP, true);
+      CServiceBroker::GetWinSystem()->GetGfxContext().SetVideoResolution(RES_DESKTOP, true);
+      CLog::Log(LOGINFO, "Updated resolutions and set desktop");
+    }
+    break;
+  }
+
   case TMSG_NETWORKMESSAGE:
     m_ServiceManager->GetNetwork().NetworkMessage(static_cast<CNetworkBase::EMESSAGE>(pMsg->param1),
                                                   pMsg->param2);
