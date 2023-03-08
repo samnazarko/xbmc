@@ -1328,17 +1328,14 @@ void CVideoPlayer::Prepare()
     if (m_pDemuxer)
     {
       if (m_pDemuxer->SeekTime(starttime, true, &startpts))
-      {
-        FlushBuffers(starttime / 1000 * AV_TIME_BASE, true, true);
         CLog::Log(LOGDEBUG, "{} - starting demuxer from: {}", __FUNCTION__, starttime);
-      }
       else
         CLog::Log(LOGDEBUG, "{} - failed to start demuxing from: {}", __FUNCTION__, starttime);
     }
 
     if (m_pSubtitleDemuxer)
     {
-      if(m_pSubtitleDemuxer->SeekTime(starttime, true, &startpts))
+      if(m_pSubtitleDemuxer->SeekTime(starttime, false, &startpts))
         CLog::Log(LOGDEBUG, "{} - starting subtitle demuxer from: {}", __FUNCTION__, starttime);
       else
         CLog::Log(LOGDEBUG, "{} - failed to start subtitle demuxing from: {}", __FUNCTION__,
