@@ -47,6 +47,8 @@ public:
   bool GetRenderGUI() const { return m_renderGUI; }
   void SetRenderGUI(bool renderGUI);
 
+  bool isVeroStandby() const {return m_bVeroStandby; }
+
   int GlobalIdleTime();
   void ResetSystemIdleTimer();
   bool IsIdleShutdownInhibited() const;
@@ -65,8 +67,11 @@ public:
   bool OnSettingChanged(const CSetting& setting);
   bool OnSettingAction(const CSetting& setting);
 
+  void ActivateScreenSaverStandby();
+
 protected:
   void ActivateScreenSaver(bool forceType = false);
+  void ToggleStandby();
   void CheckOSScreenSaverInhibitionSetting();
   // Checks whether the screensaver and / or DPMS should become active.
   void CheckScreenSaverAndDPMS();
@@ -93,6 +98,7 @@ protected:
   // -1 = failed, 0 = locked, 1 = unlocked, 2 = check in progress
   int m_iScreenSaveLock = 0;
   std::string m_screensaverIdInUse;
+  bool m_bVeroStandby;
 
   bool m_dpmsIsActive = false;
   bool m_dpmsIsManual = false;

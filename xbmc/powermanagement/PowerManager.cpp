@@ -123,7 +123,11 @@ bool CPowerManager::Powerdown()
 
 bool CPowerManager::Suspend()
 {
-  return (CanSuspend() && m_instance->Suspend());
+  CLog::Log(LOGINFO, "Activating standby mode");
+  auto& components = CServiceBroker::GetAppComponents();
+  const auto appPower = components.GetComponent<CApplicationPowerHandling>();
+  appPower->ActivateScreenSaverStandby();
+  return true;
 }
 
 bool CPowerManager::Hibernate()

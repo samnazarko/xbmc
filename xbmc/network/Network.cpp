@@ -18,6 +18,8 @@
 #include "settings/Settings.h"
 #include "settings/SettingsComponent.h"
 #include "utils/log.h"
+#include "application/ApplicationComponents.h"
+#include "application/ApplicationPowerHandling.h"
 #ifdef TARGET_WINDOWS
 #include "platform/win32/WIN32Util.h"
 #include "utils/CharsetConverter.h"
@@ -227,6 +229,13 @@ void CNetworkBase::NetworkMessage(EMESSAGE message, int param)
 
 bool CNetworkBase::WakeOnLan(const char* mac)
 {
+  auto& components = CServiceBroker::GetAppComponents();
+  const auto appPower = components.GetComponent<CApplicationPowerHandling>();
+  if (appPower->isVeroStandby())
+  {
+    CLog::Log(LOGDEBUG, "{} - Vero is in standby, not sending WOL packet", __FUNCTION__);
+    return false;
+  }
   int i, j, packet;
   unsigned char ethaddr[8];
   unsigned char buf [128];

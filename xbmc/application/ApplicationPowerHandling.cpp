@@ -16,6 +16,7 @@
 #include "addons/gui/GUIDialogAddonSettings.h"
 #include "application/ApplicationComponents.h"
 #include "application/ApplicationPlayer.h"
+#include "application/Application.h"
 #include "guilib/GUIComponent.h"
 #include "guilib/GUIMessage.h"
 #include "guilib/GUIWindowManager.h"
@@ -35,8 +36,14 @@
 #include "settings/SettingsComponent.h"
 #include "utils/AlarmClock.h"
 #include "utils/log.h"
+#include "utils/SysfsUtils.h"
 #include "video/VideoLibraryQueue.h"
 #include "windowing/WinSystem.h"
+#include "filesystem/SpecialProtocol.h"
+#include "filesystem/File.h"
+#include <sstream>
+
+using namespace XFILE;
 
 void CApplicationPowerHandling::ResetScreenSaver()
 {
@@ -144,6 +151,8 @@ bool CApplicationPowerHandling::WakeUpScreenSaverAndDPMS(bool bPowerOffKeyPresse
 
 bool CApplicationPowerHandling::WakeUpScreenSaver(bool bPowerOffKeyPressed /* = false */)
 {
+  if (m_bVeroStandby)
+    ToggleStandby();
   if (m_iScreenSaveLock == 2)
     return false;
 
@@ -220,6 +229,57 @@ bool CApplicationPowerHandling::WakeUpScreenSaver(bool bPowerOffKeyPressed /* = 
   }
   else
     return false;
+}
+
+void CApplicationPowerHandling::ActivateScreenSaverStandby()
+{
+  if (m_bVeroStandby) {
+    CLog::Log(LOGINFO, "Ignoring standby request: we are already in standby");
+    return;
+  }
+
+  CLog::Log(LOGINFO, "Activating Vero standby mode");
+  const auto& components = CServiceBroker::GetAppComponents();
+  const auto appPlayer = components.GetComponent<CApplicationPlayer>();
+  if (appPlayer && appPlayer->IsPlayingVideo())
+    g_application.StopPlaying();
+  ToggleStandby();
+  CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::GUI, "OnScreenSaverActivated");
+  CServiceBroker::GetGUI()->GetWindowManager().CloseDialogs(true);
+}
+
+void CApplicationPowerHandling::ToggleStandby() {
+  CLog::Log(LOGINFO, "Toggle standby state is {}", m_bVeroStandby ? "waking" : "sleeping");
+  int sysfs_toggle = m_bVeroStandby;
+  CLog::Log(LOGINFO, "CApplication::ToggleStandby -- Toggle TMDS clock to {}", sysfs_toggle);
+  SysfsUtils::SetInt("/sys/class/amhdmitx/amhdmitx0/phy", sysfs_toggle);
+  CLog::Log(LOGINFO, "CApplication::ToggleStandby -- Toggle LED brightness to {}", sysfs_toggle);
+  SysfsUtils::SetInt("/sys/class/leds/standby/brightness", ! sysfs_toggle);
+  std::string hpdlock = "hpd_lock1";
+  if (m_bVeroStandby && ! CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_VIDEOSCREEN_LOCKHPD))
+	hpdlock = "hpd_lock0";
+  CLog::Log(LOGINFO, "CApplication::ToggleStandby -- HPD locking will now be {}", hpdlock);
+  SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/debug", hpdlock);
+  if (m_bVeroStandby) {
+	CServiceBroker::GetAppMessenger()->PostMsg(TMSG_CECACTIVATESOURCEOSMCWAKEUP); // wake cec
+  }
+
+  std::string strStandbyScript;
+  if (m_bVeroStandby)
+	strStandbyScript = CSpecialProtocol::TranslatePath("special://profile/wake.py");
+  else
+	strStandbyScript = CSpecialProtocol::TranslatePath("special://profile/standby.py");
+  CLog::Log(LOGINFO, "CApplication::ToggleStandby -- checking for existence of {}", strStandbyScript);
+
+  if (XFILE::CFile::Exists(strStandbyScript)) {
+    CLog::Log(LOGINFO, "CApplication::ToggleStandby -- script {} found", strStandbyScript);
+    CScriptInvocationManager::GetInstance().ExecuteAsync(strStandbyScript);
+  }
+
+  m_bVeroStandby = ! m_bVeroStandby; //invert state
+  m_screensaverActive = m_bVeroStandby;
+  return;
+
 }
 
 void CApplicationPowerHandling::CheckOSScreenSaverInhibitionSetting()

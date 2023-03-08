@@ -1832,7 +1832,7 @@ bool CPeripheralCecAdapter::ToggleDeviceState(CecStateChange mode /*= STATE_SWIT
     StandbyDevices();
     return false;
   }
-  else if (mode == STATE_SWITCH_TOGGLE || mode == STATE_ACTIVATE_SOURCE)
+  else if (mode == STATE_SWITCH_TOGGLE || mode == STATE_ACTIVATE_SOURCE || mode == STATE_ACTIVATE_SOURCE_OSMC_WAKEUP)
   {
     CLog::Log(LOGDEBUG, "{} - waking up CEC device...", __FUNCTION__);
     ActivateSource();

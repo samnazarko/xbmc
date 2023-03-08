@@ -1003,6 +1003,10 @@ void CPeripherals::OnApplicationMessage(MESSAGING::ThreadMessage* pMsg)
       ToggleDeviceState(STATE_ACTIVATE_SOURCE);
       break;
 
+    case TMSG_CECACTIVATESOURCEOSMCWAKEUP:
+      ToggleDeviceState(STATE_ACTIVATE_SOURCE_OSMC_WAKEUP);
+      break;
+
     case TMSG_CECSTANDBY:
       ToggleDeviceState(STATE_STANDBY);
       break;
