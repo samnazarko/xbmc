@@ -20,6 +20,7 @@
 // and will be optimized out.
 
 #include "system_gl.h"
+#include <stdint.h>
 
 namespace KODI
 {
