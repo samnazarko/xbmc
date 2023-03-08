@@ -1683,7 +1683,16 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
         if (pStream->codecpar->height)
           st->fAspect *= (double)pStream->codecpar->width / pStream->codecpar->height;
         st->iOrientation = 0;
-        st->iBitsPerPixel = pStream->codecpar->bits_per_coded_sample;
+        st->iBitsPerPixel = pStream->codecpar->bits_per_raw_sample;
+        if (st->iBitsPerPixel == 0) {
+          if (pStream->codec->color_trc == AVCOL_TRC_BT2020_12)
+            st->iBitsPerPixel = 12;
+        else if(pStream->codec->color_trc >= AVCOL_TRC_BT2020_10)
+            /* Assume all 10-bit until 12-bit gets common */
+            st->iBitsPerPixel = 10;
+            else
+            st->iBitsPerPixel = 8;
+        }
         st->iBitRate = static_cast<int>(pStream->codecpar->bit_rate);
         st->bitDepth = 8;
         const AVPixFmtDescriptor* desc =
