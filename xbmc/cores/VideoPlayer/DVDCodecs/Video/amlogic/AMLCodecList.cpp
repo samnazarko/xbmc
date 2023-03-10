@@ -25,14 +25,14 @@ AMLCodecList::AMLCodecList()
 
 AMLCodecList::~AMLCodecList()
 {
-	CSingleLock lock(m_mutex);
+	std::unique_lock<CCriticalSection> lock(m_mutex);
 
 	m_instance = nullptr;
 }
 
 AMLCodecList &AMLCodecList::getInstance()
 {
-	CSingleLock lock(m_mutex);
+	std::unique_lock<CCriticalSection> lock(m_mutex);
 
 	if (m_instance == nullptr) {
 		m_instance = new AMLCodecList();
@@ -43,7 +43,7 @@ AMLCodecList &AMLCodecList::getInstance()
 
 void AMLCodecList::registerAmlVideoCodec(AMLVideoCodecInfo *info)
 {
-	CSingleLock lock(m_mutex);
+	std::unique_lock<CCriticalSection> lock(m_mutex);
 
 	m_codecInfo.push_back(info);
 }
