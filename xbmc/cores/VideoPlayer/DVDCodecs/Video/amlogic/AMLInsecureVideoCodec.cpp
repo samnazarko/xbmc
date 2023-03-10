@@ -20,6 +20,7 @@
 #include "utils/log.h"
 #include "utils/SysfsUtils.h"
 #include "utils/AMLUtils.h"
+#include "utils/StringUtils.h"
 #include "settings/Settings.h"
 #include "settings/DisplaySettings.h"
 #include "settings/SettingsComponent.h"
