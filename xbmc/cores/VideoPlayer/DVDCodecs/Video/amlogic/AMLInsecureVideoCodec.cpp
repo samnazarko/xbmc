@@ -35,6 +35,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <linux/videodev2.h>
+#include <thread>
 
 #include "AMLInsecureVideoCodec.h"
 
