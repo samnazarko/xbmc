@@ -9,6 +9,7 @@
 #pragma once
 
 #include <string>
+#include <mutex>
 
 #include "cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodec.h"
 #include "utils/Geometry.h"
@@ -23,7 +24,6 @@ class amlogic::AMLVideoCodec
 {
 private:
 	static AMLVideoCodec	*m_videoCodec;
-	static std::atomic_flag	 m_pollSync;
 
 protected:
 	CProcessInfo &m_processInfo;

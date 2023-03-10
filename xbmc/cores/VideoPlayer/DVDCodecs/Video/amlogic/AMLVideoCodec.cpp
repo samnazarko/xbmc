@@ -8,14 +8,12 @@
 
 #include "AMLVideoCodec.h"
 
-#include "threads/Atomics.h"
-
 #include <chrono>
 #include <thread>
 
 using namespace amlogic;
 
-std::atomic_flag AMLVideoCodec::m_pollSync = ATOMIC_FLAG_INIT;
+static std::mutex m_pollSync;
 AMLVideoCodec *AMLVideoCodec::m_videoCodec;
 
 AMLVideoCodec::AMLVideoCodec(CProcessInfo &processInfo)
@@ -31,7 +29,7 @@ AMLVideoCodec::~AMLVideoCodec()
 
 int AMLVideoCodec::pollFrame()
 {
-	CAtomicSpinLock lock(m_pollSync);
+	std::lock_guard<std::mutex> lock(m_pollSync);
 
 	if (m_videoCodec == nullptr) {
 		// no codec, no reason to poll
