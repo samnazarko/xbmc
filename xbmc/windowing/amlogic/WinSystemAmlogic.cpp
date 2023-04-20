@@ -492,3 +492,29 @@ void CWinSystemAmlogic::Unregister(IDispResource *resource)
   if (i != m_resources.end())
     m_resources.erase(i);
 }
+
+CHDRCapabilities CWinSystemAmlogic::GetDisplayHDRCapabilities() const
+{
+  std::string hdr_caps;
+  CHDRCapabilities HDRcaps;
+  if (SysfsUtils::GetString("/sys/class/amvecm/hdr_support", hdr_caps) == 0)
+  {
+    if (hdr_caps.find("HDR10") != std::string::npos)
+      HDRcaps.SetHDR10();
+    if (hdr_caps.find("HDR10+") != std::string::npos)
+      HDRcaps.SetHDR10Plus();
+    if (hdr_caps.find("HLG") != std::string::npos)
+      HDRcaps.SetHLG();
+    if (hdr_caps.find("DV") != std::string::npos)
+      HDRcaps.SetDolbyVision();
+  }
+  return HDRcaps;
+}
+
+bool CWinSystemAmlogic::IsHDRDisplay()
+{
+  CHDRCapabilities HDRcaps;
+  HDRcaps = CWinSystemAmlogic::GetDisplayHDRCapabilities();
+  return HDRcaps.SupportsHDR10();
+}
+

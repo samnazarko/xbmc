@@ -38,7 +38,8 @@ public:
   bool Show(bool show = true) override;
   virtual void Register(IDispResource *resource);
   virtual void Unregister(IDispResource *resource);
-
+  CHDRCapabilities GetDisplayHDRCapabilities() const override;
+  bool IsHDRDisplay() override;
   bool m_monitorEvents;
   std::string m_lastEdid;
   
