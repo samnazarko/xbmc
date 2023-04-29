@@ -26,6 +26,9 @@
 #include "settings/DisplaySettings.h"
 #include "settings/Settings.h"
 #include "settings/SettingsComponent.h"
+#include "settings/AdvancedSettings.h"
+#include "settings/SettingPath.h"
+#include "settings/windows/GUIControlSettings.h"
 #include "guilib/DispResource.h"
 #include "utils/AMLUtils.h"
 #include "utils/log.h"
@@ -215,6 +218,18 @@ void CWinSystemAmlogic::StopMonitorHWEvent() {
 
 bool CWinSystemAmlogic::InitWindowSystem()
 {
+
+const std::shared_ptr<CSettings> settings = CServiceBroker::GetSettingsComponent()->GetSettings();
+
+  if (!aml_support_av1()) {
+	auto setting = settings->GetSetting(CSettings::SETTING_VIDEOPLAYER_USEAMCODECAV1);
+	if (setting)
+	{
+		setting->SetVisible(false);
+		settings->SetBool(CSettings::SETTING_VIDEOPLAYER_USEAMCODECAV1, false);
+	}
+  }
+
   m_nativeDisplay = EGL_DEFAULT_DISPLAY;
 
   CDVDVideoCodecAmlogic::Register();
