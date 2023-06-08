@@ -243,23 +243,6 @@ std::shared_ptr<CDVDOverlay> CDVDOverlayCodecFFmpeg::GetOverlay()
       }
     }
 
-    RENDER_STEREO_MODE render_stereo_mode = CServiceBroker::GetWinSystem()->GetGfxContext().GetStereoMode();
-    if (render_stereo_mode != RENDER_STEREO_MODE_OFF &&
-        render_stereo_mode != RENDER_STEREO_MODE_MONO &&
-        render_stereo_mode != RENDER_STEREO_MODE_HARDWAREBASED)
-    {
-      if (rect.h > m_height / 2)
-      {
-        m_height /= 2;
-        rect.h /= 2;
-      }
-      else if (rect.w > m_width / 2)
-      {
-        m_width /= 2;
-        rect.w /= 2;
-      }
-    }
-
     auto overlay = std::make_shared<CDVDOverlayImage>();
 
     overlay->iPTSStartTime = m_StartTime;
