@@ -147,6 +147,13 @@ void CUDevProvider::GetDisks(VECSOURCES& disks, bool removable)
       continue;
    }
 
+   // filter out tee partition
+   if (strcmp(mountpoint, "/tee") == 0)
+   {
+      udev_device_unref(device);
+      continue;
+   }
+
     // filter out things mounted on /tmp
     if (strstr(mountpoint, "/tmp"))
     {
