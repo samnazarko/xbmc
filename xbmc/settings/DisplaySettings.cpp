@@ -565,7 +565,14 @@ void CDisplaySettings::ApplyCalibrations()
     // find resolutions
     for (size_t res = RES_DESKTOP; res < m_resolutions.size(); ++res)
     {
-      if (StringUtils::EqualsNoCase(itCal->strMode, m_resolutions[res].strMode))
+      if (StringUtils::EqualsNoCase(itCal->strMode, m_resolutions[res].strMode) && (m_resolutions[res].dwFlags & D3DPRESENTFLAG_MODE3DMASK))
+      {
+        // in case of 3D resolutions we ignore overscan settings and just update the subtitle position
+        m_resolutions[res].iSubtitles = itCal->iSubtitles;
+        if (m_resolutions[res].iSubtitles < 0)
+          m_resolutions[res].iSubtitles = 0;
+      }
+      else if (StringUtils::EqualsNoCase(itCal->strMode, m_resolutions[res].strMode))
       {
         // overscan
         m_resolutions[res].Overscan.left = itCal->Overscan.left;
@@ -603,7 +610,6 @@ void CDisplaySettings::ApplyCalibrations()
           m_resolutions[res].fPixelRatio = 0.5f;
         if (m_resolutions[res].fPixelRatio > 2.0f)
           m_resolutions[res].fPixelRatio = 2.0f;
-        break;
       }
     }
   }
@@ -633,6 +639,8 @@ void CDisplaySettings::UpdateCalibrations()
       cal = *res;
     }
   }
+
+  ApplyCalibrations();
 }
 
 void CDisplaySettings::ClearCalibrations()
