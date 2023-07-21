@@ -11,6 +11,7 @@
 #include <deque>
 #include <string>
 #include <list>
+#include <atomic>
 
 #include "cores/VideoPlayer/DVDStreamInfo.h"
 #include "cores/VideoSettings.h"
@@ -38,8 +39,7 @@ private:
 
 	void am_packet_release(am_packet_t *pkt);
 
-	float getTimeSize();
-	int dequeueBuffer();
+	bool dequeueBuffer();
 
 	void setVideoContrast(const int contrast) const;
 	void setVideoBrightness(const int brightness) const;
@@ -66,8 +66,9 @@ protected:
 	uint64_t			 m_last_pts;
 	uint32_t			 m_bufferIndex;
 	unsigned int		 m_state;
-	std::uint32_t		 m_frameSizeSum;
-	std::deque<uint32_t> m_frameSizes;
+	bool				 m_filling;
+
+	std::atomic<int>	 m_input_queue_length;
 
 	bool			 m_drain = false;
 	CRect			 m_dst_rect;
@@ -124,6 +125,8 @@ protected:
 
 	virtual void setVideoMode(std::string videoInputMode, RENDER_STEREO_MODE videoOutputMode);
 	virtual void setPictureStereoMode(VideoPicture *pVideoPicture);
+
+	virtual float getDecoderInputBufferLevel() const;
 
 public:
 	AMLInsecureVideoCodec(CProcessInfo &processInfo);
