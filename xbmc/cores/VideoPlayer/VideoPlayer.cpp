@@ -1730,6 +1730,11 @@ void CVideoPlayer::ProcessVideoData(CDemuxStream* pStream, DemuxPacket* pPacket)
   if (CheckSceneSkip(m_CurrentVideo))
     drop = true;
 
+  m_CurrentVideo.lastdts = pPacket->dts;
+
+  CLog::Log(LOGDEBUG, LOGVIDEO, "CVideoPlayer::ProcessVideoData size:{} dts:{:.3f} pts:{:.3f} dur:{:.3f}ms, clock:{:.3f} level:{}",
+    pPacket->iSize, pPacket->dts/1000000, pPacket->pts/1000000, pPacket->duration/1000.0, m_clock.GetClock()/1000000.0, m_processInfo->GetLevelVQ());
+
   m_VideoPlayerVideo->SendMessage(std::make_shared<CDVDMsgDemuxerPacket>(pPacket, drop));
 
   if (!drop)
@@ -2701,14 +2706,14 @@ void CVideoPlayer::HandleMessages()
       if (m_pInputStream->GetIPosTime() == nullptr)
         time -= m_State.time_offset/1000l;
 
-      CLog::Log(LOGDEBUG, "demuxer seek to: {:f}", time);
+      CLog::Log(LOGDEBUG, "CVideoPlayer::HandleMessages: demuxer seek to: {:f}", time);
       if (m_pDemuxer && m_pDemuxer->SeekTime(time, msg.GetBackward(), &start))
       {
-        CLog::Log(LOGDEBUG, "demuxer seek to: {:f}, success", time);
+        CLog::Log(LOGDEBUG, "CVideoPlayer::HandleMessages: demuxer seek to: {:f}, success", time);
         if(m_pSubtitleDemuxer)
         {
           if(!m_pSubtitleDemuxer->SeekTime(time, msg.GetBackward()))
-            CLog::Log(LOGDEBUG, "failed to seek subtitle demuxer: {:f}, success", time);
+            CLog::Log(LOGDEBUG, "CVideoPlayer::HandleMessages: failed to seek subtitle demuxer: {:f}, success", time);
         }
         // dts after successful seek
         if (start == DVD_NOPTS_VALUE)
