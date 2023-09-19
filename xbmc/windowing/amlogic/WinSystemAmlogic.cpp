@@ -239,7 +239,7 @@ const std::shared_ptr<CSettings> settings = CServiceBroker::GetSettingsComponent
   CRendererAML::Register();
   CScreenshotSurfaceAML::Register();
 
-  aml_set_framebuffer_resolution(1920, 2205, m_framebuffer_name);
+  aml_set_framebuffer_resolution(4096, 2205, m_framebuffer_name);
 
   return CWinSystemBase::InitWindowSystem();
 }

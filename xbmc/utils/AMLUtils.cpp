@@ -23,6 +23,8 @@
 #include "filesystem/SpecialProtocol.h"
 #include "rendering/RenderSystem.h"
 
+#include "OSMCSecureOS.h"
+
 #include "linux/fb.h"
 #include <sys/ioctl.h>
 
@@ -444,8 +446,15 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
       return false;
     }
 
-    res->iWidth = (width < 3840) ? width : 1920;
-    res->iHeight= (height < 2160) ? height : 1080;
+    if (OSMCSecureOS::getInstance().isVeroV()) {
+        // it's a V
+        res->iWidth = (width > 4096) ? 1920 : width;
+        res->iHeight= (height > 2160) ? 1080 : height;
+    } else {
+        res->iWidth = (width < 3840) ? width : 1920;
+        res->iHeight= (height < 2160) ? height : 1080;
+    }
+
     res->iScreenWidth = width;
     res->iScreenHeight = height;
     res->dwFlags = (smode == 'p') ? D3DPRESENTFLAG_PROGRESSIVE : D3DPRESENTFLAG_INTERLACED;
@@ -818,7 +827,7 @@ void aml_set_framebuffer_resolution(int width, int height, std::string framebuff
         // There seems to be a bug in libMali or the Mali driver which can't handle
         // virtual resolutions other than those originally set when libMali was
         // initialized.
-        vinfo.xres_virtual = 1920;
+        vinfo.xres_virtual = 4096;
         vinfo.yres_virtual = 4410;
       }
 
