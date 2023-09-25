@@ -36,4 +36,7 @@ public:
 	int getMvcSubtitleDepth(double pts) const;
 
 	void parseFrame(uint32_t codecTag, uint8_t subtitlePlane, int64_t pts, const uint8_t *data, size_t size) const;
+
+	bool isVero4k() const;
+	bool isVeroV() const;
 };

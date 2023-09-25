@@ -33,6 +33,9 @@ public:
 
 	virtual int mvcsub_get_depth(void *ctx, double pts)=0;
 	virtual int parse_frame(void *ctx, uint32_t codecTag, uint8_t subtitlePlane, int64_t pts, const uint8_t *data, size_t size)=0;
+
+	virtual int is_Vero4k(void *ctx)=0;
+	virtual int is_VeroV(void *ctx)=0;
 };
 
 class LibsecureOSMC : public DllDynamic, LibsecureOSMCInterface
@@ -48,6 +51,9 @@ class LibsecureOSMC : public DllDynamic, LibsecureOSMCInterface
 	DEFINE_METHOD2(int, mvcsub_get_depth, (void *p1, double p2));
 	DEFINE_METHOD6(int, parse_frame,      (void *p1, uint32_t p2, uint8_t p3, int64_t p4, const uint8_t *p5, size_t p6))
 
+	DEFINE_METHOD1(int, is_Vero4k, (void *p1))
+	DEFINE_METHOD1(int, is_VeroV,  (void *p1))
+
 	BEGIN_METHOD_RESOLVE()
 		RESOLVE_METHOD_FP(osmc_init)
 		RESOLVE_METHOD(osmc_close)
@@ -55,6 +61,8 @@ class LibsecureOSMC : public DllDynamic, LibsecureOSMCInterface
 		RESOLVE_METHOD(auth_get_totp)
 		RESOLVE_METHOD(mvcsub_get_depth)
 		RESOLVE_METHOD(parse_frame)
+		RESOLVE_METHOD(is_Vero4k)
+		RESOLVE_METHOD(is_VeroV)
 	END_METHOD_RESOLVE()
 
 public:
@@ -165,4 +173,22 @@ void OSMCSecureOS::parseFrame(uint32_t codecTag, uint8_t subtitlePlane, int64_t 
 	if (m_dll) {
 		(void) m_dll->parse_frame(m_osmcCtxt, codecTag, subtitlePlane, pts, data, size);
 	}
+}
+
+bool OSMCSecureOS::isVero4k() const
+{
+	if (m_dll) {
+		return m_dll->is_Vero4k(m_osmcCtxt) == 1;
+	}
+
+	return false;
+}
+
+bool OSMCSecureOS::isVeroV() const
+{
+	if (m_dll) {
+		return m_dll->is_VeroV(m_osmcCtxt) == 1;
+	}
+
+	return false;
 }
