@@ -22,7 +22,6 @@ namespace amlogic {
 	class AV1Codec;
 	class H264Codec;
 	class HEVCCodec;
-	class MJPEGCodec;
 	class MPEG12Codec;
 	class MPEG4Codec;
 	class VC1Codec;
