@@ -37,6 +37,9 @@ DemuxPacket* CDemuxStreamSSIF::AddPacket(DemuxPacket* &srcPkt)
   {
     if (m_bluRay && !m_bluRay->HasExtention())
       return srcPkt;
+#if defined(DEBUG_VERBOSE)
+    CLog::Log(LOGDEBUG, ">>> MVC add h264 packet: pts: {:.3f} dts: {:.3f}", srcPkt->pts*1e-6, srcPkt->dts*1e-6);
+#endif
     m_H264queue.push(srcPkt);
   }
   else if (srcPkt->iStreamId == m_mvcStreamId)
@@ -149,7 +152,7 @@ DemuxPacket* CDemuxStreamSSIF::GetMVCPacket()
     else
     {
 #if defined(DEBUG_VERBOSE)
-      CLog::Log(LOGDEBUG, ">>> MVC discard h264: {6}, pts({:.3f}) dts({:.3f})", h264pkt->iSize, h264pkt->pts*1e-6, h264pkt->dts*1e-6);
+      CLog::Log(LOGDEBUG, ">>> MVC discard h264: {:6}, pts({:.3f}) dts({:.3f})", h264pkt->iSize, h264pkt->pts*1e-6, h264pkt->dts*1e-6);
 #endif
       CDVDDemuxUtils::FreeDemuxPacket(h264pkt);
       m_H264queue.pop();
@@ -164,6 +167,9 @@ DemuxPacket* CDemuxStreamSSIF::GetMVCPacket()
 
 void CDemuxStreamSSIF::AddMVCExtPacket(DemuxPacket* &mvcExtPkt)
 {
+#if defined(DEBUG_VERBOSE)
+    CLog::Log(LOGDEBUG, ">>> MVC add mvc  packet: pts: {:.3f} dts: {:.3f}", mvcExtPkt->pts*1e-6, mvcExtPkt->dts*1e-6);
+#endif
   m_MVCqueue.push(mvcExtPkt);
 }
 
