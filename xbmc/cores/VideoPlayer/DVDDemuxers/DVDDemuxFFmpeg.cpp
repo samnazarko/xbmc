@@ -722,6 +722,9 @@ void CDVDDemuxFFmpeg::Flush()
   m_displayTime = 0;
   m_dtsAtDisplayTime = DVD_NOPTS_VALUE;
   m_seekToKeyFrame = false;
+
+  if (m_pSSIF)
+    m_pSSIF->Flush();
 }
 
 void CDVDDemuxFFmpeg::Abort()
@@ -1074,8 +1077,6 @@ DemuxPacket* CDVDDemuxFFmpeg::ReadInternal(bool keep)
 
         m_pkt.result = -1;
         av_packet_unref(&m_pkt.pkt);
-        if (m_pSSIF)
-          m_pSSIF->Flush();
       }
       else
       {

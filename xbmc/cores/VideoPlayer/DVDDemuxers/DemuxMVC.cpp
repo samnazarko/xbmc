@@ -190,7 +190,7 @@ DemuxPacket* CDemuxMVC::Read()
   return nullptr;
 }
 
-bool CDemuxMVC::SeekTime(double time, bool backwords, double* startpts)
+bool CDemuxMVC::SeekTime(double time, bool backwards, double* startpts)
 {
   if (!m_pInput)
     return false;
@@ -208,7 +208,8 @@ bool CDemuxMVC::SeekTime(double time, bool backwords, double* startpts)
   else
     seek_pts -= MVC_SEEK_TIME_WINDOW;
 
-  av_seek_frame(m_pFormatContext, m_nStreamIndex, seek_pts, AVSEEK_FLAG_BACKWARD);
+  av_seek_frame(m_pFormatContext, m_nStreamIndex, seek_pts, backwards ? AVSEEK_FLAG_BACKWARD : 0);
+
   return true;
 }
 

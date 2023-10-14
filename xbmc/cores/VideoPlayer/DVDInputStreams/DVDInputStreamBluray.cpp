@@ -1390,7 +1390,7 @@ bool CDVDInputStreamBluray::CloseMVCDemux()
 void CDVDInputStreamBluray::SeekMVCDemux(int64_t time)
 {
   if (m_bMVCPlayback && m_pMVCDemux)
-    m_pMVCDemux->SeekTime(time);
+    m_pMVCDemux->SeekTime(time, time < GetTime());
 }
 
 void CDVDInputStreamBluray::SetupPlayerSettings()
