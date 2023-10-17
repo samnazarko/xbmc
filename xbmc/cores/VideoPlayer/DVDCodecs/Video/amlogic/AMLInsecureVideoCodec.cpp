@@ -188,7 +188,7 @@ bool AMLInsecureVideoCodec::openAmlVideo(const CDVDStreamInfo &hints)
 
 	m_defaultVfmMap = getVfmMap("default");
 
-	setVfmMap("default", "decoder ppmgr amlvideo amvideo");
+	setVfmMap("default", "decoder ppmgr deinterlace amlvideo amvideo");
 
 	int hdrMode = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOPLAYER_HDR_PROCESS);
 
