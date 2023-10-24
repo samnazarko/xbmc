@@ -146,7 +146,7 @@ EGLConfig  CWinSystemAmlogicGLESContext::GetEGLConfig() const
   return m_pGLContext.GetEGLConfig();
 }
 
-std::unique_ptr<CVideoSync> CWinSystemAmlogicGLESContext::GetVideoSync(void *clock)
+std::unique_ptr<CVideoSync> CWinSystemAmlogicGLESContext::GetVideoSync(CVideoReferenceClock *clock)
 {
   std::unique_ptr<CVideoSync> pVSync(new CVideoSyncAML(clock));
   return pVSync;

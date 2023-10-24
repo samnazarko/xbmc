@@ -29,7 +29,7 @@ public:
   bool ResizeWindow(int newWidth, int newHeight, int newLeft, int newTop) override;
   bool SetFullScreen(bool fullScreen, RESOLUTION_INFO& res, bool blankOtherDisplays) override;
 
-  virtual std::unique_ptr<CVideoSync> GetVideoSync(void *clock) override;
+  virtual std::unique_ptr<CVideoSync> GetVideoSync(CVideoReferenceClock *clock) override;
 
   EGLDisplay GetEGLDisplay() const;
   EGLSurface GetEGLSurface() const;
