@@ -9,6 +9,7 @@
 #include "VideoSyncAML.h"
 #include "ServiceBroker.h"
 #include "windowing/GraphicContext.h"
+#include "cores/VideoPlayer/VideoReferenceClock.h"
 #include "utils/TimeUtils.h"
 #include "utils/log.h"
 #include "threads/Thread.h"
@@ -20,7 +21,7 @@
 
 extern CEvent g_aml_sync_event;
 
-CVideoSyncAML::CVideoSyncAML(void *clock)
+CVideoSyncAML::CVideoSyncAML(CVideoReferenceClock *clock)
 : CVideoSync(clock)
 , m_abort(false)
 {
@@ -30,10 +31,8 @@ CVideoSyncAML::~CVideoSyncAML()
 {
 }
 
-bool CVideoSyncAML::Setup(PUPDATECLOCK func)
+bool CVideoSyncAML::Setup()
 {
-  UpdateClock = func;
-
   m_abort = false;
 
   CServiceBroker::GetWinSystem()->Register(this);
@@ -73,7 +72,7 @@ void CVideoSyncAML::Run(CEvent& stopEvent)
 
     uint64_t now = CurrentHostCounter();
 
-    UpdateClock(countVSyncs, now, m_refClock);
+    m_refClock->UpdateClock(countVSyncs, now);
   }
 }
 

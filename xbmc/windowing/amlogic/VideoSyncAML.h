@@ -14,9 +14,9 @@
 class CVideoSyncAML : public CVideoSync, IDispResource
 {
 public:
-  CVideoSyncAML(void *clock);
+  CVideoSyncAML(CVideoReferenceClock *clock);
   virtual ~CVideoSyncAML();
-  virtual bool Setup(PUPDATECLOCK func)override;
+  virtual bool Setup()override;
   virtual void Run(CEvent& stopEvent)override;
   virtual void Cleanup()override;
   virtual float GetFps()override;
