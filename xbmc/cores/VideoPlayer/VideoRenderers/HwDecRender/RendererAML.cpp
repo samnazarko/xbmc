@@ -82,9 +82,10 @@ bool CRendererAML::Configure(const VideoPicture &picture, float fps, unsigned in
 CRenderInfo CRendererAML::GetRenderInfo()
 {
   CRenderInfo info;
+
   info.max_buffer_size = m_numRenderBuffers;
-  info.optimal_buffer_size = m_numRenderBuffers;
   info.opaque_pointer = (void *)this;
+
   return info;
 }
 

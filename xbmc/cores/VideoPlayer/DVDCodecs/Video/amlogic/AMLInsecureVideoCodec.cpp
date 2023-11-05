@@ -263,15 +263,15 @@ unsigned int AMLInsecureVideoCodec::getVideoRate(const CDVDStreamInfo &hints) co
 
 void AMLInsecureVideoCodec::getExtradata(const CDVDStreamInfo &hints, uint8_t *&extradata, unsigned int &extrasize) const
 {
-	if (hints.extrasize == 0) {
+	if (hints.extradata.GetSize()) {
 		extradata = nullptr;
 		extrasize = 0;
 		return;
 	}
 
-	extradata = (uint8_t*)malloc(hints.extrasize);
-	extrasize = hints.extrasize;
-	memcpy(extradata, hints.extradata, hints.extrasize);
+	extradata = (uint8_t*)malloc(hints.extradata.GetSize());
+	extrasize = hints.extradata.GetSize();
+	memcpy(extradata, hints.extradata.GetData(), hints.extradata.GetSize());
 }
 
 bool AMLInsecureVideoCodec::handleMasteringMetadata(const CDVDStreamInfo &hints) const
@@ -520,7 +520,7 @@ bool AMLInsecureVideoCodec::openDecoder(CDVDStreamInfo &hints)
 		hints.aspect, video_ratio.num, video_ratio.den);
 	CLog::Log(LOGDEBUG,
 		"AMLInsecureVideoCodec::openDecoder hints.orientation({}), hints.forced_aspect({}), hints.extrasize({})",
-		hints.orientation, hints.forced_aspect, hints.extrasize);
+		hints.orientation, hints.forced_aspect, hints.extradata.GetSize());
 	CLog::Log(LOGDEBUG,
 		"AMLInsecureVideoCodec::openDecoder hints primaries {}, transfer characteristic {}, colourspace {}",
 		hints.colorPrimaries, hints.colorTransferCharacteristic, hints.colorSpace);

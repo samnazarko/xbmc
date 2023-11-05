@@ -114,7 +114,7 @@ bool CDVDVideoCodecAmlogic::Open(CDVDStreamInfo &hints, CDVDCodecOptions &option
 
   m_hints = hints;
 
-  CLog::Log(LOGDEBUG, "CDVDVideoCodecAmlogic::Opening: codec {:d} profile:{:d} extra_size:{:d}", m_hints.codec, hints.profile, hints.extrasize);
+  CLog::Log(LOGDEBUG, "CDVDVideoCodecAmlogic::Opening: codec {:d} profile:{:d} extra_size:{:d}", m_hints.codec, hints.profile, hints.extradata.GetSize());
 
   bool needSecureDecoder = false;
 #if notyet

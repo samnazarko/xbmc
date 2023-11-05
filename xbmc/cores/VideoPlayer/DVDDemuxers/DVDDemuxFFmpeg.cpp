@@ -1225,7 +1225,7 @@ DemuxPacket* CDVDDemuxFFmpeg::ReadInternal(bool keep)
     {
       if (static_cast<CDemuxStreamVideo*>(stream)->iWidth != m_pFormatContext->streams[pPacket->iStreamId]->codecpar->width ||
           static_cast<CDemuxStreamVideo*>(stream)->iHeight != m_pFormatContext->streams[pPacket->iStreamId]->codecpar->height ||
-		  (stream->disabled && stream->ExtraSize != m_pFormatContext->streams[pPacket->iStreamId]->codecpar->extradata_size))
+		  (stream->disabled && stream->extraData.GetSize() != m_pFormatContext->streams[pPacket->iStreamId]->codecpar->extradata_size))
       {
         // content has changed
         stream = AddStream(pPacket->iStreamId);
@@ -1670,7 +1670,7 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
           stream = new CDemuxStream();
           stream->type = STREAM_DATA;
           stream->disabled = true;
-          pStream->need_parsing = AVSTREAM_PARSE_NONE;
+// todo tanio: check if needed          pStream->need_parsing = AVSTREAM_PARSE_NONE;
           pStream->codecpar->codec_type = AVMEDIA_TYPE_DATA;
           break;
         }
@@ -1734,9 +1734,9 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
         st->iOrientation = 0;
         st->iBitsPerPixel = pStream->codecpar->bits_per_raw_sample;
         if (st->iBitsPerPixel == 0) {
-          if (pStream->codec->color_trc == AVCOL_TRC_BT2020_12)
+          if (pStream->codecpar->color_trc == AVCOL_TRC_BT2020_12)
             st->iBitsPerPixel = 12;
-        else if(pStream->codec->color_trc >= AVCOL_TRC_BT2020_10)
+        else if(pStream->codecpar->color_trc >= AVCOL_TRC_BT2020_10)
             /* Assume all 10-bit until 12-bit gets common */
             st->iBitsPerPixel = 10;
             else

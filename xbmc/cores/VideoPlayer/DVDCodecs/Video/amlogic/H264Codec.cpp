@@ -208,18 +208,13 @@ bool H264Codec::prepareFrame(CDVDStreamInfo &hints, uint8_t *&data, size_t &size
 	if (m_bitstream == nullptr && m_bitparser == nullptr) {
 		// convert h264-avcC to h264-annex-b as h264-avcC
 		// under streamers can have issues when seeking.
-		if (hints.extradata && *(uint8_t*) hints.extradata == 1) {
+		if (hints.extradata.GetSize() && *hints.extradata.GetData() == 1) {
 			m_bitstream = new CBitstreamConverter;
 
-			m_bitstream->Open(hints.codec, (uint8_t*) hints.extradata, hints.extrasize, true);
+			m_bitstream->Open(hints.codec, (uint8_t*) hints.extradata.GetData(), hints.extradata.GetSize(), true);
 			m_bitstream->ResetStartDecode();
 
-			// make sure we do not leak the existing hints.extradata
-			free(hints.extradata);
-
-			hints.extrasize = m_bitstream->GetExtraSize();
-			hints.extradata = malloc(hints.extrasize);
-			memcpy(hints.extradata, m_bitstream->GetExtraData(), hints.extrasize);
+			hints.extradata = FFmpegExtraData(m_bitstream->GetExtraData(), m_bitstream->GetExtraSize());
 		} else {
 			m_bitparser = new CBitstreamParser();
 			m_bitparser->Open();

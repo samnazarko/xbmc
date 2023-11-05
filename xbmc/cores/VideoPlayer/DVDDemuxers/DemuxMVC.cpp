@@ -74,10 +74,10 @@ bool CDemuxMVC::Open(CDVDInputStream* pInput)
   unsigned char* buffer = (unsigned char*)av_malloc(bufferSize);
   m_ioContext = avio_alloc_context(buffer, bufferSize, 0, this, mvc_file_read, NULL, mvc_file_seek);
 
-    m_pFormatContext = avformat_alloc_context();
+  m_pFormatContext = avformat_alloc_context();
   m_pFormatContext->pb = m_ioContext;
 
-  AVInputFormat *format = av_find_input_format("mpegts");
+  const AVInputFormat *format = av_find_input_format("mpegts");
   ret = avformat_open_input(&m_pFormatContext, m_pInput->GetFileName().c_str(), format, nullptr);
   if (ret < 0)
   {
@@ -88,7 +88,6 @@ bool CDemuxMVC::Open(CDVDInputStream* pInput)
 
   av_opt_set_int(m_pFormatContext, "analyzeduration", 500000, 0);
   av_opt_set_int(m_pFormatContext, "correct_ts_overflow", 0, 0);
-  m_pFormatContext->flags |= AVFMT_FLAG_KEEP_SIDE_DATA;
 
   // Find the streams
   ret = avformat_find_stream_info(m_pFormatContext, nullptr);
