@@ -639,7 +639,7 @@ bool aml_probe_resolutions(std::vector<RESOLUTION_INFO> &resolutions)
 
   if (!SysfsUtils::Has(dcapfile) || SysfsUtils::GetString(dcapfile, valstr) < 0)
   {
-    if (SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/disp_cap", valstr) < 0 || valstr.empty())
+    if (SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/cta_cap", valstr) < 0 || valstr.empty())
     {
       CLog::Log(LOGDEBUG, "Cannot read EDID - falling back to current display mode");
       if (SysfsUtils::GetString("/sys/class/display/mode", valstr) < 0)
@@ -649,7 +649,11 @@ bool aml_probe_resolutions(std::vector<RESOLUTION_INFO> &resolutions)
       }
     }
   }
-
+  else if (!valstr.empty())
+  {
+    CLog::Log(LOGWARNING, "Using {} to override display modes reported by EDID valstr {}", dcapfile, valstr);
+  }
+  
   if (SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/vesa_cap", vesastr) == 0 && !vesastr.empty())
   {
     // If EDID returns VESA modes then check if we should override them
@@ -657,12 +661,17 @@ bool aml_probe_resolutions(std::vector<RESOLUTION_INFO> &resolutions)
 
     if (SysfsUtils::Has(vesacapfile))
     {
-      if (SysfsUtils::GetString(vesacapfile, vesastr) == 0)
-        CLog::Log(LOGINFO, "Using {} to override VESA modes reported by EDID", vesacapfile);
+      if (SysfsUtils::Has(dcapfile))
+        vesastr.clear();
       else
       {
-        CLog::Log(LOGERROR, "Error reading {}", vesacapfile);
-        vesastr.clear();
+        if (SysfsUtils::GetString(vesacapfile, vesastr) == 0)
+          CLog::Log(LOGWARNING, "Using {} to override VESA modes reported by EDID", vesacapfile);
+        else
+        {
+          CLog::Log(LOGERROR, "Error reading {}", vesacapfile);
+          vesastr.clear();
+        }
       }
     }
     else
