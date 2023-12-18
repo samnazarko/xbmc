@@ -58,20 +58,36 @@ int64_t CurrentHostFrequency(void)
 
 unsigned int CTimeUtils::frameTime = 0;
 
+static inline uint64_t GetTimeInMs()
+{
+  timeval now_time;
+
+  ::gettimeofday(&now_time, nullptr);
+
+  return now_time.tv_sec * 1000ll + now_time.tv_usec / 1000ll;
+}
+
+static unsigned int GetUptimeInMs()
+{
+  static bool start_time_set = false;
+  static uint64_t start_time = 0;
+
+  uint64_t now_ms = GetTimeInMs();
+
+  if (!start_time_set) {
+	start_time = now_ms;
+	start_time_set = true;
+  }
+
+  return (unsigned int) (now_ms - start_time);
+}
+
 void CTimeUtils::UpdateFrameTime(bool flip)
 {
-  auto now = std::chrono::steady_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime);
+  unsigned int currentTime = GetUptimeInMs();
+  unsigned int framedur = (unsigned int)(1000.0 / CServiceBroker::GetWinSystem()->GetFPS());
 
-  unsigned int currentTime = duration.count();
-  unsigned int last = frameTime;
-  while (frameTime < currentTime)
-  {
-    frameTime += (unsigned int)(1000 / CServiceBroker::GetWinSystem()->GetGfxContext().GetFPS());
-    // observe wrap around
-    if (frameTime < last)
-      break;
-  }
+  frameTime += framedur * ((currentTime - frameTime + framedur - 1) / framedur);
 }
 
 unsigned int CTimeUtils::GetFrameTime()

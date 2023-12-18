@@ -235,6 +235,10 @@ public:
 
   virtual std::vector<std::string> GetConnectedOutputs() { return {}; }
 
+  // Other than GetFPS from GraphicContext, it does not block access by using a mutex. The refresh rate
+  // is only set during initialization (CreateNewWindow) when GetFPS() isn't called from other threads.
+  virtual inline float GetFPS() const { return m_fRefreshRate; }
+
   /*!
    * \brief Return true when HDR display is available and enabled in settings
    *
