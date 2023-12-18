@@ -790,12 +790,15 @@ bool AMLInsecureVideoCodec::addData(uint8_t *pData, size_t iSize, double dts, do
 {
 	/* if passing through HDR, ignore contrast and brightness
 	 * thus users can view HDR on both HDR and SDR screens without faff */
-	int curCscType, hdrProcessMode;
+	int curCscType, hdrProcessMode, hdr10plusProcessMode, hlgProcessMode;
 	std::string cur_csc_type;
 	SysfsUtils::GetString("/sys/module/am_vecm/parameters/cur_csc_type", cur_csc_type);
 	curCscType = std::stoi(cur_csc_type.substr(0, 2));
 	SysfsUtils::GetInt("/sys/module/am_vecm/parameters/hdr_process_mode", hdrProcessMode);
-	bool isHDR = curCscType == 64 && hdrProcessMode == 0;
+	SysfsUtils::GetInt("/sys/module/am_vecm/parameters/hdr10_plus_process_mode", hdr10plusProcessMode);
+	SysfsUtils::GetInt("/sys/module/am_vecm/parameters/hlg_process_mode", hlgProcessMode);
+	bool isHDR = curCscType == 64 && hdrProcessMode == 0
+		&& hdr10plusProcessMode == 0 && hlgProcessMode == 0;
 
 	// video contrast adjustment.
 	int contrast = m_processInfo.GetVideoSettings().m_Contrast;
