@@ -112,12 +112,6 @@ vdec_type_t H264Codec::getVideoCodecType(const CDVDStreamInfo &hints) const
 	return m_is4k ? VIDEO_DEC_FORMAT_H264_4K2K : VIDEO_DEC_FORMAT_H264;
 }
 
-int H264Codec::calculateSleepDuration()
-{
-	// we need a shorter sleep period for MVC playback to avoid Kodi skipping like hell
-	return AMLInsecureVideoCodec::calculateSleepDuration() / (m_isMvc ? 2 : 1);
-}
-
 void H264Codec::setupVideoCodecParams(aml_generic_param &params) const
 {
 	AMLInsecureVideoCodec::setupVideoCodecParams(params);

@@ -196,20 +196,4 @@ void CRendererAML::RenderUpdate(int index, int index2, bool clear, unsigned int 
       m_prevVPts = pts;
     }
   }
-
-#if 0
-  // Use polling to sync with the kernel's vsync IRQ. It turned out that the
-  // Linux schedulers wakeup latency varies too much. Wakeup delays of up to 6 ms
-  // are too big and are causing 'stutters' like skipped/dropped frames. However,
-  // this can be avoided if we let Kodi run with realtime priority.
-  //
-  amlogic::AMLVideoCodec::pollFrame();
-#else
-  // We do not use polling in this case. The vsync IRQ will handle 'ready' frames anyway.
-  // Just sleep a bit here to avoid high CPU usage and temperature.
-  //
-  // Note: you want to use polling if you enable the 'sync-to-display' option.
-  //
-  amlogic::AMLVideoCodec::sleep();
-#endif
 }

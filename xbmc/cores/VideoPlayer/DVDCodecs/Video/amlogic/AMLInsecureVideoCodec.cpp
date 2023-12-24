@@ -73,8 +73,8 @@ extern "C" void libamlcodec_logger(const char *format, ...)
 /*************************************************************************/
 
 AMLInsecureVideoCodec::AMLInsecureVideoCodec(CProcessInfo &processInfo)
-	: AMLVideoCodec(processInfo), m_sleepDurationInMs(0), m_opened(false), m_speed(DVD_PLAYSPEED_NORMAL), m_cur_pts(DVD_NOPTS_VALUE),
-	  m_last_pts(DVD_NOPTS_VALUE) , m_bufferIndex(-1), m_state(0), m_filling(true), m_secureOSMC(&OSMCSecureOS::getInstance())
+	: AMLVideoCodec(processInfo), m_opened(false), m_speed(DVD_PLAYSPEED_NORMAL), m_cur_pts(DVD_NOPTS_VALUE),
+	  m_last_pts(DVD_NOPTS_VALUE), m_bufferIndex(-1), m_state(0), m_filling(true), m_secureOSMC(&OSMCSecureOS::getInstance())
 {
 	m_am_private = new am_private_t;
 	memset(m_am_private, 0, sizeof(am_private_t));
@@ -109,47 +109,6 @@ int AMLInsecureVideoCodec::poll()
 		return 1;
 	}
 	return 0;
-}
-
-int AMLInsecureVideoCodec::calculateSleepDuration()
-{
-	// Calculate the thread sleep duration in ms.
-	//
-	// The render thread is used to sleep between frames. This keeps the CPU load and CPU
-	// temperature low. When polling is being used to let the thread sleep until the next
-	// vsync event occurs, the Linux scheduler wakeup latency might be too high (around 6 ms)
-	// and could cause some glitches like frame skips. Further, that thread needs another (up
-	// to) 6 ms to prepare the next frame before it is being displayed. This gives a total
-	// (worst case) latency of about 12 ms.
-	//
-	// The resulting sleep duration depends on the fps. For instance, for 24 fps (42 ms per
-	// frame) the thread should sleep for 42 - 6 - 6 = 30 ms. BUT: if Kodi sets a different
-	// refresh rate (eg. 50 Hz instead of 25 Hz) we must rely on that refresh rate.
-	//
-	// It doesn't matter that the thread doesn't send a frame exactly every e.g. 42 ms. The
-	// kernel will display frames only when a vsync event occurs. We just have to make sure
-	// that there's at least one frame available when the kernel needs it.
-
-	double refreshRate = (double) m_hints.fpsrate / (double) m_hints.fpsscale;
-	RESOLUTION_INFO res;
-
-	if (aml_get_native_resolution(&res)) {
-		refreshRate = res.fRefreshRate;
-	}
-
-	int sleepDurationInMs = int(1000.0 / refreshRate - 0.5) - 6 - 6;
-
-	if (sleepDurationInMs < 2) {
-		// if the sleep duration is too low, we do not sleep at all
-		sleepDurationInMs = 0;
-	}
-
-	return sleepDurationInMs;
-}
-
-int AMLInsecureVideoCodec::getSleepDurationInMs() const
-{
-	return m_sleepDurationInMs;
 }
 
 void AMLInsecureVideoCodec::setVfmMap(const std::string &name, const std::string &map)
@@ -588,8 +547,6 @@ bool AMLInsecureVideoCodec::openDecoder(CDVDStreamInfo &hints)
 	// vcodec is open, update speed if it was
 	// changed before VideoPlayer called OpenDecoder.
 	setSpeed(m_speed);
-
-	m_sleepDurationInMs = calculateSleepDuration();
 
 	return true;
 }

@@ -38,15 +38,3 @@ int AMLVideoCodec::pollFrame()
 
 	return m_videoCodec->poll();
 }
-
-/*
- * Just sleep a while until we think the next frame could be ready
- */
-void AMLVideoCodec::sleep()
-{
-	if (m_videoCodec == nullptr) {
-		return;
-	}
-
-	std::this_thread::sleep_for(std::chrono::milliseconds(m_videoCodec->getSleepDurationInMs()));
-}

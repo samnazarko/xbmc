@@ -34,8 +34,6 @@ protected:
 
 	virtual void playbackResume(int speed);
 
-	virtual int calculateSleepDuration();
-
 public:
 	H264Codec(CProcessInfo &processInfo, bool request4k, bool requestMvc);
 	virtual ~H264Codec();

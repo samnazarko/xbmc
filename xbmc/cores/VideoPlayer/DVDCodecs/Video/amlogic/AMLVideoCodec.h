@@ -29,7 +29,6 @@ protected:
 	CProcessInfo &m_processInfo;
 
 	virtual int poll() = 0;
-	virtual int getSleepDurationInMs() const = 0;
 
 public:
 	AMLVideoCodec(CProcessInfo &processInfo);
@@ -57,7 +56,6 @@ public:
 	virtual void setDrain(bool drain) = 0;
 
 	static int pollFrame();
-	static void sleep();
 
 	virtual void reset() = 0;
 };

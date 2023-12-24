@@ -132,8 +132,6 @@ void CWinSystemAmlogicGLESContext::PresentRenderImpl(bool rendered)
     for (std::vector<IDispResource *>::iterator i = m_resources.begin(); i != m_resources.end(); ++i)
       (*i)->OnResetDisplay();
   }
-  if (!rendered)
-    return;
 
   // Ignore errors - eglSwapBuffers() sometimes fails during modeswaps on AML,
   // there is probably nothing we can do about it

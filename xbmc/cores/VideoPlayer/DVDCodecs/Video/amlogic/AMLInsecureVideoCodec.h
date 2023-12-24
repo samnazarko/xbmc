@@ -35,8 +35,6 @@ typedef std::shared_ptr<amlogic::PosixFile> PosixFilePtr;
 class amlogic::AMLInsecureVideoCodec : public amlogic::AMLVideoCodec
 {
 private:
-	int m_sleepDurationInMs;
-
 	void am_packet_release(am_packet_t *pkt);
 
 	bool dequeueBuffer();
@@ -116,8 +114,6 @@ protected:
 	virtual int write_header(am_private_t *para, am_packet_t *pkt) const;
 
 	virtual int poll();
-	virtual int getSleepDurationInMs() const;
-	virtual int calculateSleepDuration();
 
 	virtual void playbackPause();
 	virtual void playbackResume();
