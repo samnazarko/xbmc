@@ -1726,6 +1726,16 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
                          pStream->codecpar->field_order == AV_FIELD_TB ||
                          pStream->codecpar->field_order == AV_FIELD_BT;
 
+        float fps = 0.;
+
+        if (st->iFpsScale)
+          fps = static_cast<float>(st->iFpsRate) / static_cast<float>(st->iFpsScale);
+
+        int tbc = st->interlaced && fps > 24.0 && fps < 30.0 ? st->iFpsRate * 2 : st->iFpsRate;
+        CLog::Log(LOGDEBUG, "CDVDDemuxFFmpeg::AddStream video - interlaced: {}, fps: {:f}, tba: {}/{}, tbr: {}/{}, tbc: {}/{}",
+				  st->interlaced, fps, pStream->avg_frame_rate.num, pStream->avg_frame_rate.den,
+				  r_frame_rate.num, r_frame_rate.den, tbc, st->iFpsScale);
+
         st->iWidth = pStream->codecpar->width;
         st->iHeight = pStream->codecpar->height;
         st->fAspect = SelectAspect(pStream, st->bForcedAspect);

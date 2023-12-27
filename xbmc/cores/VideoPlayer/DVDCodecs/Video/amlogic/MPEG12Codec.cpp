@@ -17,6 +17,8 @@
 #include "ServiceBroker.h"
 #include "settings/SettingsComponent.h"
 
+#include "utils/log.h"
+
 using namespace amlogic;
 
 class MPEG12CodecInfo : public AMLVideoCodecInfo
@@ -115,6 +117,9 @@ bool MPEG12Codec::prepareFrame(CDVDStreamInfo &hints, uint8_t *&data, size_t &si
 			m_mpeg2_sequence_pts = dts;
 		}
 
+		CLog::Log(LOGDEBUG, "MPEG12Codec::prepareFrame - interlaced: {}, hints.fps: {}/{}, mpeg2_seq: {}/{}",
+				  hints.interlaced, hints.fpsrate, hints.fpsscale, m_mpeg2_sequence->fps_rate, m_mpeg2_sequence->fps_scale);
+
 		hints.fpsrate = m_mpeg2_sequence->fps_rate;
 		hints.fpsscale = m_mpeg2_sequence->fps_scale;
 
@@ -126,6 +131,7 @@ bool MPEG12Codec::prepareFrame(CDVDStreamInfo &hints, uint8_t *&data, size_t &si
 
 		m_processInfo.SetVideoFps(m_framerate);
 		m_processInfo.SetVideoDAR(hints.aspect);
+		m_processInfo.SetVideoInterlaced(hints.interlaced);
 	}
 
 	return true;
