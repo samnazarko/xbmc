@@ -2907,6 +2907,20 @@
           </constraints>
           <control type="spinner" format="integer" />
         </setting>
+        <setting id="videoscreen.hdrcaps" type="integer" parent="videoscreen.screen" label="34217" help="34216">
+          <level>2</level>
+          <default>0</default>
+          <constraints>
+            <options>
+              <option label="34218">0</option> <!-- AUTO -->
+              <option label="34219">1</option> <!-- HDR10 only -->
+              <option label="34230">3</option> <!-- HDR10 and HLG -->
+              <option label="34231">5</option> <!-- HDR10 and HDR10+ -->
+              <option label="34232">7</option> <!-- HDR10, HLG and HDR10+ -->
+            </options>
+          </constraints>
+          <control type="spinner" format="string" />
+        </setting>
         <setting id="videoscreen.delayrefreshchange" type="integer" parent="videoscreen.screen" label="13550" help="36165">
           <level>2</level>
           <default>0</default>

@@ -378,6 +378,7 @@ public:
   static constexpr auto SETTING_VIDEOSCREEN_MUTEHDMI = "videoscreen.mutehdmi";
   static constexpr auto SETTING_VIDEOSCREEN_FORCE422 = "videoscreen.force422";
   static constexpr auto SETTING_VIDEOSCREEN_MAXLUM = "videoscreen.maxlum";
+  static constexpr auto SETTING_VIDEOSCREEN_HDRCAPS = "videoscreen.hdrcaps";
   static constexpr auto SETTING_VIDEOSCREEN_STEREOSCOPICMODE = "videoscreen.stereoscopicmode";
   static constexpr auto SETTING_VIDEOSCREEN_PREFEREDSTEREOSCOPICMODE =
       "videoscreen.preferedstereoscopicmode";

@@ -390,9 +390,18 @@ bool CDisplaySettings::OnSettingChanging(const std::shared_ptr<const CSetting>& 
   else if (settingId == CSettings::SETTING_VIDEOSCREEN_MAXLUM)
   {
      int maxlum = 100;
+
      maxlum = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOSCREEN_MAXLUM);
      CLog::Log(LOGDEBUG, "CDisplaySettings::OnSettingChanging -- setting max lum to {}", maxlum);
      SysfsUtils::SetInt("/sys/module/am_vecm/parameters/customer_panel_lumin", maxlum);
+  }
+  else if (settingId == CSettings::SETTING_VIDEOSCREEN_HDRCAPS)
+  {
+    int hdr_caps = 0;
+    std::string attr = "";
+
+    hdr_caps = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOSCREEN_HDRCAPS);
+    SysfsUtils::SetInt("/sys/class/amhdmitx/amhdmitx0/force_hdr", hdr_caps);
   }
 #if defined(HAVE_X11) || defined(TARGET_WINDOWS_DESKTOP) || defined(TARGET_DARWIN_OSX)
   else if (settingId == CSettings::SETTING_VIDEOSCREEN_BLANKDISPLAYS)

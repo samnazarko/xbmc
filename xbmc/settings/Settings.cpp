@@ -610,6 +610,8 @@ void CSettings::InitializeISettingCallbacks()
   settingSet.insert(CSettings::SETTING_VIDEOSCREEN_SCREENMODE);
   settingSet.insert(CSettings::SETTING_VIDEOSCREEN_FORCE422);
   settingSet.insert(CSettings::SETTING_VIDEOSCREEN_LIMITEDRANGEAML);
+  settingSet.insert(CSettings::SETTING_VIDEOSCREEN_MAXLUM);
+  settingSet.insert(CSettings::SETTING_VIDEOSCREEN_HDRCAPS);
   settingSet.insert(CSettings::SETTING_VIDEOSCREEN_MONITOR);
   settingSet.insert(CSettings::SETTING_VIDEOSCREEN_PREFEREDSTEREOSCOPICMODE);
   settingSet.insert(CSettings::SETTING_VIDEOSCREEN_3DLUT);
