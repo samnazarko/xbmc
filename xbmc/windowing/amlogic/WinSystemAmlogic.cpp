@@ -77,9 +77,8 @@ CWinSystemAmlogic::CWinSystemAmlogic() :
   aml_disable_freeScale();
 
   /* Take in to account custom OSMC parameters */
-  if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_VIDEOSCREEN_FORCERGB))
-  {
-    CLog::Log(LOGDEBUG, "CEGLNativeTypeAmlogic::Initialize -- forcing RGB");
+  if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_VIDEOSCREEN_FORCERGB)) {
+    CLog::Log(LOGDEBUG, "CWinSystemAmlogic::Initialize -- forcing RGB");
     SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/output_rgb", "1");
   }
 
@@ -89,45 +88,42 @@ CWinSystemAmlogic::CWinSystemAmlogic() :
     range_control &= 1;
   else
     range_control |= 2;
-  CLog::Log(LOGDEBUG, "CEGLNativeTypeAmlogic::Initialize -- setting quantization range to {}",
+  CLog::Log(LOGDEBUG, "CWinSystemAmlogic::Initialize -- setting quantization range to {}",
       range_control & 2 ? "full" : "limited");
   SysfsUtils::SetInt("/sys/module/am_vecm/parameters/range_control", range_control);
 
-  if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_VIDEOSCREEN_LOCKHPD))
-  {
-    CLog::Log(LOGDEBUG, "CEGLNativeTypeAmlogic::Initialize -- forcing HPD to be locked");
+  if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_VIDEOSCREEN_LOCKHPD)) {
+    CLog::Log(LOGDEBUG, "CWinSystemAmlogic::Initialize -- forcing HPD to be locked");
     SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/debug", "hpd_lock1");
   }
 
   std::string attr = "";
   SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/attr", attr);
 
-  if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_VIDEOSCREEN_FORCE422))
-  {
+  if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_VIDEOSCREEN_FORCE422)) {
     if (attr.find("444") != std::string::npos ||
-      attr.find("422") != std::string::npos ||
-      attr.find("420") != std::string::npos)
+        attr.find("422") != std::string::npos ||
+        attr.find("420") != std::string::npos)
       attr.replace(attr.find("4"),3,"422").append("now");
     else
       attr.append("422now");
   }
-  else 
-  {
-    if (attr.find("422") != std::string::npos)
+  else {
+    if (attr.find("422") != std::string::npos) {
       attr.erase(attr.find("4"),3);
+    }
     attr.append("now");
   }
-  CLog::Log(LOGDEBUG, "CEGLNativeTypeAmlogic::Initialize -- setting 422 output, attr = {}", attr);
+  CLog::Log(LOGDEBUG, "CWinSystemAmlogic::Initialize -- setting 422 output, attr = {}", attr);
   SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/attr", attr.c_str());
 
   int maxlum = 100;
   maxlum = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOSCREEN_MAXLUM);
-  CLog::Log(LOGDEBUG, "CEGLNativeTypeAmlogic::Initialize -- setting max lum to {}", maxlum);
+  CLog::Log(LOGDEBUG, "CWinSystemAmlogic::Initialize -- setting max lum to {}", maxlum);
   SysfsUtils::SetInt("/sys/module/am_vecm/parameters/customer_panel_lumin", maxlum);
 
   int hdr_caps = 0;
-  hdr_caps = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(
-      CSettings::SETTING_VIDEOSCREEN_HDRCAPS);
+  hdr_caps = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOSCREEN_HDRCAPS);
   SysfsUtils::SetInt("/sys/class/amhdmitx/amhdmitx0/force_hdr", hdr_caps);
 
   SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/rawedid", m_lastEdid);
@@ -149,77 +145,74 @@ CWinSystemAmlogic::~CWinSystemAmlogic()
   }
 }
 
-void hwMon(CWinSystemAmlogic *instance) {
+static void hwMon(CWinSystemAmlogic *instance)
+{
+	struct udev *udev;
+	struct udev_device *dev;
 
-        struct udev *udev;
-        struct udev_device *dev;
+	struct udev_monitor *mon;
+	int fd;
 
-        struct udev_monitor *mon;
-        int fd;
+	/* Create the udev object */
+	udev = udev_new();
+	if (!udev) {
+		return;
+	}
 
-        /* Create the udev object */
-        udev = udev_new();
-        if (!udev) {
-                return;
-        }
-
-        mon = udev_monitor_new_from_netlink(udev, "udev");
-        udev_monitor_filter_add_match_subsystem_devtype(mon, "extcon", NULL);
+	mon = udev_monitor_new_from_netlink(udev, "udev");
+	udev_monitor_filter_add_match_subsystem_devtype(mon, "extcon", NULL);
 	udev_monitor_filter_add_match_subsystem_devtype(mon, "switch", NULL);
 
-        udev_monitor_enable_receiving(mon);
-        fd = udev_monitor_get_fd(mon);
+	udev_monitor_enable_receiving(mon);
+	fd = udev_monitor_get_fd(mon);
 
-        /* Poll for events */
+	/* Poll for events */
 
-        while (1 && instance->m_monitorEvents) {
+	while (1 && instance->m_monitorEvents) {
+		fd_set fds;
+		struct timeval tv;
+		int ret;
 
-                fd_set fds;
-                struct timeval tv;
-                int ret;
+		FD_ZERO(&fds);
+		FD_SET(fd, &fds);
+		tv.tv_sec = 0;
+		tv.tv_usec = 0;
 
-                FD_ZERO(&fds);
-                FD_SET(fd, &fds);
-                tv.tv_sec = 0;
-                tv.tv_usec = 0;
+		ret = select(fd + 1, &fds, NULL, NULL, &tv);
 
-                ret = select(fd+1, &fds, NULL, NULL, &tv);
+		/* Check if FD has received data */
 
-                /* Check if FD has received data */
-
-                if (ret > 0 && FD_ISSET(fd, &fds)) {
-
-                        dev = udev_monitor_receive_device(mon);
-                        if (dev) {
-                                CLog::Log(LOGDEBUG, "CEGLNativeTypeAmlogic: Detected HDMI switch");
-                                int state;
-                                SysfsUtils::GetInt("/sys/class/amhdmitx/amhdmitx0/hpd_state", state);
+		if (ret > 0 && FD_ISSET(fd, &fds)) {
+			dev = udev_monitor_receive_device(mon);
+			if (dev) {
+				CLog::Log(LOGDEBUG, "CWinSystemAmlogic: Detected HDMI switch");
+				int state;
+				SysfsUtils::GetInt("/sys/class/amhdmitx/amhdmitx0/hpd_state", state);
 				std::string newEdid;
 				SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/rawedid", newEdid);
 
-                                if (state && newEdid != instance->m_lastEdid) {
-                                    CServiceBroker::GetAppMessenger()->PostMsg(TMSG_AML_RESIZE);
-				    instance->m_lastEdid = newEdid;
+				if (state && newEdid != instance->m_lastEdid) {
+					CServiceBroker::GetAppMessenger()->PostMsg(TMSG_AML_RESIZE);
+					instance->m_lastEdid = newEdid;
 				}
-                                udev_device_unref(dev);
-                        }
-                        else {
-                                CLog::Log(LOGERROR, "CEGLNativeTypeAmlogic: can't get device from receive_device");
-                        }
-                }
-                usleep(250*1000);
-        }
+				udev_device_unref(dev);
+			} else {
+				CLog::Log(LOGERROR, "CWinSystemAmlogic: can't get device from receive_device");
+			}
+		}
+		usleep(250 * 1000);
+	}
 }
 
 void CWinSystemAmlogic::StartMonitorHWEvent() {
-    CLog::Log(LOGDEBUG, "CEGLNativeTypeAmlogic::StartMonitorHWEvent -- starting event monitor for HDMI hotplug events");
+    CLog::Log(LOGDEBUG, "CWinSystemAmlogic::StartMonitorHWEvent -- starting event monitor for HDMI hotplug events");
     m_monitorEvents = true;
     m_monitorThread = std::thread(hwMon, this);
     return;
 }
 
 void CWinSystemAmlogic::StopMonitorHWEvent() {
-    CLog::Log(LOGDEBUG, "CEGLNativeTypeAmlogic::StopMonitorHWEvent -- stopping event monitor for HDMI hotplug events");
+    CLog::Log(LOGDEBUG, "CWinSystemAmlogic::StopMonitorHWEvent -- stopping event monitor for HDMI hotplug events");
     m_monitorEvents = false;
     m_monitorThread.join();
     return;
@@ -227,13 +220,11 @@ void CWinSystemAmlogic::StopMonitorHWEvent() {
 
 bool CWinSystemAmlogic::InitWindowSystem()
 {
-
-const std::shared_ptr<CSettings> settings = CServiceBroker::GetSettingsComponent()->GetSettings();
+  const std::shared_ptr<CSettings> settings = CServiceBroker::GetSettingsComponent()->GetSettings();
 
   if (!aml_support_av1()) {
 	auto setting = settings->GetSetting(CSettings::SETTING_VIDEOPLAYER_USEAMCODECAV1);
-	if (setting)
-	{
+	if (setting) {
 		setting->SetVisible(false);
 		settings->SetBool(CSettings::SETTING_VIDEOPLAYER_USEAMCODECAV1, false);
 	}
