@@ -36,6 +36,7 @@
 #include <unistd.h>
 #include <linux/videodev2.h>
 #include <thread>
+#include <chrono>
 
 #include "AMLInsecureVideoCodec.h"
 
@@ -43,6 +44,7 @@ extern "C" {
 	#include <libavcodec/packet.h>
 }
 
+using namespace std::chrono_literals;
 using namespace amlogic;
 
 CEvent g_aml_codec_sync_event;
@@ -53,8 +55,9 @@ static const int RW_WAIT_TIME = 5 * 1000; // 5 ms
 
 static const unsigned int STATE_HASPTS = 2;
 
-// max level for the decoder input queue
-static const float maxDecoderInputLevel = 0.8f;
+// max and min levels for the decoder input queue
+static const float maxDecoderInputLevel = 0.5f;
+static const float minDecoderInputLevel = 0.015f;
 
 /*************************************************************************/
 
@@ -483,6 +486,7 @@ bool AMLInsecureVideoCodec::openDecoder(CDVDStreamInfo &hints)
 	CLog::Log(LOGDEBUG,
 		"AMLInsecureVideoCodec::openDecoder hints.orientation({}), hints.forced_aspect({}), hints.extrasize({})",
 		hints.orientation, hints.forced_aspect, hints.extradata.GetSize());
+	CLog::Log(LOGDEBUG,"AMLInsecureVideoCodec::openDecoder hints.interlaced({})", hints.interlaced);
 	CLog::Log(LOGDEBUG,
 		"AMLInsecureVideoCodec::openDecoder hints primaries {}, transfer characteristic {}, colourspace {}",
 		hints.colorPrimaries, hints.colorTransferCharacteristic, hints.colorSpace);
@@ -756,7 +760,7 @@ float AMLInsecureVideoCodec::getDecoderInputBufferLevel() const
 
 bool AMLInsecureVideoCodec::addData(uint8_t *pData, size_t iSize, double dts, double pts, uint8_t subtitlePlane)
 {
-	if (!m_filling || getDecoderInputBufferLevel() > maxDecoderInputLevel) {
+	if (getDecoderInputBufferLevel() > maxDecoderInputLevel) {
 		// we shouldn't feed the decoder with further packets right now
 		return false;
 	}
@@ -854,7 +858,7 @@ bool AMLInsecureVideoCodec::addData(uint8_t *pData, size_t iSize, double dts, do
 		}
 
 		if (m_am_private->am_pkt.isvalid) {
-			CLog::Log(LOGDEBUG, "AMLInsecureVideoCodec::addData: write_av_packet looping");
+			CLog::Log(LOGDEBUG, "AMLInsecureVideoCodec::addData: write_av_packet looping, lvl:{:0.3f}", getDecoderInputBufferLevel());
 		}
 		loop++;
 	}
@@ -865,9 +869,8 @@ bool AMLInsecureVideoCodec::addData(uint8_t *pData, size_t iSize, double dts, do
 		return false;
 	}
 
-	if (iSize > 50000) {
-		usleep(2000); // wait 2ms to process larger packets
-	}
+	// give decoder some time to settle
+	std::this_thread::sleep_for(2ms);
 
 	if (iSize > 0) {
 		CLog::Log(LOGDEBUG, LOGVIDEO, "AMLInsecureVideoCodec::addData: sz:{} dts_in:{:0.3f} pts_in:{:0.3f} ptsOut:{:0.3f} lvl:{:0.3f}",
@@ -981,14 +984,20 @@ CDVDVideoCodec::VCReturn AMLInsecureVideoCodec::getPicture(VideoPicture *pVideoP
 		return CDVDVideoCodec::VC_ERROR;
 	}
 
-	m_filling = m_input_queue_length < 4;
+	float level = getDecoderInputBufferLevel();
+
+	if (!m_drain && level < minDecoderInputLevel) {
+		return CDVDVideoCodec::VC_BUFFER;
+	}
+
+	m_filling = (level < (minDecoderInputLevel * 2.0)) || m_libamcodec->isVCodecBuffering();
 
 	if (!dequeueBuffer()) {
 		if (m_drain) {
 			return m_input_queue_length > 0 ? CDVDVideoCodec::VC_NONE : CDVDVideoCodec::VC_EOF;
 		}
 
-		return m_filling || m_libamcodec->isVCodecBuffering() ? CDVDVideoCodec::VC_BUFFER : CDVDVideoCodec::VC_NONE;
+		return m_filling ? CDVDVideoCodec::VC_BUFFER : CDVDVideoCodec::VC_NONE;
 	}
 
 	pVideoPicture->iFlags = 0;
@@ -1003,7 +1012,12 @@ CDVDVideoCodec::VCReturn AMLInsecureVideoCodec::getPicture(VideoPicture *pVideoP
 	} else {
 		pVideoPicture->iDuration = static_cast<double>(m_cur_pts - m_last_pts);
 
-		if (abs(pVideoPicture->iDuration - duration) > 6000.0) { // we tolerate a difference of about 6 ms
+		double duration_ratio = pVideoPicture->iDuration / duration;
+
+		// pts order not correct (sometimes, the pts_server in the kernel returns wrong
+		// pts values => try to compensate). If the difference is too big, then we assume
+		// there's a leap in the stream's pts values
+		if (duration_ratio < 0.2 || (duration_ratio > 1.5 && duration_ratio < 4.0)) {
 			pVideoPicture->iDuration = duration;
 			m_cur_pts = m_last_pts + duration;
 		}
@@ -1070,8 +1084,12 @@ unsigned int AMLInsecureVideoCodec::getDecoderVideoRate() const
 	}
 
 	struct vdec_status vs;
+
 	m_libamcodec->getVdecState(vs);
 	if (vs.fps > 0) {
+		if (m_hints.interlaced) {
+			vs.fps *= 2;
+		}
 		return static_cast<unsigned int>(0.5 + (static_cast<float>(UNIT_FREQ) / static_cast<float>(vs.fps)));
 	} else {
 		return 0;
