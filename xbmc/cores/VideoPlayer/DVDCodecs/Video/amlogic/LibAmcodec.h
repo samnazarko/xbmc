@@ -82,6 +82,7 @@ public:
 
 	int getVbufState(struct buf_status &bs) const;
 	int getVdecState(struct vdec_status &vs) const;
+	int getVdecInfo(struct vdec_info &vi) const;
 	bool isVCodecBuffering() const;
 
 	int checkinPts64(uint64_t pts64);

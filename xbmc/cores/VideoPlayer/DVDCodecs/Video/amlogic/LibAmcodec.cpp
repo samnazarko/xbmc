@@ -36,6 +36,7 @@ public:
   virtual int codec_checkin_pts64(codec_para_t *pcodec, unsigned long long pts64)=0;
   virtual int codec_get_vbuf_state(codec_para_t *pcodec, struct buf_status *buf)=0;
   virtual int codec_get_vdec_state(codec_para_t *pcodec, struct vdec_status *vdec)=0;
+  virtual int codec_get_vdec_info(codec_para_t *pcodec, struct vdec_info *vdec) = 0;
 
   virtual int codec_get_vdec_is_buffering(codec_para_t *pcodec, unsigned long *buffering)=0;
 
@@ -68,8 +69,9 @@ class amlogic::DllLibAmCodec : public DllDynamic, LibamCodecInterface
   DEFINE_METHOD3(int, codec_write,              (codec_para_t *p1, void *p2, int p3))
   DEFINE_METHOD2(int, codec_checkin_pts,        (codec_para_t *p1, unsigned long p2))
   DEFINE_METHOD2(int, codec_checkin_pts64,      (codec_para_t *p1, unsigned long long p2))
-  DEFINE_METHOD2(int, codec_get_vbuf_state,     (codec_para_t *p1, struct buf_status * p2))
-  DEFINE_METHOD2(int, codec_get_vdec_state,     (codec_para_t *p1, struct vdec_status * p2))
+  DEFINE_METHOD2(int, codec_get_vbuf_state,     (codec_para_t *p1, struct buf_status *p2))
+  DEFINE_METHOD2(int, codec_get_vdec_state,     (codec_para_t *p1, struct vdec_status *p2))
+  DEFINE_METHOD2(int, codec_get_vdec_info,      (codec_para_t *p1, struct vdec_info *p2))
 
   DEFINE_METHOD2(int, codec_get_vdec_is_buffering,     (codec_para_t *p1, unsigned long *p2))
 
@@ -100,6 +102,7 @@ class amlogic::DllLibAmCodec : public DllDynamic, LibamCodecInterface
     RESOLVE_METHOD(codec_checkin_pts64)
     RESOLVE_METHOD(codec_get_vbuf_state)
     RESOLVE_METHOD(codec_get_vdec_state)
+    RESOLVE_METHOD(codec_get_vdec_info)
 
     RESOLVE_METHOD_OPTIONAL(codec_get_vdec_is_buffering)
 
@@ -272,6 +275,11 @@ int LibAmcodec::setHdr10pMetadata(unsigned char *metadata, int metadata_length)
 int LibAmcodec::getVdecState(struct vdec_status &vs) const
 {
 	return m_dll->codec_get_vdec_state(m_codec, &vs);
+}
+
+int LibAmcodec::getVdecInfo(struct vdec_info &vi) const
+{
+	return m_dll->codec_get_vdec_info(m_codec, &vi);
 }
 
 int LibAmcodec::write(unsigned char *buf, unsigned int size)
