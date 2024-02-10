@@ -947,9 +947,14 @@ bool AMLInsecureVideoCodec::dequeueBuffer()
 	m_cur_pts = static_cast<uint64_t>(vbuf.timestamp.tv_sec) << 32;
 	m_cur_pts |= static_cast<uint64_t>(vbuf.timestamp.tv_usec & 0xFFFFFFFF);
 
-	CLog::Log(LOGDEBUG, LOGAVTIMING, "AMLInsecureVideoCodec::dequeueBuffer: pts:{:0.3f} idx:{}", static_cast<double>(m_cur_pts) / DVD_TIME_BASE, vbuf.index);
-
 	m_bufferIndex = vbuf.index;
+
+	// The interlaced flag was initially set when the decoder was opened. But when the decoder
+	// is doing its job, it finds out the truth.
+	m_hints.interlaced = (vbuf.field & V4L2_FIELD_INTERLACED) != 0;
+
+	CLog::Log(LOGDEBUG, LOGAVTIMING, "AMLInsecureVideoCodec::dequeueBuffer: pts: {:0.3f} idx: {} interlaced: {}",
+			  static_cast<double>(m_cur_pts) / DVD_TIME_BASE, vbuf.index, m_hints.interlaced);
 
 	return true;
 }
@@ -1083,17 +1088,19 @@ unsigned int AMLInsecureVideoCodec::getDecoderVideoRate() const
 		return 0;
 	}
 
-	struct vdec_status vs;
+	struct vdec_info vi;
 
-	m_libamcodec->getVdecState(vs);
-	if (vs.fps > 0) {
-		if (m_hints.interlaced) {
-			vs.fps *= 2;
-		}
-		return static_cast<unsigned int>(0.5 + (static_cast<float>(UNIT_FREQ) / static_cast<float>(vs.fps)));
-	} else {
+	m_libamcodec->getVdecInfo(vi);
+
+	if (vi.frame_dur == 0) {
 		return 0;
 	}
+
+	if (m_hints.interlaced && vi.frame_dur >= 3200) {
+		return vi.frame_dur / 2;
+	}
+
+	return vi.frame_dur;
 }
 
 void AMLInsecureVideoCodec::setFramepackingResolution(const int width, const int height, const int blanking) const
