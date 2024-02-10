@@ -32,7 +32,7 @@
 
 #define EXTERNAL_PTS    (1)
 #define SYNC_OUTSIDE    (2)
-#define KEYFRAME_PTS_ONLY 0x100
+#define UNSTABLE_PTS	0x40
 
 #define PTS_FREQ        90000
 #define UNIT_FREQ       96000

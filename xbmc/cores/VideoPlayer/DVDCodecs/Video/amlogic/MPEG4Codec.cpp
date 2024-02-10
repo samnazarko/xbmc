@@ -205,7 +205,4 @@ void MPEG4Codec::setupVideoCodecParams(aml_generic_param &params) const
 	AMLInsecureVideoCodec::setupVideoCodecParams(params);
 
 	params.param = (void*) EXTERNAL_PTS;
-	if (m_hints.ptsinvalid) {
-		params.param = (void*) (EXTERNAL_PTS | KEYFRAME_PTS_ONLY);
-	}
 }

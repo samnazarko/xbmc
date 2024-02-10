@@ -826,7 +826,7 @@ bool AMLInsecureVideoCodec::addData(uint8_t *pData, size_t iSize, double dts, do
 		m_am_private->am_pkt.avdts = dts;
 
 		// For VC1 AML decoder uses PTS only on I-Frames
-		if (m_am_private->am_pkt.avpts == UINT64_0 && (((size_t) m_am_private->gcodec.param) & KEYFRAME_PTS_ONLY)) {
+		if (m_am_private->am_pkt.avpts == UINT64_0 && (((size_t) m_am_private->gcodec.param) & UNSTABLE_PTS)) {
 			m_am_private->am_pkt.avpts = m_am_private->am_pkt.avdts;
 		}
 	}

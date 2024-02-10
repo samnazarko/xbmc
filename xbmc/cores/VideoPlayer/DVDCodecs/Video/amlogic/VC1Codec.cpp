@@ -79,7 +79,7 @@ void VC1Codec::setupVideoCodecParams(aml_generic_param &params) const
 	AMLInsecureVideoCodec::setupVideoCodecParams(params);
 
 	if (m_hints.ptsinvalid) {
-		params.param = (void*) KEYFRAME_PTS_ONLY;
+		params.param = (void*) UNSTABLE_PTS;
 	}
 }
 
