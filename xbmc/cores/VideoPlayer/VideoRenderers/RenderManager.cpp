@@ -1172,10 +1172,9 @@ void CRenderManager::PrepareNextRender()
   }
 
   CLog::LogFC(LOGDEBUG, LOGAVTIMING,
-              "frameOnScreen: {:f} renderPts: {:f} nextFramePts: {:f} -> diff: {:f}  render: {} "
-              "forceNext: {}",
-              frameOnScreen, renderPts, nextFramePts, (renderPts - nextFramePts),
-              renderPts >= nextFramePts, m_forceNext);
+            "clock: {:.3f}, renderPts: {:.3f}, nextFramePts: {:.3f}, diff: {:.3f}, queue: {}, late: {}, force next: {}",
+            frameOnScreen / 1000000.0, renderPts / 1000000.0, nextFramePts / 1000000.0, (nextFramePts - renderPts) / 1000000.0,
+            m_queued.size(), m_lateframes, m_forceNext);
 
   bool combined = false;
   if (m_presentsourcePast >= 0)
@@ -1190,9 +1189,7 @@ void CRenderManager::PrepareNextRender()
     // see if any future queued frames are already due
     auto iter = m_queued.begin();
     int idx = *iter;
-    int lateframes = 0;
-    int queue_size = m_queued.size();
-
+    ++iter;
     while (iter != m_queued.end())
     {
       // the slot for rendering in time is [pts .. (pts +  x * frametime)]
@@ -1200,10 +1197,8 @@ void CRenderManager::PrepareNextRender()
       // we are really late. The likelihood that we recover decreases the greater m_lateframes
       // get. Skipping a frame is easier than having decoder dropping one (lateframes > 10)
       double x = (m_lateframes <= 6) ? 0.98 : 0;
-      if ((renderPts - frametime * queue_size) < (m_Queue[*iter].pts + x * frametime))
+      if (renderPts < m_Queue[*iter].pts + x * frametime)
         break;
-      lateframes++;
-      queue_size--;
       idx = *iter;
       ++iter;
     }
@@ -1211,17 +1206,17 @@ void CRenderManager::PrepareNextRender()
     // skip late frames
     while (m_queued.front() != idx)
     {
-      m_presentsourcePast = m_queued.front();
-      m_queued.pop_front();
-
       if (m_presentsourcePast >= 0)
       {
         m_discard.push_back(m_presentsourcePast);
         m_QueueSkip++;
-        m_presentsourcePast = -1;
       }
+      m_presentsourcePast = m_queued.front();
+      m_queued.pop_front();
     }
 
+    int lateframes = static_cast<int>((renderPts - m_Queue[idx].pts) *
+                                      static_cast<double>(m_fps / DVD_TIME_BASE));
     if (lateframes)
       m_lateframes += lateframes;
     else
