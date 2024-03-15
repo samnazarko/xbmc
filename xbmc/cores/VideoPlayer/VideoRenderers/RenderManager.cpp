@@ -1186,41 +1186,26 @@ void CRenderManager::PrepareNextRender()
 
   if (renderPts >= nextFramePts || m_forceNext)
   {
-    // see if any future queued frames are already due
-    auto iter = m_queued.begin();
-    int idx = *iter;
-    ++iter;
-    while (iter != m_queued.end())
-    {
-      // the slot for rendering in time is [pts .. (pts +  x * frametime)]
-      // renderer/drivers have internal queues, being slightly late here does not mean that
-      // we are really late. The likelihood that we recover decreases the greater m_lateframes
-      // get. Skipping a frame is easier than having decoder dropping one (lateframes > 10)
-      double x = (m_lateframes <= 6) ? 0.98 : 0;
-      if (renderPts < m_Queue[*iter].pts + x * frametime)
-        break;
-      idx = *iter;
-      ++iter;
-    }
+    double lateframes = (renderPts - nextFramePts) / frametime;
 
-    // skip late frames
-    while (m_queued.front() != idx)
+    while (lateframes >= 1.5 && m_queued.size() > 2)
     {
+      // skip late frames if possible; if the queue is almost empty, we don't skip
+      // even if we should to avoid emptying the queue too fast
       if (m_presentsourcePast >= 0)
       {
         m_discard.push_back(m_presentsourcePast);
-        m_QueueSkip++;
       }
       m_presentsourcePast = m_queued.front();
       m_queued.pop_front();
+      m_QueueSkip++;
+
+      lateframes = (renderPts - m_Queue[m_queued.front()].pts) / frametime;
     }
 
-    int lateframes = static_cast<int>((renderPts - m_Queue[idx].pts) *
-                                      static_cast<double>(m_fps / DVD_TIME_BASE));
-    if (lateframes)
-      m_lateframes += lateframes;
-    else
-      m_lateframes = 0;
+    int idx = m_queued.front();
+
+    m_lateframes = (int) (lateframes > 0. ? lateframes : 0.);
 
     m_presentstep = PRESENT_FLIP;
     m_discard.push_back(m_presentsource);
