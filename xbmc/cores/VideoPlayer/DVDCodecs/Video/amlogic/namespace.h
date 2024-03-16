@@ -11,6 +11,7 @@
 namespace amlogic {
 	// base classes
 	class AMLCodecList;
+	class AMLDecoderInputQueueStats;
 	class AMLInsecureVideoCodec;
 	class AMLVideoCodec;
 	class AMLVideoCodecInfo;
