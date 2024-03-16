@@ -40,6 +40,8 @@
 
 #include "AMLInsecureVideoCodec.h"
 
+#include "AMLDecoderInputQueueStats.h"
+
 extern "C" {
 	#include <libavcodec/packet.h>
 }
@@ -55,9 +57,8 @@ static const int RW_WAIT_TIME = 5 * 1000; // 5 ms
 
 static const unsigned int STATE_HASPTS = 2;
 
-// max and min levels for the decoder input queue
-static const float maxDecoderInputLevel = 0.5f;
-static const float minDecoderInputLevel = 0.015f;
+// max level for the decoder input queue
+static const float maxDecoderInputLevel = 0.7f;
 
 /*************************************************************************/
 
@@ -85,6 +86,7 @@ AMLInsecureVideoCodec::AMLInsecureVideoCodec(CProcessInfo &processInfo)
 	m_input_queue_length = 0;
 
 	m_libamcodec = new LibAmcodec();
+	m_decInputQueue = new AMLDecoderInputQueueStats(m_libamcodec);
 
 	// set logging callback
 	m_libamcodec->setLogCallback(libamlcodec_logger);
@@ -93,6 +95,7 @@ AMLInsecureVideoCodec::AMLInsecureVideoCodec(CProcessInfo &processInfo)
 AMLInsecureVideoCodec::~AMLInsecureVideoCodec()
 {
 	delete m_am_private, m_am_private = nullptr;
+	delete m_decInputQueue, m_decInputQueue = nullptr;
 	delete m_libamcodec, m_libamcodec = nullptr;
 }
 
@@ -432,6 +435,7 @@ bool AMLInsecureVideoCodec::openDecoder(CDVDStreamInfo &hints)
 	m_hints = hints;
 	m_state = 0;
 	m_filling = true;
+	m_decInputQueue->reset();
 
 	if (!openAmlVideo(hints)) {
 		CLog::Log(LOGERROR, "AMLInsecureVideoCodec::openDecoder - cannot open amlvideo device");
@@ -750,18 +754,10 @@ int AMLInsecureVideoCodec::write_av_packet(am_private_t *para, am_packet_t *pkt)
 	return PLAYER_SUCCESS;
 }
 
-float AMLInsecureVideoCodec::getDecoderInputBufferLevel() const
-{
-	struct buf_status bs;
-	m_libamcodec->getVbufState(bs);
-
-	return (float) bs.data_len / (float) bs.size;
-}
-
 bool AMLInsecureVideoCodec::addData(uint8_t *pData, size_t iSize, double dts, double pts, uint8_t subtitlePlane)
 {
-	if (getDecoderInputBufferLevel() > maxDecoderInputLevel) {
-		// we shouldn't feed the decoder with further packets right now
+	if (!m_decInputQueue->isAvailable(iSize)) {
+		// decoder input queue is almost full
 		return false;
 	}
 
@@ -858,7 +854,7 @@ bool AMLInsecureVideoCodec::addData(uint8_t *pData, size_t iSize, double dts, do
 		}
 
 		if (m_am_private->am_pkt.isvalid) {
-			CLog::Log(LOGDEBUG, "AMLInsecureVideoCodec::addData: write_av_packet looping, lvl:{:0.3f}", getDecoderInputBufferLevel());
+			CLog::Log(LOGDEBUG, "AMLInsecureVideoCodec::addData: write_av_packet looping, lvl:{:0.3f}", m_decInputQueue->fillLevel());
 		}
 		loop++;
 	}
@@ -869,6 +865,8 @@ bool AMLInsecureVideoCodec::addData(uint8_t *pData, size_t iSize, double dts, do
 		return false;
 	}
 
+	m_decInputQueue->addFrame(iSize);
+
 	// give decoder some time to settle
 	std::this_thread::sleep_for(2ms);
 
@@ -878,7 +876,7 @@ bool AMLInsecureVideoCodec::addData(uint8_t *pData, size_t iSize, double dts, do
 			dts / DVD_TIME_BASE,
 			pts / DVD_TIME_BASE,
 			static_cast<float>(m_cur_pts) / DVD_TIME_BASE,
-			getDecoderInputBufferLevel());
+			m_decInputQueue->fillLevel());
 	}
 
 	return true;
@@ -919,6 +917,7 @@ void AMLInsecureVideoCodec::reset()
 	m_cur_pts = DVD_NOPTS_VALUE;
 	m_state = 0;
 	m_filling = true;
+	m_decInputQueue->reset();
 
 	m_input_queue_length = 0;
 
@@ -989,13 +988,17 @@ CDVDVideoCodec::VCReturn AMLInsecureVideoCodec::getPicture(VideoPicture *pVideoP
 		return CDVDVideoCodec::VC_ERROR;
 	}
 
-	float level = getDecoderInputBufferLevel();
+	float level = m_decInputQueue->fillLevel();
+	unsigned waitingFrameCount = m_decInputQueue->frameCount();
 
-	if (!m_drain && level < minDecoderInputLevel) {
+	if (!m_drain && waitingFrameCount < 5 && level < maxDecoderInputLevel) {
 		return CDVDVideoCodec::VC_BUFFER;
 	}
 
-	m_filling = (level < (minDecoderInputLevel * 2.0)) || m_libamcodec->isVCodecBuffering();
+	// give decoder some time to settle
+	std::this_thread::sleep_for(5ms);
+
+	m_filling = (waitingFrameCount < 10 && level < maxDecoderInputLevel) || m_libamcodec->isVCodecBuffering();
 
 	if (!dequeueBuffer()) {
 		if (m_drain) {

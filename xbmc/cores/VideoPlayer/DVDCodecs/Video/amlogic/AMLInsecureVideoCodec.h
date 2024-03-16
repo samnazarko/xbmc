@@ -88,6 +88,8 @@ protected:
 
 	OSMCSecureOS	*m_secureOSMC;
 
+	AMLDecoderInputQueueStats	*m_decInputQueue;
+
 	virtual vformat_t getVideoFormat(const CDVDStreamInfo &hints) const = 0;
 	virtual vdec_type_t getVideoCodecType(const CDVDStreamInfo &hints) const = 0;
 
@@ -121,8 +123,6 @@ protected:
 
 	virtual void setVideoMode(std::string videoInputMode, RENDER_STEREO_MODE videoOutputMode);
 	virtual void setPictureStereoMode(VideoPicture *pVideoPicture);
-
-	virtual float getDecoderInputBufferLevel() const;
 
 public:
 	AMLInsecureVideoCodec(CProcessInfo &processInfo);
