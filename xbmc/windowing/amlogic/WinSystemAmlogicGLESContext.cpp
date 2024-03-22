@@ -6,12 +6,19 @@
  *  See LICENSES/README.md for more information.
  */
 
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <linux/fb.h>
+
 #include "VideoSyncAML.h"
 #include "WinSystemAmlogicGLESContext.h"
 #include "utils/log.h"
 #include "threads/SingleLock.h"
 #include "windowing/WindowSystemFactory.h"
 #include "windowing/GraphicContext.h"
+
+#include "OSMCSecureOS.h"
 
 using namespace KODI;
 using namespace KODI::WINDOWING::AML;
@@ -28,6 +35,17 @@ std::unique_ptr<CWinSystemBase> CWinSystemAmlogicGLESContext::CreateWinSystem()
 
 bool CWinSystemAmlogicGLESContext::InitWindowSystem()
 {
+  m_is_vero_4k = OSMCSecureOS::getInstance().isVero4k();
+  if (m_is_vero_4k) {
+    std::string fb = "/dev/" + m_framebuffer_name;
+
+    m_fb_fd = open(fb.c_str(), O_RDWR);
+    if (m_fb_fd < 0) {
+      CLog::Log(LOGERROR, "CWinSystemAmlogicGLESContext: unable to open frame buffer {}", fb);
+      return false;
+    }
+  }
+
   if (!CWinSystemAmlogic::InitWindowSystem())
   {
     return false;
@@ -54,6 +72,15 @@ bool CWinSystemAmlogicGLESContext::InitWindowSystem()
   if (!m_pGLContext.CreateContext(contextAttribs))
   {
     return false;
+  }
+
+  return true;
+}
+
+bool CWinSystemAmlogicGLESContext::DestroyWindowSystem()
+{
+  if (m_is_vero_4k && m_fb_fd >= 0) {
+    close(m_fb_fd);
   }
 
   return true;
@@ -131,6 +158,12 @@ void CWinSystemAmlogicGLESContext::PresentRenderImpl(bool rendered)
     // tell any shared resources
     for (std::vector<IDispResource *>::iterator i = m_resources.begin(); i != m_resources.end(); ++i)
       (*i)->OnResetDisplay();
+  }
+
+  if (m_is_vero_4k) {
+    // libMali on 4k/4k+ doesn't honor vsync
+    unsigned int zero=0;
+    (void) ioctl(m_fb_fd, FBIO_WAITFORVSYNC, &zero);
   }
 
   // Ignore errors - eglSwapBuffers() sometimes fails during modeswaps on AML,

@@ -23,7 +23,7 @@ namespace AML
 class CWinSystemAmlogicGLESContext : public CWinSystemAmlogic, public CRenderSystemGLES
 {
 public:
-  CWinSystemAmlogicGLESContext() = default;
+  CWinSystemAmlogicGLESContext() : m_is_vero_4k(false), m_fb_fd(-1) {}
   virtual ~CWinSystemAmlogicGLESContext() = default;
 
   static void Register();
@@ -32,6 +32,7 @@ public:
   // Implementation of CWinSystemBase via CWinSystemAmlogic
   CRenderSystemBase *GetRenderSystem() override { return this; }
   bool InitWindowSystem() override;
+  bool DestroyWindowSystem() override;
   bool CreateNewWindow(const std::string& name,
                        bool fullScreen,
                        RESOLUTION_INFO& res) override;
@@ -53,6 +54,9 @@ protected:
 
 private:
   CEGLContextUtils m_pGLContext;
+
+  bool m_is_vero_4k;
+  int m_fb_fd;
 
 };
 
