@@ -224,7 +224,7 @@ unsigned int AMLInsecureVideoCodec::getVideoRate(const CDVDStreamInfo &hints) co
 	// incorrectly reported as 50 fps (yes, video_rate == 1920)
 	if (hints.width == 1920 && video_rate == 1920) {
 		CLog::Log(LOGDEBUG, "AMLInsecureVideoCodec::getVideoRate: video_rate exception");
-		video_rate = 0.5 + (float) UNIT_FREQ * 1001 / 25000;
+		video_rate = 0.5 + (float) UNIT_FREQ * 1000 / 25000;
 	}
 
 	return video_rate;
