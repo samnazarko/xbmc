@@ -21,6 +21,7 @@
 #include "utils/SysfsUtils.h"
 #include "utils/AMLUtils.h"
 #include "utils/StringUtils.h"
+#include "utils/MathUtils.h"
 #include "settings/Settings.h"
 #include "settings/DisplaySettings.h"
 #include "settings/SettingsComponent.h"
@@ -1011,6 +1012,14 @@ CDVDVideoCodec::VCReturn AMLInsecureVideoCodec::getPicture(VideoPicture *pVideoP
 	pVideoPicture->iFlags = 0;
 
 	double duration = static_cast<double>((m_am_private->video_rate * DVD_TIME_BASE) / UNIT_FREQ);
+
+	float dec_vr = (float) m_am_private->video_rate;
+	float vr = (float) getVideoRate(m_hints);
+
+	if (!m_hints.interlaced && MathUtils::FloatEquals(vr / dec_vr, 2.f, 0.01f)) {
+		// the kernel refresh rate was set to double video rate
+		duration *= 2.0;
+	}
 
 	if (m_last_pts == DVD_NOPTS_VALUE) {
 		pVideoPicture->iDuration = duration;
