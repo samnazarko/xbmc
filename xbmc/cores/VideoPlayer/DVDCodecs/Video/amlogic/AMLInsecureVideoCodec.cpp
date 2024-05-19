@@ -233,7 +233,7 @@ unsigned int AMLInsecureVideoCodec::getVideoRate(const CDVDStreamInfo &hints) co
 
 void AMLInsecureVideoCodec::getExtradata(const CDVDStreamInfo &hints, uint8_t *&extradata, unsigned int &extrasize) const
 {
-	if (hints.extradata.GetSize()) {
+	if (hints.extradata.GetSize() == 0) {
 		extradata = nullptr;
 		extrasize = 0;
 		return;

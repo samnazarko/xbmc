@@ -297,7 +297,7 @@ int VC1Codec::set_header_info(am_private_t *para) const
 
 void VC1Codec::wmv3_set_header(am_private_t *para, am_packet_t *pkt) const
 {
-	CLog::Log(LOGDEBUG, "wmv3_write_header");
+	CLog::Log(LOGDEBUG, "wmv3_set_header");
 
 	unsigned i, check_sum = 0;
 	unsigned data_len = para->extrasize + 4;
@@ -344,7 +344,7 @@ void VC1Codec::wmv3_set_header(am_private_t *para, am_packet_t *pkt) const
 
 void VC1Codec::wvc1_set_header(am_private_t *para, am_packet_t *pkt) const
 {
-    CLog::Log(LOGDEBUG, "wvc1_write_header");
+    CLog::Log(LOGDEBUG, "wvc1_set_header");
 
     memcpy(pkt->hdr->data, para->extradata + 1, para->extrasize - 1);
     pkt->hdr->size = para->extrasize - 1;
