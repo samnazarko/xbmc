@@ -61,6 +61,8 @@ static const unsigned int STATE_HASPTS = 2;
 // max level for the decoder input queue
 static const float maxDecoderInputLevel = 0.7f;
 
+static const int drainRepeatCount = 20;
+
 /*************************************************************************/
 
 extern "C" void libamlcodec_logger(const char *format, ...)
@@ -928,6 +930,7 @@ void AMLInsecureVideoCodec::reset()
 void AMLInsecureVideoCodec::setDrain(bool drain)
 {
 	m_drain = drain;
+	m_drainRepeatCount = m_drain ? drainRepeatCount : 0;
 }
 
 bool AMLInsecureVideoCodec::dequeueBuffer()
@@ -1003,7 +1006,10 @@ CDVDVideoCodec::VCReturn AMLInsecureVideoCodec::getPicture(VideoPicture *pVideoP
 
 	if (!dequeueBuffer()) {
 		if (m_drain) {
-			return m_input_queue_length > 0 ? CDVDVideoCodec::VC_NONE : CDVDVideoCodec::VC_EOF;
+			// m_drainRepeatCount tells us indirectly how long we want to wait until everything's squeezed
+			// out of the decoder. Since we give the decoder 5 ms per try, m_drainRepeatCount refers
+			// to a time period (m_drainRepeatCount * 5 ms).
+			return m_drainRepeatCount-- > 0 ? CDVDVideoCodec::VC_NONE : CDVDVideoCodec::VC_EOF;
 		}
 
 		return m_filling ? CDVDVideoCodec::VC_BUFFER : CDVDVideoCodec::VC_NONE;

@@ -69,6 +69,7 @@ protected:
 	std::atomic<int>	 m_input_queue_length;
 
 	bool			 m_drain = false;
+	int				 m_drainRepeatCount;
 	CRect			 m_dst_rect;
 	CRect			 m_display_rect;
 	float			 m_zoom = -1.0f;
