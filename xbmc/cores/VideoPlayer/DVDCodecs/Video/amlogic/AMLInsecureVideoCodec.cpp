@@ -992,10 +992,25 @@ CDVDVideoCodec::VCReturn AMLInsecureVideoCodec::getPicture(VideoPicture *pVideoP
 		return CDVDVideoCodec::VC_ERROR;
 	}
 
+	if (m_drain) {
+		if (dequeueBuffer()) {
+			// we're draining, so just drop what we've got
+			releaseFrame(m_bufferIndex, true);
+		}
+
+		// give decoder some time to settle
+		std::this_thread::sleep_for(5ms);
+
+		// m_drainRepeatCount tells us indirectly how long we want to wait until everything's squeezed
+		// out of the decoder. Since we give the decoder 5 ms per try, m_drainRepeatCount refers
+		// to a time period (m_drainRepeatCount * 5 ms).
+		return m_drainRepeatCount-- > 0 ? CDVDVideoCodec::VC_NONE : CDVDVideoCodec::VC_EOF;
+	}
+
 	float level = m_decInputQueue->fillLevel();
 	unsigned waitingFrameCount = m_decInputQueue->frameCount();
 
-	if (!m_drain && waitingFrameCount < 5 && level < maxDecoderInputLevel) {
+	if (waitingFrameCount < 5 && level < maxDecoderInputLevel) {
 		return CDVDVideoCodec::VC_BUFFER;
 	}
 
@@ -1005,13 +1020,6 @@ CDVDVideoCodec::VCReturn AMLInsecureVideoCodec::getPicture(VideoPicture *pVideoP
 	m_filling = (waitingFrameCount < 10 && level < maxDecoderInputLevel) || m_libamcodec->isVCodecBuffering();
 
 	if (!dequeueBuffer()) {
-		if (m_drain) {
-			// m_drainRepeatCount tells us indirectly how long we want to wait until everything's squeezed
-			// out of the decoder. Since we give the decoder 5 ms per try, m_drainRepeatCount refers
-			// to a time period (m_drainRepeatCount * 5 ms).
-			return m_drainRepeatCount-- > 0 ? CDVDVideoCodec::VC_NONE : CDVDVideoCodec::VC_EOF;
-		}
-
 		return m_filling ? CDVDVideoCodec::VC_BUFFER : CDVDVideoCodec::VC_NONE;
 	}
 
