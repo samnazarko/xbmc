@@ -2637,7 +2637,7 @@
       <group id="1" label="16000">
         <setting id="filecache.buffermode" type="integer" label="37103" help="37104">
           <level>2</level>
-          <default>4</default>
+          <default>1</default>
           <constraints>
             <options>filecachebuffermodes</options>
           </constraints>
@@ -2645,7 +2645,7 @@
         </setting>
         <setting id="filecache.memorysize" type="integer" label="37105" help="37106">
           <level>2</level>
-          <default>20</default>
+          <default>64</default>
           <dependencies>
             <dependency type="enable">
               <condition setting="filecache.buffermode" operator="!is">3</condition>
