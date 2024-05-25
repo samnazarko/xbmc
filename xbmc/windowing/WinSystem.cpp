@@ -160,9 +160,9 @@ static bool resSortPredicate(const RESOLUTION_WHR& i, const RESOLUTION_WHR& j)
 {
   // note: this comparison must obey "strict weak ordering"
   // a "!=" on the flags comparison resulted in memory corruption
-  return (    i.width < j.width
-          || (i.width == j.width && i.height < j.height)
-          || (i.width == j.width && i.height == j.height && i.flags < j.flags) );
+  return (    i.m_screenWidth < j.m_screenWidth
+          || (i.m_screenWidth == j.m_screenWidth && i.m_screenHeight < j.m_screenHeight)
+          || (i.m_screenWidth == j.m_screenWidth && i.m_screenHeight == j.m_screenHeight && i.flags < j.flags) );
 }
 
 std::vector<RESOLUTION_WHR> CWinSystemBase::ScreenResolutions(float refreshrate)
