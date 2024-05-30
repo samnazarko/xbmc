@@ -1007,6 +1007,7 @@ CDVDVideoCodec::VCReturn AMLInsecureVideoCodec::getPicture(VideoPicture *pVideoP
 		return m_drainRepeatCount-- > 0 ? CDVDVideoCodec::VC_NONE : CDVDVideoCodec::VC_EOF;
 	}
 
+	unsigned int fps = UNIT_FREQ / m_am_private->video_rate;
 	float level = m_decInputQueue->fillLevel();
 	unsigned waitingFrameCount = m_decInputQueue->frameCount();
 
@@ -1015,9 +1016,9 @@ CDVDVideoCodec::VCReturn AMLInsecureVideoCodec::getPicture(VideoPicture *pVideoP
 	}
 
 	// give decoder some time to settle
-	std::this_thread::sleep_for(5ms);
+	std::this_thread::sleep_for(7ms);
 
-	m_filling = (waitingFrameCount < 10 && level < maxDecoderInputLevel) || m_libamcodec->isVCodecBuffering();
+	m_filling = (waitingFrameCount < fps && level < maxDecoderInputLevel) || m_libamcodec->isVCodecBuffering();
 
 	if (!dequeueBuffer()) {
 		return m_filling ? CDVDVideoCodec::VC_BUFFER : CDVDVideoCodec::VC_NONE;
