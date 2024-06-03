@@ -297,7 +297,7 @@ bool CDisplaySettings::OnSettingChanging(const std::shared_ptr<const CSetting>& 
           if (resInfo.iScreenHeight >= 2160)
           {
             CLog::Log(LOGWARNING, "The user has chosen a UHD resolution. We will warn them not to apply this");
-            if (HELPERS::ShowYesNoDialogText(CVariant{13110}, CVariant{40064}, CVariant{""}, CVariant{""}, 15000) != DialogResponse::CHOICE_YES)
+            if (HELPERS::ShowYesNoDialogText(CVariant{13110}, CVariant{38384}, CVariant{""}, CVariant{""}, 15000) != DialogResponse::CHOICE_YES)
             {
               m_resolutionChangeAborted = true;
               return false;
