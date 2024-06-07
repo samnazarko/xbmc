@@ -34,7 +34,13 @@ extern "C" {
 static int mvc_file_read(void *h, uint8_t* buf, int size)
 {
   CDVDInputStream* pInputStream = static_cast<CDemuxMVC*>(h)->m_pInput;
-  return pInputStream->Read(buf, size);
+  int s = pInputStream->Read(buf, size);
+
+  if (pInputStream->IsEOF()) {
+	  return AVERROR_EOF;
+  }
+
+  return s;
 }
 
 static int64_t mvc_file_seek(void *h, int64_t pos, int whence)
