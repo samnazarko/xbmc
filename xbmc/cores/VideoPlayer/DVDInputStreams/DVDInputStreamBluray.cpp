@@ -174,6 +174,11 @@ bool CDVDInputStreamBluray::Open()
   }
   else if (m_item.IsDiscImage())
   {
+    CURL url2("udf://");
+
+    url2.SetHostName(m_item.GetPath());
+    root = url2.Get();
+
     if (!OpenStream(m_item))
       return false;
 
