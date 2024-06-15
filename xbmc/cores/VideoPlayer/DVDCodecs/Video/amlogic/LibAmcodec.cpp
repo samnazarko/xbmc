@@ -211,6 +211,7 @@ int LibAmcodec::init(const aml_generic_param &gparam)
 	m_codec->am_sysinfo.ratio	= gparam.ratio;
 	m_codec->am_sysinfo.ratio64	= gparam.ratio64;
 	m_codec->am_sysinfo.param	= gparam.param;
+	m_codec->use_dv_vpath		= gparam.use_dv_vpath ? 1 : 0;
 
 	return m_dll->codec_init(m_codec);
 }

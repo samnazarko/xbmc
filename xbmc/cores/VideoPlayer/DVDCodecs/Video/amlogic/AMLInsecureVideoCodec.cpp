@@ -358,6 +358,7 @@ void AMLInsecureVideoCodec::setupVideoCodecParams(aml_generic_param &params) con
 	params.ratio        = m_am_private->video_ratio;
 	params.ratio64      = m_am_private->video_ratio64;
 	params.param        = NULL;
+	params.use_dv_vpath = false;
 }
 
 int AMLInsecureVideoCodec::handle_pre_header_feeding(am_private_t *para, am_packet_t *pkt) const

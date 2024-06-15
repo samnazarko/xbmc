@@ -58,6 +58,7 @@ typedef struct {
 	void *param;
 	int config_len;
 	char *config;
+	bool use_dv_vpath;
 } aml_generic_param;
 
 class amlogic::LibAmcodec
