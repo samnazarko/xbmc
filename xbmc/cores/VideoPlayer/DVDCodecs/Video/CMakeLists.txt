@@ -16,6 +16,7 @@ if(AML_FOUND)
                       amlogic/AMLDecoderInputQueueStats.cpp
                       amlogic/AMLInsecureVideoCodec.cpp
                       amlogic/AMLVideoCodec.cpp
+                      amlogic/DVCodec.cpp
                       amlogic/AV1Codec.cpp
                       amlogic/H264Codec.cpp
                       amlogic/HEVCCodec.cpp
@@ -32,6 +33,7 @@ if(AML_FOUND)
                       amlogic/AMLVideoCodecConstants.h
                       amlogic/AMLVideoCodecDataTypes.h
                       amlogic/AMLVideoCodecInfo.h
+                      amlogic/DVCodec.h
                       amlogic/AV1Codec.h
                       amlogic/H264Codec.h
                       amlogic/HEVCCodec.h
