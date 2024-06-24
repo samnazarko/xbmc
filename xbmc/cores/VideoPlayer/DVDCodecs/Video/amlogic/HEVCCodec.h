@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include "AMLInsecureVideoCodec.h"
+#include "DVCodec.h"
 
 class CBitstreamConverter;
 
-class amlogic::HEVCCodec : public amlogic::AMLInsecureVideoCodec
+class amlogic::HEVCCodec : public amlogic::DVCodec
 {
 private:
 	CBitstreamConverter	*m_bitstream;

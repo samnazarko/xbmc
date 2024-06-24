@@ -57,7 +57,7 @@ public:
 
 
 HEVCCodec::HEVCCodec(CProcessInfo &processInfo)
-	: AMLInsecureVideoCodec(processInfo), m_bitstream(nullptr)
+	: DVCodec(processInfo), m_bitstream(nullptr)
 {
 }
 
@@ -85,7 +85,7 @@ vdec_type_t HEVCCodec::getVideoCodecType(const CDVDStreamInfo &hints) const
 
 void HEVCCodec::setupVideoCodecParams(aml_generic_param &params) const
 {
-	AMLInsecureVideoCodec::setupVideoCodecParams(params);
+	DVCodec::setupVideoCodecParams(params);
 
 	params.decoder_type = DECODER_TYPE_FRAME_MODE;
 	params.param = (void*) EXTERNAL_PTS;
