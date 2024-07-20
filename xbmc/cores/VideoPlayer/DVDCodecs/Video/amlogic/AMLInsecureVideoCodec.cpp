@@ -1230,7 +1230,6 @@ void AMLInsecureVideoCodec::setVideoRect(const CRect &SrcRect, const CRect &Dest
 	}
 
 	if (m_guiStereoMode == RENDER_STEREO_MODE_MONO) {
-		std::string videoStereoMode = m_processInfo.GetVideoStereoMode();
 		if (videoStereoMode == "left_right" || videoStereoMode == "right_left")
 			dst_rect.x2 *= 2.0;
 		else if (videoStereoMode == "top_bottom" || videoStereoMode == "bottom_top")
@@ -1243,6 +1242,7 @@ void AMLInsecureVideoCodec::setVideoRect(const CRect &SrcRect, const CRect &Dest
 		// 3D frame packed output: get the screen height from the graphic context
 		// (will work in fullscreen mode only)
 		RESOLUTION_INFO info = CServiceBroker::GetWinSystem()->GetGfxContext().GetResInfo();
+		dst_rect.x2 = info.iWidth;
 		dst_rect.y2 = info.iHeight * 2 + info.iBlanking;
 		setFramepackingResolution(info.iWidth, info.iHeight, info.iBlanking);
 	}
@@ -1303,6 +1303,13 @@ void AMLInsecureVideoCodec::setVideoMode(std::string videoInputMode, RENDER_STER
 	} else if (videoInputMode == "block_rl") {
 		vimode = VIDEO_INPUT_MODE_MVC;
 		leftEyeFirst = false;
+	}
+
+	// handle Full-SBS/Full-TAB
+	if (vimode == VIDEO_INPUT_MODE_HSBS && m_hints.width == 3840) {
+		vimode = VIDEO_INPUT_MODE_FSBS;
+	} else if (vimode == VIDEO_INPUT_MODE_HTAB && m_hints.height > 1080) {
+		vimode = VIDEO_INPUT_MODE_FTAB;
 	}
 
 	if (vimode != VIDEO_INPUT_MODE_2D) {
