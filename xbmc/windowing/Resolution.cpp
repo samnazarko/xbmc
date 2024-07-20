@@ -95,8 +95,8 @@ void CResolutionUtils::FindResolutionFromWhitelist(float fps, int width, int hei
 {
   RESOLUTION_INFO curr = CServiceBroker::GetWinSystem()->GetGfxContext().GetResInfo(resolution);
   CLog::Log(LOGINFO,
-            "[WHITELIST] Searching the whitelist for: width: {}, height: {}, fps: {:0.3f}, 3D: {}",
-            width, height, fps, modeflag3d ? "true" : "false");
+            "[WHITELIST] Searching the whitelist for: width: {}, height: {}, fps: {:0.3f}, 3D: {}, 3d mode flags: 0x{:x}",
+            width, height, fps, modeflag3d ? "true" : "false", modeflag3d);
 
   std::vector<CVariant> indexList = CServiceBroker::GetSettingsComponent()->GetSettings()->GetList(CSettings::SETTING_VIDEOSCREEN_WHITELIST);
 
