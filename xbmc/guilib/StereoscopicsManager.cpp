@@ -52,6 +52,10 @@ static const struct StereoModeMap VideoModeToGuiModeMap[] =
   { "right_left",               RENDER_STEREO_MODE_SPLIT_VERTICAL },
   { "top_bottom",               RENDER_STEREO_MODE_SPLIT_HORIZONTAL },
   { "bottom_top",               RENDER_STEREO_MODE_SPLIT_HORIZONTAL },
+  { "full_left_right",          RENDER_STEREO_MODE_HARDWAREBASED },
+  { "full_right_left",          RENDER_STEREO_MODE_HARDWAREBASED },
+  { "full_top_bottom",          RENDER_STEREO_MODE_HARDWAREBASED },
+  { "full_bottom_top",          RENDER_STEREO_MODE_HARDWAREBASED },
   { "checkerboard_rl",          RENDER_STEREO_MODE_CHECKERBOARD },
   { "checkerboard_lr",          RENDER_STEREO_MODE_CHECKERBOARD },
   { "row_interleaved_rl",       RENDER_STEREO_MODE_INTERLACED },
@@ -587,8 +591,25 @@ std::string CStereoscopicsManager::GetVideoStereoMode() const
 
   const auto& components = CServiceBroker::GetAppComponents();
   const auto appPlayer = components.GetComponent<CApplicationPlayer>();
-  if (appPlayer->IsPlaying())
-    playerMode = CServiceBroker::GetDataCacheCore().GetVideoStereoMode();
+  if (appPlayer->IsPlaying()) {
+	  playerMode = CServiceBroker::GetDataCacheCore().GetVideoStereoMode();
+
+	  if (playerMode.find("left") != std::string::npos) {
+		  // check for Full-SBS
+		  int width = CServiceBroker::GetDataCacheCore().GetVideoWidth();
+
+		  if (width == 3840) {
+			  playerMode = "full_" + playerMode;
+		  }
+	  } else if (playerMode.find("bottom") != std::string::npos) {
+		  // check for Full-TAB
+		  int height = CServiceBroker::GetDataCacheCore().GetVideoHeight();
+
+		  if (height > 1080) {
+			  playerMode = "full_" + playerMode;
+		  }
+	  }
+  }
 
   return playerMode;
 }
