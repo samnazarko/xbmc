@@ -562,34 +562,69 @@ bool aml_set_native_resolution(const RESOLUTION_INFO &res, std::string framebuff
 
   aml_enable_PHY(true);
 
-
   return result;
+}
+
+static void aml_add_resolution(RESOLUTION_INFO res, std::vector<RESOLUTION_INFO> &resolutions)
+{
+    res.strMode = StringUtils::Format("{}x{} @ {:.2f}{} - Full Screen",
+									  res.iScreenWidth, res.iScreenHeight, res.fRefreshRate, res.dwFlags & D3DPRESENTFLAG_INTERLACED ? "i" : "");
+	resolutions.push_back(res);
+}
+
+static void aml_add_3d_full_sbs_resolution(RESOLUTION_INFO res, std::vector<RESOLUTION_INFO> &resolutions)
+{
+	if ((res.dwFlags & D3DPRESENTFLAG_MODE3DFP) && res.iScreenWidth == 1920) {
+		// add Full SBS resolution displayed as FP
+		res.iScreenWidth *= 2;
+		res.fPixelRatio *= 2;
+		aml_add_resolution(res, resolutions);
+	}
+}
+
+static void aml_add_3d_full_tab_resolution(RESOLUTION_INFO res, std::vector<RESOLUTION_INFO> &resolutions)
+{
+	if ((res.dwFlags & D3DPRESENTFLAG_MODE3DFP) && res.iScreenWidth == 1920) {
+		// add Full TAB resolution displayed as FP
+		res.iScreenHeight *= 2;
+		res.fPixelRatio /= 2;
+		aml_add_resolution(res, resolutions);
+	}
 }
 
 static void aml_add_resolution(const std::string &mode, std::vector<RESOLUTION_INFO> &resolutions)
 {
-  RESOLUTION_INFO res;
+	if (StringUtils::StartsWith(mode, "4k2k") && aml_support_h264_4k2k() <= AML_NO_H264_4K2K) {
+		// 4k2k is not supported
+		return;
+	}
 
-  if (((StringUtils::StartsWith(mode, "4k2k")) && (aml_support_h264_4k2k() > AML_NO_H264_4K2K)) || !(StringUtils::StartsWith(mode, "4k2k")))
-  {
-    if (aml_mode_to_resolution(mode.c_str(), &res))
-      resolutions.push_back(res);
+	RESOLUTION_INFO res;
 
-    if (aml_has_frac_rate_policy())
-    {
-      // Add fractional frame rates: 23.976, 29.97 and 59.94 Hz
-      switch ((int)res.fRefreshRate)
-      {
-        case 24:
-        case 30:
-        case 60:
-        res.fRefreshRate /= 1.001;
-        res.strMode       = StringUtils::Format("{}x{} @ {:.2f}{} - Full Screen", res.iScreenWidth, res.iScreenHeight, res.fRefreshRate,
-            res.dwFlags & D3DPRESENTFLAG_INTERLACED ? "i" : "");
-        resolutions.push_back(res);
-      }
-    }
-  }
+	if (!aml_mode_to_resolution(mode.c_str(), &res)) {
+		// there's no resolution that fits the mode
+		return;
+	}
+
+	aml_add_resolution(res, resolutions);
+	aml_add_3d_full_sbs_resolution(res, resolutions);
+	aml_add_3d_full_tab_resolution(res, resolutions);
+
+	if (!aml_has_frac_rate_policy()) {
+		// no fractional frame rates supported
+		return;
+	}
+
+	switch ((int) res.fRefreshRate) {
+		case 24:
+		case 30:
+		case 60:
+			res.fRefreshRate /= 1.001;
+			aml_add_resolution(res, resolutions);
+			aml_add_3d_full_sbs_resolution(res, resolutions);
+			aml_add_3d_full_tab_resolution(res, resolutions);
+			break;
+	}
 }
 
 static bool aml_modes_to_resolutions(const std::vector<std::string> &probe_str, std::vector<RESOLUTION_INFO> &resolutions)
