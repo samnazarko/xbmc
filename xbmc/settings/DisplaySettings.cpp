@@ -742,6 +742,10 @@ std::string CDisplaySettings::GetDisplayStringFromRes(const RESOLUTION res, bool
       stereo += "SBS)";
     else if(info.dwFlags & D3DPRESENTFLAG_MODE3DTB)
       stereo += "TAB)";
+    else if((info.dwFlags & D3DPRESENTFLAG_MODE3DFP) && (info.dwFlags & D3DPRESENTFLAG_MODE3DFSBS))
+      stereo += "Full-SBS)";
+    else if((info.dwFlags & D3DPRESENTFLAG_MODE3DFP) && (info.dwFlags & D3DPRESENTFLAG_MODE3DFTAB))
+      stereo += "Full-TAB)";
     else if(info.dwFlags & D3DPRESENTFLAG_MODE3DFP)
       stereo += "FP)";
   }

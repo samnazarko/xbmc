@@ -576,6 +576,7 @@ static void aml_add_3d_full_sbs_resolution(RESOLUTION_INFO res, std::vector<RESO
 {
 	if ((res.dwFlags & D3DPRESENTFLAG_MODE3DFP) && res.iScreenWidth == 1920) {
 		// add Full SBS resolution displayed as FP
+		res.dwFlags |= D3DPRESENTFLAG_MODE3DFSBS;
 		res.iScreenWidth *= 2;
 		res.fPixelRatio *= 2;
 		aml_add_resolution(res, resolutions);
@@ -586,6 +587,7 @@ static void aml_add_3d_full_tab_resolution(RESOLUTION_INFO res, std::vector<RESO
 {
 	if ((res.dwFlags & D3DPRESENTFLAG_MODE3DFP) && res.iScreenWidth == 1920) {
 		// add Full TAB resolution displayed as FP
+		res.dwFlags |= D3DPRESENTFLAG_MODE3DFTAB;
 		res.iScreenHeight *= 2;
 		res.fPixelRatio /= 2;
 		aml_add_resolution(res, resolutions);
