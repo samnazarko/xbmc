@@ -221,6 +221,10 @@ unsigned int AMLInsecureVideoCodec::getVideoRate(const CDVDStreamInfo &hints) co
 	if (hints.fpsrate > 0 && hints.fpsscale != 0) {
 		// then ffmpeg avg_frame_rate next
 		video_rate = 0.5 + (float) UNIT_FREQ * hints.fpsscale / hints.fpsrate;
+	} else {
+		// the video_rate can't be calculated because fpsrate and/or fpsscale are invalid, so
+		// we're using a default one as a fallback
+		video_rate = 0.5 + (float) UNIT_FREQ * 1001 / 30000;
 	}
 
 	// check for 1920x1080, interlaced, 25 fps
