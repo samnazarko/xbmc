@@ -106,7 +106,7 @@ bool CDVDVideoCodecAmlogic::Open(CDVDStreamInfo &hints, CDVDCodecOptions &option
   // allow only 1 instance here
   if (m_InstanceGuard.exchange(true))
   {
-    CLog::Log(LOGERROR, "CDVDVideoCodecAmlogic::Open - InstanceGuard locked\n");
+    CLog::Log(LOGERROR, "CDVDVideoCodecAmlogic::Open - InstanceGuard locked");
     return false;
   }
 

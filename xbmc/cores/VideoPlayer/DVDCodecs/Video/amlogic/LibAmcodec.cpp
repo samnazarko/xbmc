@@ -156,6 +156,9 @@ LibAmcodec::LibAmcodec()
 	}
 
 	m_codec = new codec_para_t;
+
+	memset(m_codec, 0x00, sizeof(codec_para_t));
+
 	m_codec->handle             = -1; //init to invalid
 	m_codec->cntl_handle        = -1;
 	m_codec->sub_handle         = -1;

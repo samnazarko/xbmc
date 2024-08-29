@@ -585,8 +585,11 @@ void AMLInsecureVideoCodec::closeDecoder()
 		m_libamcodec->setControlMode(TRICKMODE_NONE);
 	}
 
-	m_libamcodec->close();
-	m_opened = false;
+	if (m_opened) {
+		// close the codec only if it was opened before
+		m_libamcodec->close();
+		m_opened = false;
+	}
 
 	am_packet_release(&m_am_private->am_pkt);
 	free(m_am_private->extradata);
