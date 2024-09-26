@@ -49,7 +49,7 @@ void DVCodec::setupVideoCodecParams(aml_generic_param &params) const
 {
 	AMLInsecureVideoCodec::setupVideoCodecParams(params);
 
-	bool enable_dv = m_hints.hdrType == StreamHdrType::HDR_TYPE_DOLBYVISION && isDolbyVisionSupported() && isDisplaySupportsDolbyVision();
+	bool enable_dv = m_hints.hdrType == StreamHdrType::HDR_TYPE_DOLBYVISION && isDolbyVisionSupported();
 
 	CLog::Log(LOGDEBUG, "DVCodec: stream type: {}, DV supported: {}, display supports DV: {}, DV enabled: {}",
 			  m_hints.hdrType, isDolbyVisionSupported(), isDisplaySupportsDolbyVision(), enable_dv);
