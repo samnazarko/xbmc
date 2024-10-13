@@ -1123,7 +1123,7 @@ void CDVDInputStreamBluray::GetStreamInfo(int pid, std::string &language)
   if(!m_titleInfo || !m_clip)
     return;
 
-  if (pid == HDMV_PID_VIDEO)
+  if (HDMV_PID_VIDEO_FIRST <= pid && pid <= HDMV_PID_VIDEO_LAST)
     find_stream(pid, m_clip->video_streams, m_clip->video_stream_count, language);
   else if (HDMV_PID_AUDIO_FIRST <= pid && pid <= HDMV_PID_AUDIO_LAST)
     find_stream(pid, m_clip->audio_streams, m_clip->audio_stream_count, language);

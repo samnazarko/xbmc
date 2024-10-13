@@ -30,7 +30,8 @@ extern "C"
 #define BD_EVENT_MENU_ERROR   -2
 #define BD_EVENT_ENC_ERROR    -3
 
-#define HDMV_PID_VIDEO            0x1011
+#define HDMV_PID_VIDEO_FIRST      0x1011
+#define HDMV_PID_VIDEO_LAST       0x1015
 #define HDMV_PID_AUDIO_FIRST      0x1100
 #define HDMV_PID_AUDIO_LAST       0x111f
 #define HDMV_PID_PG_FIRST         0x1200
