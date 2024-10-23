@@ -42,6 +42,8 @@ extern "C"
 
 class CDVDOverlayImage;
 class IVideoPlayer;
+class CDVDInputStreamBlurayExtension;
+class FFmpegExtraData;
 
 class CDVDInputStreamBluray
   : public CDVDInputStream
@@ -65,6 +67,13 @@ public:
   int GetBlockSize() override { return 6144; }
   ENextStream NextStream() override;
 
+  /* BD3D related */
+  int Get3dSubtitlePlane(uint16_t pid);
+  inline bool AreEyesFlipped() const { return m_flipEyes; }
+  DemuxPacket *ReadExtensionPacket();
+  inline bool IsExtensionStreamFound() const { return m_extension != nullptr; }
+  FFmpegExtraData GetExtensionExtraData();
+  void SetExtensionStreamStartTime(int64_t ms);
 
   /* IMenus */
   void ActivateButton() override { UserInput(BD_VK_ENTER); }
@@ -126,8 +135,6 @@ public:
 
   void GetStreamInfo(int pid, std::string &language);
 
-  int Get3dSubtitlePlane(uint16_t pid);
-
   void OverlayCallback(const BD_OVERLAY * const);
 #ifdef HAVE_LIBBLURAY_BDJ
   void OverlayCallbackARGB(const struct bd_argb_overlay_s * const);
@@ -187,11 +194,17 @@ protected:
     bool OpenStream(CFileItem &item);
     void SetupPlayerSettings();
     void FreeTitleInfo();
+    void SelectPlaylist(int item);
+
     std::unique_ptr<CDVDInputStreamFile> m_pstream;
     std::string m_rootPath;
 
     /*! Bluray state serializer handler */
     CBlurayStateSerializer m_blurayStateSerializer;
+
+    /* BD3D related things */
+    CDVDInputStreamBlurayExtension     *m_extension;
+    bool m_flipEyes;
 
     /* used during bd_open_stream read block*/
     CCriticalSection m_readBlocksLock;
