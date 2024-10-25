@@ -19,6 +19,7 @@ extern "C" {
 #include <libavformat/avformat.h>
 }
 
+class DVDStreamMuxer;
 class CDVDDemuxFFmpeg;
 class CURL;
 
@@ -178,7 +179,10 @@ protected:
   bool m_seekToKeyFrame = false;
   double m_startTime = 0;
 
+  DVDStreamMuxer *m_muxer;
+
 private:
   bool isFpsNonsense(const AVRational &frameRate);
+  void checkNeedMuxer();
 };
 

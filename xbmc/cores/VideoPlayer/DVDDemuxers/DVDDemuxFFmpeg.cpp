@@ -9,6 +9,7 @@
 #include "DVDDemuxFFmpeg.h"
 
 #include "DVDDemuxUtils.h"
+#include "DVDMvcStreamMuxer.h"
 #include "DVDInputStreams/DVDInputStream.h"
 #ifdef HAVE_LIBBLURAY
 #include "DVDInputStreams/DVDInputStreamBluray.h"
@@ -207,6 +208,7 @@ CDVDDemuxFFmpeg::CDVDDemuxFFmpeg() : CDVDDemux()
   m_bMatroska = false;
   m_bAVI = false;
   m_bSup = false;
+  m_muxer = nullptr;
   m_speed = DVD_PLAYSPEED_NORMAL;
   m_program = UINT_MAX;
   m_pkt.result = -1;
@@ -672,6 +674,8 @@ void CDVDDemuxFFmpeg::Dispose()
   m_pkt.result = -1;
   av_packet_unref(&m_pkt.pkt);
 
+  delete m_muxer, m_muxer = nullptr;
+
   if (m_pFormatContext)
   {
     if (m_ioContext && m_pFormatContext->pb && m_pFormatContext->pb != m_ioContext)
@@ -721,6 +725,10 @@ void CDVDDemuxFFmpeg::Flush()
   m_displayTime = 0;
   m_dtsAtDisplayTime = DVD_NOPTS_VALUE;
   m_seekToKeyFrame = false;
+
+  if (m_muxer) {
+	  m_muxer->flush();
+  }
 }
 
 void CDVDDemuxFFmpeg::Abort()
@@ -1080,7 +1088,7 @@ DemuxPacket* CDVDDemuxFFmpeg::ReadInternal(bool keep)
 
         if (IsProgramChange())
         {
-          CLog::Log(LOGINFO, "CDVDDemuxFFmpeg::Read() stream change");
+          CLog::Log(LOGINFO, "CDVDDemuxFFmpeg::ReadInternal() stream change");
           av_dump_format(m_pFormatContext, 0, CURL::GetRedacted(m_pInput->GetFileName()).c_str(),
                          0);
 
@@ -1220,7 +1228,7 @@ DemuxPacket* CDVDDemuxFFmpeg::ReadInternal(bool keep)
     {
       if (static_cast<CDemuxStreamVideo*>(stream)->iWidth != m_pFormatContext->streams[pPacket->iStreamId]->codecpar->width ||
           static_cast<CDemuxStreamVideo*>(stream)->iHeight != m_pFormatContext->streams[pPacket->iStreamId]->codecpar->height ||
-		  (stream->disabled && stream->extraData.GetSize() != m_pFormatContext->streams[pPacket->iStreamId]->codecpar->extradata_size))
+		  (stream->disabled && stream->extraData.GetSize() != (size_t) m_pFormatContext->streams[pPacket->iStreamId]->codecpar->extradata_size))
       {
         // content has changed
         stream = AddStream(pPacket->iStreamId);
@@ -1244,7 +1252,13 @@ DemuxPacket* CDVDDemuxFFmpeg::ReadInternal(bool keep)
 
 DemuxPacket* CDVDDemuxFFmpeg::Read()
 {
-  return ReadInternal(false);
+  DemuxPacket *p = ReadInternal(false);
+
+  if (m_muxer) {
+	  return m_muxer->addPacket(p);
+  }
+
+  return p;
 }
 
 bool CDVDDemuxFFmpeg::SeekTime(double time, bool backwards, double* startpts)
@@ -1385,8 +1399,10 @@ bool CDVDDemuxFFmpeg::SeekTime(double time, bool backwards, double* startpts)
 
   if (ret >= 0)
   {
-    if (!hitEnd)
+    if (!hitEnd) {
+      Flush();
       return true;
+    }
     else
       return false;
   }
@@ -1405,7 +1421,12 @@ bool CDVDDemuxFFmpeg::SeekByte(int64_t pos)
   m_pkt.result = -1;
   av_packet_unref(&m_pkt.pkt);
 
-  return (ret >= 0);
+  if (ret >= 0) {
+	  Flush();
+	  return true;
+  }
+
+  return false;
 }
 
 int CDVDDemuxFFmpeg::GetStreamLength()
@@ -1579,6 +1600,40 @@ void CDVDDemuxFFmpeg::CreateStreams(unsigned int program)
   {
     for (unsigned int i = 0; i < m_pFormatContext->nb_streams; i++)
       AddStream(i);
+  }
+
+  checkNeedMuxer();
+}
+
+void CDVDDemuxFFmpeg::checkNeedMuxer()
+{
+  CDemuxStreamVideo *vmain = nullptr, *vext = nullptr;
+
+  for (int i = 0; i < GetNrOfStreams(); i++) {
+    CDemuxStream *s = GetStream(i);
+
+    if (s && s->type == STREAM_VIDEO) {
+      CDemuxStreamVideo *vs = reinterpret_cast<CDemuxStreamVideo*>(s);
+
+      if (vs->codec == AV_CODEC_ID_H264_MVC) {
+        vext = vs;
+      } else if (vmain == nullptr) {
+        vmain = vs;
+      }
+    }
+  }
+
+  if (vmain != nullptr && vext != nullptr) {
+    // we need the stream muxer
+    if (vext->codec == AV_CODEC_ID_H264_MVC) {
+      CLog::Log(LOGINFO, "{}: creating MVC track muxer", __FUNCTION__);
+      m_muxer = new DVDMvcStreamMuxer(vmain, vext);
+    }
+  } else if (m_pInput->IsStreamType(DVDSTREAM_TYPE_BLURAY) &&
+             std::static_pointer_cast<CDVDInputStreamBluray>(m_pInput)->IsExtensionStreamFound()) {
+      CLog::Log(LOGINFO, "{}: creating MVC track muxer for 3DBD playback", __FUNCTION__);
+      std::static_pointer_cast<CDVDInputStreamBluray>(m_pInput)->SetExtensionStreamStartTime(m_pFormatContext->start_time);
+      m_muxer = new DVDMvcStreamMuxer(vmain, std::static_pointer_cast<CDVDInputStreamBluray>(m_pInput));
   }
 }
 
@@ -1805,6 +1860,16 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
         }
         if (av_dict_get(pStream->metadata, "title", NULL, 0))
           st->m_description = av_dict_get(pStream->metadata, "title", NULL, 0)->value;
+
+        if (pStream->codecpar->codec_id == AV_CODEC_ID_H264)
+        {
+		  if (CDVDCodecUtils::ProcessH264MVCExtradata(pStream->codecpar->extradata, pStream->codecpar->extradata_size)) {
+			  pStream->codecpar->codec_tag = MKTAG('M', 'V', 'C', '1');
+
+			  // use lr if we don't know what the stereo mode is
+			  st->stereo_mode = stereoMode.empty() ? "block_lr" : stereoMode;
+		  }
+        }
         break;
       }
       case AVMEDIA_TYPE_DATA:
@@ -2200,6 +2265,10 @@ bool CDVDDemuxFFmpeg::IsProgramChange()
   if (m_program == UINT_MAX)
     return false;
 
+  // TODO t99 check dovi usage
+  if (m_muxer)
+    return false;
+
   if (m_program == 0 && !m_pFormatContext->nb_programs)
     return false;
 
@@ -2249,7 +2318,7 @@ bool CDVDDemuxFFmpeg::IsProgramChange()
         return true;
       }
     }
-    if (m_pFormatContext->streams[idx]->codecpar->extradata_size !=
+    if (m_muxer == nullptr && m_pFormatContext->streams[idx]->codecpar->extradata_size !=
         static_cast<int>(stream->extraData.GetSize()))
       return true;
   }
@@ -2354,7 +2423,7 @@ void CDVDDemuxFFmpeg::ParsePacket(AVPacket* pkt)
 {
   AVStream* st = m_pFormatContext->streams[pkt->stream_index];
 
-  if (st && st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
+  if (st && st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO && st->codecpar->codec_id != AV_CODEC_ID_H264_MVC)
   {
     auto parser = m_parsers.find(st->index);
     if (parser == m_parsers.end())
