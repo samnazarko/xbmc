@@ -9,6 +9,7 @@
 #include "DVDDemuxFFmpeg.h"
 
 #include "DVDDemuxUtils.h"
+#include "DVDDoviStreamMuxer.h"
 #include "DVDMvcStreamMuxer.h"
 #include "DVDInputStreams/DVDInputStream.h"
 #ifdef HAVE_LIBBLURAY
@@ -1617,6 +1618,8 @@ void CDVDDemuxFFmpeg::checkNeedMuxer()
 
       if (vs->codec == AV_CODEC_ID_H264_MVC) {
         vext = vs;
+      } else if (vs->hdr_type == StreamHdrType::HDR_TYPE_DOLBYVISION) {
+        vext = vs;
       } else if (vmain == nullptr) {
         vmain = vs;
       }
@@ -1628,6 +1631,9 @@ void CDVDDemuxFFmpeg::checkNeedMuxer()
     if (vext->codec == AV_CODEC_ID_H264_MVC) {
       CLog::Log(LOGINFO, "{}: creating MVC track muxer", __FUNCTION__);
       m_muxer = new DVDMvcStreamMuxer(vmain, vext);
+    } else {
+      CLog::Log(LOGINFO, "{}: creating DV track muxer", __FUNCTION__);
+      m_muxer = new DVDDoviStreamMuxer(vmain, vext);
     }
   } else if (m_pInput->IsStreamType(DVDSTREAM_TYPE_BLURAY) &&
              std::static_pointer_cast<CDVDInputStreamBluray>(m_pInput)->IsExtensionStreamFound()) {
@@ -2025,15 +2031,6 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
 #ifdef HAVE_LIBBLURAY
     if (m_pInput->IsStreamType(DVDSTREAM_TYPE_BLURAY))
     {
-      // UHD BD have a secondary video stream called by Dolby as enhancement layer.
-      // This is not used by streaming services and devices (ATV, Nvidia Shield, XONE).
-      if (pStream->id == 0x1015)
-      {
-        CLog::Log(LOGDEBUG, "CDVDDemuxFFmpeg::AddStream - discarding Dolby Vision stream");
-        pStream->discard = AVDISCARD_ALL;
-        delete stream;
-        return nullptr;
-      }
       stream->dvdNavId = pStream->id;
 
       auto it = std::find_if(m_streams.begin(), m_streams.end(),
@@ -2691,6 +2688,31 @@ StreamHdrType CDVDDemuxFFmpeg::DetermineHdrType(AVStream* pStream)
 
   if (av_stream_get_side_data(pStream, AV_PKT_DATA_DOVI_CONF, nullptr)) // DoVi
     hdrType = StreamHdrType::HDR_TYPE_DOLBYVISION;
+  else if (pStream->id == 0x1015)
+  {
+    // Poor man's Dolby Vision detector ahead
+    // Until we know it better, we suppose that a stream ID 0x1015 indicates DoVi
+    AVDOVIDecoderConfigurationRecord *dovi;
+    size_t dovi_size;
+
+    dovi = av_dovi_alloc(&dovi_size);
+    if (dovi)
+    {
+      dovi->dv_version_major = 1;
+      dovi->dv_version_minor = 0;
+      dovi->dv_profile = 7;
+      dovi->dv_level = 6;
+      dovi->rpu_present_flag = 1;
+      dovi->el_present_flag = 1;
+      dovi->bl_present_flag = 1;
+      dovi->dv_bl_signal_compatibility_id = 6;
+
+      if (av_stream_add_side_data(pStream, AV_PKT_DATA_DOVI_CONF, (uint8_t*) dovi, dovi_size) < 0)
+        av_free(dovi);
+    }
+
+    hdrType = StreamHdrType::HDR_TYPE_DOLBYVISION;
+  }
   else if (pStream->codecpar->color_trc == AVCOL_TRC_SMPTE2084) // HDR10
     hdrType = StreamHdrType::HDR_TYPE_HDR10;
   else if (pStream->codecpar->color_trc == AVCOL_TRC_ARIB_STD_B67) // HLG
