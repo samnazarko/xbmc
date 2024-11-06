@@ -42,15 +42,20 @@ bool DVCodec::isDisplaySupportsDolbyVision() const
 		return false;
 	}
 
-	return dv_cap.find("The Rx don't support DolbyVision") == std::string::npos;
+	return dv_cap.find("DV_RGB_444_8BIT") != std::string::npos;
 }
 
 void DVCodec::setupVideoCodecParams(aml_generic_param &params) const
 {
-	AMLInsecureVideoCodec::setupVideoCodecParams(params);
+	bool isProfile4 = m_hints.dovi.dv_profile == 4;
+  bool isProfile8HLG = m_hints.dovi.dv_profile == 8
+    && m_hints.dovi.dv_bl_signal_compatibility_id == 4;
+  AMLInsecureVideoCodec::setupVideoCodecParams(params);
 
-	bool enable_dv = m_hints.hdrType == StreamHdrType::HDR_TYPE_DOLBYVISION && isDolbyVisionSupported();
+	bool enable_dv = m_hints.hdrType == StreamHdrType::HDR_TYPE_DOLBYVISION && isDolbyVisionSupported()
+    && !isProfile4 && !isProfile8HLG;
 
+  CLog::Log(LOGDEBUG, "DVCodec: Profile: {}, CCID: {}", m_hints.dovi.dv_profile, m_hints.dovi.dv_bl_signal_compatibility_id);
 	CLog::Log(LOGDEBUG, "DVCodec: stream type: {}, DV supported: {}, display supports DV: {}, DV enabled: {}",
 			  m_hints.hdrType, isDolbyVisionSupported(), isDisplaySupportsDolbyVision(), enable_dv);
 
@@ -61,10 +66,15 @@ void DVCodec::setupVideoCodecParams(aml_generic_param &params) const
 
 	if (enable_dv) {
 		// enable display-led DV
-		if (SysfsUtils::SetString("/sys/module/amdolby_vision/parameters/dolby_vision_efuse_bypass", "Y")) {
-			CLog::Log(LOGERROR, "DVCodec: unable to enable display-led support");
+		if (isDisplaySupportsDolbyVision()) {
+      if (SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/attr", "RGB8bit"))
+			  CLog::Log(LOGERROR, "DVCodec: unable to set 8bit output");
 			return;
-		}
+		} else {
+      CLog::Log(LOGINFO, "DVCodec: DV output to HDR/SDR");
+      if (SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/attr", ""))
+			  CLog::Log(LOGERROR, "DVCodec: unable to reset default bitdepth");
+    }
 
 		CLog::Log(LOGINFO, "DVCodec: DV support enabled");
 	}
