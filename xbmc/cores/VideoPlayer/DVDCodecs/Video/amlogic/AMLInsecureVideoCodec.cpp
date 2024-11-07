@@ -179,6 +179,7 @@ void AMLInsecureVideoCodec::closeAmlVideo()
 	m_amlVideoFile.reset();
 	setVfmMap("default", m_defaultVfmMap);
 	m_amlVideoFile = nullptr;
+	SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/attr", " ");
 }
 
 void AMLInsecureVideoCodec::showMainVideo(const bool show)
