@@ -19,6 +19,7 @@ set(SOURCES ActorProtocol.cpp
             DatabaseUtils.cpp
             Digest.cpp
             DiscsUtils.cpp
+            DynamicMemory.cpp
             EndianSwap.cpp
             EmbeddedArt.cpp
             ExecString.cpp
@@ -102,6 +103,7 @@ set(HEADERS ActorProtocol.h
             DatabaseUtils.h
             Digest.h
             DiscsUtils.h
+            DynamicMemory.h
             EndianSwap.h
             EventStream.h
             EventStreamDetail.h
