@@ -50,14 +50,14 @@ public:
 	}
 
 	AMLVideoCodec *createCodec(CProcessInfo &processInfo, const CDVDStreamInfo &hints) {
-		return new HEVCCodec(processInfo);
+		return new HEVCCodec(processInfo, hints);
 	}
 
 } hevcCodecInfo;
 
 
-HEVCCodec::HEVCCodec(CProcessInfo &processInfo)
-	: DVCodec(processInfo), m_bitstream(nullptr)
+HEVCCodec::HEVCCodec(CProcessInfo &processInfo, const CDVDStreamInfo &hints)
+	: DVCodec(processInfo, hints), m_bitstream(nullptr)
 {
 }
 

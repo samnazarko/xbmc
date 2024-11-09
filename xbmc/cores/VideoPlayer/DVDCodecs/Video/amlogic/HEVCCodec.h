@@ -26,7 +26,7 @@ protected:
 	virtual int pre_header_feeding(am_private_t *para, am_packet_t *pkt) const;
 
 public:
-	HEVCCodec(CProcessInfo &processInfo);
+	HEVCCodec(CProcessInfo &processInfo, const CDVDStreamInfo &hints);
 	virtual ~HEVCCodec();
 
 	virtual std::string getFormatName() const;

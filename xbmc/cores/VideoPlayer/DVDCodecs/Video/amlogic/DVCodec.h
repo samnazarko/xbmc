@@ -14,6 +14,7 @@ class amlogic::DVCodec : public amlogic::AMLInsecureVideoCodec
 {
 private:
 	bool m_player_supports_dv;
+	bool m_dv_enabled;
 
 protected:
 	virtual inline bool isDolbyVisionSupported() const {
@@ -24,7 +25,10 @@ protected:
 
 	void setupVideoCodecParams(aml_generic_param &params) const;
 
+private:
+	void setupDolbyVision(const CDVDStreamInfo &hints);
+
 public:
-	DVCodec(CProcessInfo &processInfo);
+	DVCodec(CProcessInfo &processInfo, const CDVDStreamInfo &hints);
 	virtual ~DVCodec();
 };

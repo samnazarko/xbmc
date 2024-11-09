@@ -14,8 +14,8 @@
 
 using namespace amlogic;
 
-DVCodec::DVCodec(CProcessInfo &processInfo)
-	: AMLInsecureVideoCodec(processInfo), m_player_supports_dv(false)
+DVCodec::DVCodec(CProcessInfo &processInfo, const CDVDStreamInfo &hints)
+	: AMLInsecureVideoCodec(processInfo), m_player_supports_dv(false), m_dv_enabled(false)
 {
 	int support_info = 0;
 
@@ -28,6 +28,7 @@ DVCodec::DVCodec(CProcessInfo &processInfo)
 
 	m_player_supports_dv = true;
 
+	setupDolbyVision(hints);
 }
 
 DVCodec::~DVCodec()
@@ -45,17 +46,17 @@ bool DVCodec::isDisplaySupportsDolbyVision() const
 	return dv_cap.find("DV_RGB_444_8BIT") != std::string::npos;
 }
 
-void DVCodec::setupVideoCodecParams(aml_generic_param &params) const
+void DVCodec::setupDolbyVision(const CDVDStreamInfo &hints)
 {
 	bool isProfile4 = m_hints.dovi.dv_profile == 4;
-  bool isProfile8HLG = m_hints.dovi.dv_profile == 8
-    && m_hints.dovi.dv_bl_signal_compatibility_id == 4;
-  AMLInsecureVideoCodec::setupVideoCodecParams(params);
+	bool isProfile8HLG = m_hints.dovi.dv_profile == 8
+			&& m_hints.dovi.dv_bl_signal_compatibility_id == 4;
 
 	bool enable_dv = m_hints.hdrType == StreamHdrType::HDR_TYPE_DOLBYVISION && isDolbyVisionSupported()
-    && !isProfile4 && !isProfile8HLG;
+			&& !isProfile4 && !isProfile8HLG;
 
-  CLog::Log(LOGDEBUG, "DVCodec: Profile: {}, CCID: {}", m_hints.dovi.dv_profile, m_hints.dovi.dv_bl_signal_compatibility_id);
+	CLog::Log(LOGDEBUG, "DVCodec: Profile: {}, CCID: {}",
+			  m_hints.dovi.dv_profile, m_hints.dovi.dv_bl_signal_compatibility_id);
 	CLog::Log(LOGDEBUG, "DVCodec: stream type: {}, DV supported: {}, display supports DV: {}, DV enabled: {}",
 			  m_hints.hdrType, isDolbyVisionSupported(), isDisplaySupportsDolbyVision(), enable_dv);
 
@@ -64,27 +65,38 @@ void DVCodec::setupVideoCodecParams(aml_generic_param &params) const
 		return;
 	}
 
-	if (enable_dv) {
-		// enable display-led DV
-		if (isDisplaySupportsDolbyVision()) {
-      int range_control;
-      if (SysfsUtils::GetInt("/sys/module/am_vecm/parameters/range_control", range_control)
-        || SysfsUtils::SetInt("/sys/module/am_vecm/parameters/range_control", (range_control | 2))
-        || SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/attr", "RGB8bitnow")) {
-			  CLog::Log(LOGERROR, "DVCodec: unable to set 8bit full-range output");
-			  return;
-      } else
-			  CLog::Log(LOGDEBUG, "DVCodec: set 8bit full-range output");
-		} else {
-      CLog::Log(LOGDEBUG, "DVCodec: DV output to HDR/SDR");
-      if (SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/attr", ""))
-			  CLog::Log(LOGERROR, "DVCodec: unable to reset default attr");
-    }
-
-		CLog::Log(LOGINFO, "DVCodec: DV support enabled");
+	if (!enable_dv) {
+		return;
 	}
 
-	params.use_dv_vpath = enable_dv;
+	// enable display-led DV
+	if (isDisplaySupportsDolbyVision()) {
+		int range_control;
+
+		if (SysfsUtils::GetInt("/sys/module/am_vecm/parameters/range_control", range_control)
+				|| SysfsUtils::SetInt("/sys/module/am_vecm/parameters/range_control", (range_control | 2))
+				|| SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/attr", "RGB8bitnow")) {
+			CLog::Log(LOGERROR, "DVCodec: unable to set 8bit full-range output");
+			return;
+		} else {
+			CLog::Log(LOGDEBUG, "DVCodec: set 8bit full-range output");
+		}
+	} else {
+		CLog::Log(LOGDEBUG, "DVCodec: DV output to HDR/SDR");
+		if (SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/attr", "")) {
+			CLog::Log(LOGERROR, "DVCodec: unable to reset default attr");
+		}
+	}
+
+	CLog::Log(LOGINFO, "DVCodec: DV support enabled");
+	m_dv_enabled = true;
+}
+
+void DVCodec::setupVideoCodecParams(aml_generic_param &params) const
+{
+	AMLInsecureVideoCodec::setupVideoCodecParams(params);
+
+	params.use_dv_vpath = m_dv_enabled;
 }
 
 #if 0
