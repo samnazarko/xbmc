@@ -67,13 +67,18 @@ void DVCodec::setupVideoCodecParams(aml_generic_param &params) const
 	if (enable_dv) {
 		// enable display-led DV
 		if (isDisplaySupportsDolbyVision()) {
-      if (SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/attr", "RGB8bit"))
-			  CLog::Log(LOGERROR, "DVCodec: unable to set 8bit output");
-			return;
+      int range_control;
+      if (SysfsUtils::GetInt("/sys/module/am_vecm/parameters/range_control", range_control)
+        || SysfsUtils::SetInt("/sys/module/am_vecm/parameters/range_control", (range_control | 2))
+        || SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/attr", "RGB8bitnow")) {
+			  CLog::Log(LOGERROR, "DVCodec: unable to set 8bit full-range output");
+			  return;
+      } else
+			  CLog::Log(LOGDEBUG, "DVCodec: set 8bit full-range output");
 		} else {
-      CLog::Log(LOGINFO, "DVCodec: DV output to HDR/SDR");
+      CLog::Log(LOGDEBUG, "DVCodec: DV output to HDR/SDR");
       if (SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/attr", ""))
-			  CLog::Log(LOGERROR, "DVCodec: unable to reset default bitdepth");
+			  CLog::Log(LOGERROR, "DVCodec: unable to reset default attr");
     }
 
 		CLog::Log(LOGINFO, "DVCodec: DV support enabled");
