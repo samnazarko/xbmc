@@ -1255,7 +1255,7 @@ DemuxPacket* CDVDDemuxFFmpeg::Read()
 {
   DemuxPacket *p = ReadInternal(false);
 
-  if (m_muxer) {
+  if (m_muxer && p) {
 	  return m_muxer->addPacket(p);
   }
 
