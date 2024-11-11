@@ -24,6 +24,7 @@ DVDDoviStreamMuxer::DVDDoviStreamMuxer(CDemuxStreamVideo *main, CDemuxStreamVide
 	m_isHvccAtom = extension->extraData.GetData()[0] == 0x01;
 
 	main->dovi = extension->dovi;
+	main->hdr_type = extension->hdr_type;
 }
 
 DVDDoviStreamMuxer::~DVDDoviStreamMuxer()
