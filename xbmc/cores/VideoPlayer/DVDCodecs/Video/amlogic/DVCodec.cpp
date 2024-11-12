@@ -55,6 +55,12 @@ void DVCodec::setupDolbyVision(const CDVDStreamInfo &hints)
 	bool enable_dv = hints.hdrType == StreamHdrType::HDR_TYPE_DOLBYVISION && isDolbyVisionSupported()
 			&& !isProfile4 && !isProfile8HLG;
 
+	if (!isDisplaySupportsDolbyVision()) {
+		CLog::Log(LOGDEBUG, "DVCodec: DV output to HDR/SDR");
+		if (hints.dovi.dv_profile != 5)
+			enable_dv = false;
+	} 
+
 	CLog::Log(LOGDEBUG, "DVCodec: Profile: {}, CCID: {}",
 			  hints.dovi.dv_profile, hints.dovi.dv_bl_signal_compatibility_id);
 	CLog::Log(LOGDEBUG, "DVCodec: stream type: {}, DV supported: {}, display supports DV: {}, DV enabled: {}",
@@ -68,14 +74,6 @@ void DVCodec::setupDolbyVision(const CDVDStreamInfo &hints)
 	if (!enable_dv) {
 		return;
 	}
-
-	if (!isDisplaySupportsDolbyVision()) {
-		CLog::Log(LOGDEBUG, "DVCodec: DV output to HDR/SDR");
-		if (SysfsUtils::SetString("/sys/class/amhdmitx/amhdmitx0/attr", " ")) {
-			CLog::Log(LOGERROR, "DVCodec: unable to reset default attr");
-		}
-    return;
-	} 
 
 	CLog::Log(LOGINFO, "DVCodec: DV output enabled");
 	m_dv_enabled = true;
