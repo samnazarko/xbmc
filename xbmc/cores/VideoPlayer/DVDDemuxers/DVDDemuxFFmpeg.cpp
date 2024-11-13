@@ -1613,8 +1613,12 @@ void CDVDDemuxFFmpeg::checkNeedMuxer()
   for (int i = 0; i < GetNrOfStreams(); i++) {
     CDemuxStream *s = GetStream(i);
 
-    if (s && s->type == STREAM_VIDEO) {
+    if (s && s->type == STREAM_VIDEO && avcodec_get_type(s->codec) == AVMEDIA_TYPE_VIDEO) {
       CDemuxStreamVideo *vs = reinterpret_cast<CDemuxStreamVideo*>(s);
+
+      if (vs->iFpsRate == 0 || vs->disabled) {
+        continue;
+      }
 
       if (vs->codec == AV_CODEC_ID_H264_MVC) {
         vext = vs;
