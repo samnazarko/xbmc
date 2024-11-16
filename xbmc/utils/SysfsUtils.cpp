@@ -93,6 +93,26 @@ int SysfsUtils::GetInt(const std::string& path, int& val)
   return ret;
 }
 
+int SysfsUtils::GetIntDec(const std::string& path, int& val)
+{
+  int fd = open(path.c_str(), O_RDONLY);
+  int ret = 0;
+  if (fd >= 0)
+  {
+    char bcmd[16];
+    if (read(fd, bcmd, sizeof(bcmd)) < 0)
+      ret = -1;
+    else
+      val = strtol(bcmd, NULL, 10);
+
+    close(fd);
+  }
+  if (ret)
+    CLog::Log(LOGERROR, "{}: error reading {}",__FUNCTION__, path.c_str());
+
+  return ret;
+}
+
 bool SysfsUtils::Has(const std::string &path)
 {
   int fd = open(path.c_str(), O_RDONLY);

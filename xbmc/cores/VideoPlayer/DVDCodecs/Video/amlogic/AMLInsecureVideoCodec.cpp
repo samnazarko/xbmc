@@ -150,6 +150,8 @@ std::string AMLInsecureVideoCodec::getVfmMap(const std::string &name) const
 
 bool AMLInsecureVideoCodec::openAmlVideo(const CDVDStreamInfo &hints)
 {
+	int hdrMode, maxLum, dvFlags;
+
 	PosixFilePtr amlVideoFile = std::make_shared<PosixFile>();
 	if (!amlVideoFile->Open("/dev/video10", O_RDONLY | O_NONBLOCK)) {
 		CLog::Log(LOGERROR, "AMLInsecureVideoCodec::openAmlVideo - cannot open V4L amlvideo device /dev/video10: {}", strerror(errno));
@@ -162,11 +164,22 @@ bool AMLInsecureVideoCodec::openAmlVideo(const CDVDStreamInfo &hints)
 
 	setVfmMap("default", "decoder ppmgr deinterlace amlvideo amvideo");
 
-	int hdrMode = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOPLAYER_HDR_PROCESS);
+	hdrMode = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOPLAYER_HDR_PROCESS);
 
-	SysfsUtils::SetInt("/sys/module/am_vecm/parameters/hdr_mode", hdrMode);
+	if (SysfsUtils::SetInt("/sys/module/am_vecm/parameters/hdr_mode", hdrMode))
+		CLog::Log(LOGERROR, "AMLInsecureVideoCodec: Failed to set hdr_mode");
 
-	int maxLum = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOSCREEN_MAXLUM);
+	if (!SysfsUtils::GetIntDec("/sys/module/amdolby_vision/parameters/dolby_vision_flags", dvFlags))
+	{
+		if (hdrMode == 2)
+			dvFlags &= ~0x2000;
+		else
+			dvFlags |= 0x2000;
+		SysfsUtils::SetInt("/sys/module/amdolby_vision/parameters/dolby_vision_flags", (int) dvFlags);
+	} else
+		CLog::Log(LOGERROR, "AMLInsecureVideoCodec: Failed to get DV flags");
+
+	maxLum = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOSCREEN_MAXLUM);
 	SysfsUtils::SetInt("/sys/module/am_vecm/parameters/customer_panel_lumin", maxLum);
 
 	SysfsUtils::SetInt("/sys/class/video/freerun_mode", 3);

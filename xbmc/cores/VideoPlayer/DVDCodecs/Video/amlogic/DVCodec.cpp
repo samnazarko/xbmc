@@ -9,6 +9,8 @@
 
 #include "utils/log.h"
 #include "utils/SysfsUtils.h"
+#include "settings/Settings.h"
+#include "settings/SettingsComponent.h"
 
 #include "OSMCSecureOS.h"
 
@@ -51,11 +53,13 @@ void DVCodec::setupDolbyVision(const CDVDStreamInfo &hints)
 	bool isProfile4 = hints.dovi.dv_profile == 4;
 	bool isProfile8HLG = hints.dovi.dv_profile == 8
 			&& hints.dovi.dv_bl_signal_compatibility_id == 4;
+	bool isDVoutputDisabled =
+		CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOPLAYER_HDR_PROCESS) != 2;
 
 	bool enable_dv = hints.hdrType == StreamHdrType::HDR_TYPE_DOLBYVISION && isDolbyVisionSupported()
 			&& !isProfile4 && !isProfile8HLG;
 
-	if (!isDisplaySupportsDolbyVision()) {
+	if (!isDisplaySupportsDolbyVision() || isDVoutputDisabled) {
 		CLog::Log(LOGDEBUG, "DVCodec: DV output to HDR/SDR");
 		if (hints.dovi.dv_profile != 5)
 			enable_dv = false;
@@ -63,8 +67,8 @@ void DVCodec::setupDolbyVision(const CDVDStreamInfo &hints)
 
 	CLog::Log(LOGDEBUG, "DVCodec: Profile: {}, CCID: {}",
 			  hints.dovi.dv_profile, hints.dovi.dv_bl_signal_compatibility_id);
-	CLog::Log(LOGDEBUG, "DVCodec: stream type: {}, DV supported: {}, display supports DV: {}, DV enabled: {}",
-			  hints.hdrType, isDolbyVisionSupported(), isDisplaySupportsDolbyVision(), enable_dv);
+	CLog::Log(LOGDEBUG, "DVCodec: stream type: {}, DV supported: {}, display supports DV: {}{}, DV enabled: {}",
+			  hints.hdrType, isDolbyVisionSupported(), isDisplaySupportsDolbyVision(), isDVoutputDisabled ? " (disabled)" : "", enable_dv);
 
 	if (SysfsUtils::SetString("/sys/module/amdolby_vision/parameters/dolby_vision_enable", enable_dv ? "Y" : "N")) {
 		CLog::Log(LOGERROR, "DVCodec: unable to enable dv support");
@@ -75,7 +79,7 @@ void DVCodec::setupDolbyVision(const CDVDStreamInfo &hints)
 		return;
 	}
 
-	CLog::Log(LOGINFO, "DVCodec: DV output enabled");
+	CLog::Log(LOGINFO, "DVCodec: DV support enabled");
 	m_dv_enabled = true;
 }
 
