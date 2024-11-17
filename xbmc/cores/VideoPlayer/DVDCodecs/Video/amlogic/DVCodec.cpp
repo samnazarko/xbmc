@@ -55,15 +55,24 @@ void DVCodec::setupDolbyVision(const CDVDStreamInfo &hints)
 			&& hints.dovi.dv_bl_signal_compatibility_id == 4;
 	bool isDVoutputDisabled =
 		CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOPLAYER_HDR_PROCESS) != 2;
+	int dvFlags = 5;
 
 	bool enable_dv = hints.hdrType == StreamHdrType::HDR_TYPE_DOLBYVISION && isDolbyVisionSupported()
 			&& !isProfile4 && !isProfile8HLG;
+
+	if (SysfsUtils::GetIntDec("/sys/module/amdolby_vision/parameters/dolby_vision_flags", dvFlags))
+		CLog::Log(LOGERROR, "DVCodec: Failed to get DV flags");
 
 	if (!isDisplaySupportsDolbyVision() || isDVoutputDisabled) {
 		CLog::Log(LOGDEBUG, "DVCodec: DV output to HDR/SDR");
 		if (hints.dovi.dv_profile != 5)
 			enable_dv = false;
-	} 
+		dvFlags |= 0x2000;
+	} else
+		dvFlags &= ~0x2000;
+
+	if (SysfsUtils::SetInt("/sys/module/amdolby_vision/parameters/dolby_vision_flags", dvFlags))
+		CLog::Log(LOGERROR, "DVCodec: Failed to set DV flags to 0x{:08x}", dvFlags);
 
 	CLog::Log(LOGDEBUG, "DVCodec: Profile: {}, CCID: {}",
 			  hints.dovi.dv_profile, hints.dovi.dv_bl_signal_compatibility_id);
