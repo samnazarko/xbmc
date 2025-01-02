@@ -520,8 +520,10 @@ CHDRCapabilities CWinSystemAmlogic::GetDisplayHDRCapabilities() const
       HDRcaps.SetHDR10Plus();
     if (hdr_caps.find("HLG") != std::string::npos)
       HDRcaps.SetHLG();
-    if (hdr_caps.find("DV") != std::string::npos)
+    if (hdr_caps.find("STD") != std::string::npos)
       HDRcaps.SetDolbyVision();
+    if (hdr_caps.find("LL") != std::string::npos)
+      HDRcaps.SetDolbyVisionLL();
   }
   return HDRcaps;
 }

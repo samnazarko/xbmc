@@ -326,8 +326,20 @@ bool CSystemGUIInfo::GetLabel(std::string& value, const CFileItem *item, int con
           types += ", HLG";
         if (caps.SupportsHDR10Plus())
           types += ", HDR10+";
-        if (caps.SupportsDolbyVision())
-          types += ", Dolby Vision";
+        if (caps.SupportsDolbyVision() || caps.SupportsDolbyVisionLL())
+        {
+          types += ", Dolby Vision (";
+          if (caps.SupportsDolbyVision())
+          {
+            types += "Std";
+            types += caps.SupportsDolbyVisionLL() ? " and " : " only)";
+          }
+          if (caps.SupportsDolbyVisionLL())
+          {
+            types += "LL";
+            types += caps.SupportsDolbyVision() ? ")" : " only)";
+          }
+        }
 
         value = types;
       }

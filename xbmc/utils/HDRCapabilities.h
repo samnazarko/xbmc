@@ -17,16 +17,18 @@ public:
   bool SupportsHDR10() const { return m_hdr10; }
   bool SupportsHLG() const { return m_hlg; }
   bool SupportsHDR10Plus() const { return m_hdr10_plus; }
-  bool SupportsDolbyVision() const { return m_dolby_vision; }
+  bool SupportsDolbyVision() const { return m_dolby_vision & 2; }
+  bool SupportsDolbyVisionLL() const { return m_dolby_vision & 1; }
 
   void SetHDR10() { m_hdr10 = true; }
   void SetHLG() { m_hlg = true; }
   void SetHDR10Plus() { m_hdr10_plus = true; }
-  void SetDolbyVision() { m_dolby_vision = true; }
+  void SetDolbyVision() { m_dolby_vision |= 2; }
+  void SetDolbyVisionLL() { m_dolby_vision |= 1; }
 
 private:
   bool m_hdr10 = false;
   bool m_hlg = false;
   bool m_hdr10_plus = false;
-  bool m_dolby_vision = false;
+  int m_dolby_vision = 0;
 };
