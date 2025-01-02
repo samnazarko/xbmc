@@ -73,6 +73,24 @@ int SysfsUtils::SetInt(const std::string& path, const int val)
   return ret;
 }
 
+int SysfsUtils::SetUInt32(const std::string& path, const uint32_t val)
+{
+  int fd = open(path.c_str(), O_RDWR, 0644);
+  int ret = 0;
+  if (fd >= 0)
+  {
+    char bcmd[16];
+    sprintf(bcmd, "%u", val);
+    if (write(fd, bcmd, strlen(bcmd)) < 0)
+      ret = -1;
+    close(fd);
+  }
+  if (ret)
+    CLog::Log(LOGERROR, "{}: error writing {}",__FUNCTION__, path.c_str());
+
+  return ret;
+}
+
 int SysfsUtils::GetInt(const std::string& path, int& val)
 {
   int fd = open(path.c_str(), O_RDONLY);
@@ -93,7 +111,7 @@ int SysfsUtils::GetInt(const std::string& path, int& val)
   return ret;
 }
 
-int SysfsUtils::GetIntDec(const std::string& path, int& val)
+int SysfsUtils::GetIntDec(const std::string& path, uint32_t& val)
 {
   int fd = open(path.c_str(), O_RDONLY);
   int ret = 0;
@@ -103,7 +121,7 @@ int SysfsUtils::GetIntDec(const std::string& path, int& val)
     if (read(fd, bcmd, sizeof(bcmd)) < 0)
       ret = -1;
     else
-      val = strtol(bcmd, NULL, 10);
+      val = strtoull(bcmd, NULL, 10);
 
     close(fd);
   }
