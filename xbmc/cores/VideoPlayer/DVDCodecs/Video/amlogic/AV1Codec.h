@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "AMLInsecureVideoCodec.h"
+#include "DVCodec.h"
 
 namespace amlogic {
 	struct read_bit_buffer;
@@ -24,7 +24,7 @@ namespace amlogic {
 	};
 }
 
-class amlogic::AV1Codec : public amlogic::AMLInsecureVideoCodec
+class amlogic::AV1Codec : public amlogic::DVCodec
 {
 private:
 	DataBuffer m_data_buffer;
@@ -48,7 +48,7 @@ protected:
 	virtual void setupVideoCodecParams(aml_generic_param &params) const;
 
 public:
-	AV1Codec(CProcessInfo &processInfo);
+	AV1Codec(CProcessInfo &processInfo, const CDVDStreamInfo &hints);
 	virtual ~AV1Codec();
 
 	virtual std::string getFormatName() const;

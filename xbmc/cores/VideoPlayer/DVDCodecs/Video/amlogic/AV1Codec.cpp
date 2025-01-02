@@ -88,13 +88,13 @@ public:
 	}
 
 	AMLVideoCodec *createCodec(CProcessInfo &processInfo, const CDVDStreamInfo &hints) {
-		return new AV1Codec(processInfo);
+		return new AV1Codec(processInfo, hints);
 	}
 
 } av1CodecInfo;
 
-AV1Codec::AV1Codec(CProcessInfo &processInfo)
-	: AMLInsecureVideoCodec(processInfo)
+AV1Codec::AV1Codec(CProcessInfo &processInfo, const CDVDStreamInfo &hints)
+	: DVCodec(processInfo, hints)
 {
 }
 
@@ -123,7 +123,7 @@ vdec_type_t AV1Codec::getVideoCodecType(const CDVDStreamInfo &hints) const
 
 void AV1Codec::setupVideoCodecParams(aml_generic_param &params) const
 {
-	AMLInsecureVideoCodec::setupVideoCodecParams(params);
+	DVCodec::setupVideoCodecParams(params);
 
 	params.format = VIDEO_DEC_FORMAT_AV1;
 	params.decoder_type = DECODER_TYPE_FRAME_MODE;
