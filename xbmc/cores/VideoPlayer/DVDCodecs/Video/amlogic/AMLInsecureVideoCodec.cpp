@@ -164,11 +164,6 @@ bool AMLInsecureVideoCodec::openAmlVideo(const CDVDStreamInfo &hints)
 
 	setVfmMap("default", "decoder ppmgr deinterlace amlvideo amvideo");
 
-	hdrMode = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOPLAYER_HDR_PROCESS);
-
-	if (SysfsUtils::SetInt("/sys/module/am_vecm/parameters/hdr_mode", hdrMode))
-		CLog::Log(LOGERROR, "AMLInsecureVideoCodec: Failed to set hdr_mode");
-
 	maxLum = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOSCREEN_MAXLUM);
 	SysfsUtils::SetInt("/sys/module/am_vecm/parameters/customer_panel_lumin", maxLum);
 

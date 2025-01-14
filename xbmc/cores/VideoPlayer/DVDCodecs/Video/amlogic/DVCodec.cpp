@@ -23,7 +23,7 @@ DVCodec::DVCodec(CProcessInfo &processInfo, const CDVDStreamInfo &hints)
 
 	if (!m_secureOSMC->isVeroV()
 			|| SysfsUtils::GetInt("/sys/class/amdolby_vision/support_info", support_info)
-			|| (support_info & 0x7) == 0) {
+			|| (support_info & 0x7) != 7) {
 		// no DV support
 		return;
 	}

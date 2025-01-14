@@ -92,6 +92,13 @@ std::atomic<bool> CDVDVideoCodecAmlogic::m_InstanceGuard(false);
 
 bool CDVDVideoCodecAmlogic::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options)
 {
+  int hdrMode;
+
+  hdrMode = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOPLAYER_HDR_PROCESS);
+
+	if (SysfsUtils::SetInt("/sys/module/am_vecm/parameters/hdr_mode", hdrMode))
+		CLog::Log(LOGERROR, "AMLInsecureVideoCodec: Failed to set hdr_mode");
+
   if (!CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_VIDEOPLAYER_USEAMCODEC))
     return false;
   if (hints.stills || hints.width == 0)
