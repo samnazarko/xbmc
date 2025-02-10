@@ -75,6 +75,7 @@ bool CRendererAML::Configure(const VideoPicture &picture, float fps, unsigned in
   ManageRenderArea();
 
   m_bConfigured = true;
+  m_hdrCheckCount = m_maxChecks;
 
   return true;
 }
@@ -172,6 +173,7 @@ void CRendererAML::Reset()
       m_buffers[reset_arr[i][0]].videoBuffer = nullptr;
     }
   }
+  CServiceBroker::GetWinSystem()->GetGfxContext().SetTransferPQ(false);
 }
 
 bool CRendererAML::Flush(bool saveBuffers)
@@ -183,6 +185,31 @@ bool CRendererAML::Flush(bool saveBuffers)
 void CRendererAML::RenderUpdate(int index, int index2, bool clear, unsigned int flags, unsigned int alpha)
 {
   ManageRenderArea();
+  /* are we outputting HDR? */
+  if (m_hdrCheckCount >= 0)
+  {
+    std::string hdmiConfig = "";
+    if (!SysfsUtils::GetString("/sys/class/amhdmitx/amhdmitx0/config", hdmiConfig))
+    {
+      if ((hdmiConfig.find("EOTF: SDR") == std::string::npos &&
+        hdmiConfig.find("EOTF: HDRgamma") == std::string::npos) ||
+        hdmiConfig.find("DV type DV") != std::string::npos)
+      {
+        CLog::Log(LOGDEBUG, "CRendererAML: Output is HDR ({})", m_maxChecks - m_hdrCheckCount);
+        CServiceBroker::GetWinSystem()->GetGfxContext().SetTransferPQ(true);
+        m_hdrCheckCount = 0;
+      }
+      else if (m_hdrCheckCount == 0)
+      {
+        CServiceBroker::GetWinSystem()->GetGfxContext().SetTransferPQ(false);
+        CLog::Log(LOGDEBUG, "CRendererAML: Output is SDR");
+      }
+    }
+    else
+      CLog::Log(LOGERROR, "Failed to read hdmitx config");
+
+    m_hdrCheckCount -= 1;
+  }
 
   CAMLVideoBuffer *amli = dynamic_cast<CAMLVideoBuffer *>(m_buffers[index].videoBuffer);
   if(amli && amli->m_amlCodec)

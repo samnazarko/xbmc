@@ -535,3 +535,11 @@ bool CWinSystemAmlogic::IsHDRDisplay()
   return HDRcaps.SupportsHDR10();
 }
 
+float CWinSystemAmlogic::GetGuiSdrPeakLuminance() const
+{
+  const auto settings = CServiceBroker::GetSettingsComponent()->GetSettings();
+  const int guiSdrPeak = settings->GetInt(CSettings::SETTING_VIDEOSCREEN_GUISDRPEAKLUMINANCE);
+
+  return 0.5f * guiSdrPeak / 100.0f + 0.5f;
+}
+

@@ -40,6 +40,7 @@ public:
   virtual void Unregister(IDispResource *resource);
   CHDRCapabilities GetDisplayHDRCapabilities() const override;
   bool IsHDRDisplay() override;
+  float GetGuiSdrPeakLuminance() const override;
   bool m_monitorEvents;
   std::string m_lastEdid;
   

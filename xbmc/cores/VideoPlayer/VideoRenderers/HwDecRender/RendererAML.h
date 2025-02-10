@@ -56,4 +56,6 @@ private:
 
   int m_prevVPts;
   bool m_bConfigured;
+  int m_hdrCheckCount;
+  const int m_maxChecks = 20;
 };
